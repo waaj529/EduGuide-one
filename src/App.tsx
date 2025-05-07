@@ -1,0 +1,142 @@
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import TeacherDashboard from "./pages/TeacherDashboard";
+import Upload from "./pages/Upload";
+import Practice from "./pages/Practice";
+import FlashcardPage from "./pages/FlashcardPage";
+import StudyTimerPage from "./pages/StudyTimerPage";
+import ReviewMistakes from "./pages/ReviewMistakes";
+import ProgressTracker from "./pages/ProgressTracker";
+import Profile from "./pages/Profile";
+import StudentContentGenerator from "./pages/StudentContentGenerator";
+import { ThemeProvider } from "./context/ThemeContext";
+import Navbar from "./components/layout/Navbar";
+import Footer from "./components/layout/Footer";
+
+// Create a new query client
+const queryClient = new QueryClient();
+
+// Role-based redirect component
+const RoleBasedRedirect = () => {
+  return <Navigate to="/login" replace />;
+};
+
+const App = () => {
+  console.log('App component rendering');
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AuthProvider>
+              <div className="flex flex-col min-h-screen overflow-x-hidden">
+                <Navbar />
+                <main className="flex-1 w-full page-transition">
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/" element={<Index />} />
+                    <Route path="/login" element={<Login />} />
+                    
+                    {/* Role-based redirect */}
+                    <Route path="/dashboard-redirect" element={<RoleBasedRedirect />} />
+                    
+                    {/* Student routes */}
+                    <Route path="/dashboard" element={
+                      <ProtectedRoute allowedRoles={['student']}>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* New Student Content Generator route */}
+                    <Route path="/study-materials" element={
+                      <ProtectedRoute allowedRoles={['student']}>
+                        <StudentContentGenerator />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Teacher routes */}
+                    <Route path="/teacher-dashboard" element={
+                      <ProtectedRoute allowedRoles={['teacher']}>
+                        <TeacherDashboard />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Upload route - different content based on role */}
+                    <Route 
+                      path="/upload" 
+                      element={
+                        <ProtectedRoute>
+                          {(() => {
+                            const userRole = localStorage.getItem('eduguide_user_role');
+                            if (userRole === 'student') {
+                              return <Navigate to="/study-materials" replace />;
+                            } else {
+                              return <Upload />;
+                            }
+                          })()}
+                        </ProtectedRoute>
+                      } 
+                    />
+                    
+                    {/* Other routes - primarily student focused */}
+                    <Route path="/practice" element={
+                      <ProtectedRoute allowedRoles={['student']}>
+                        <Practice />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/flashcards" element={
+                      <ProtectedRoute allowedRoles={['student']}>
+                        <FlashcardPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/timer" element={
+                      <ProtectedRoute allowedRoles={['student']}>
+                        <StudyTimerPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/review" element={
+                      <ProtectedRoute allowedRoles={['student']}>
+                        <ReviewMistakes />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/progress" element={
+                      <ProtectedRoute allowedRoles={['student']}>
+                        <ProgressTracker />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Shared routes */}
+                    <Route path="/profile" element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Catch-all route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
+                <Footer />
+              </div>
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+};
+
+export default App;
