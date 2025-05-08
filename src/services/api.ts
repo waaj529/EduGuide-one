@@ -557,3 +557,86 @@ export const downloadAssignment = async (formData: FormData) => {
     return null;
   }
 };
+
+export interface PracticeQuestion {
+  id: string;
+  question: string;
+  userAnswer?: string;
+  evaluation?: {
+    score: number;
+    feedback: string;
+    isCorrect: boolean;
+  };
+}
+
+export async function generatePracticeQuestions(formData: FormData): Promise<PracticeQuestion[]> {
+  try {
+    const response = await fetch('https://python.iamscientist.ai/api/exam/exam_generate', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error generating questions: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("API Response data:", data);
+    
+    // Handle different response formats
+    if (Array.isArray(data)) {
+      // If data is already an array, format it directly
+      return data.map((q: any, index: number) => ({
+        id: q.id || `question-${index + 1}`,
+        question: q.question || q.text || q,
+      }));
+    } else if (data && data.questions && Array.isArray(data.questions)) {
+      // If data has a 'questions' array property
+      return data.questions.map((q: any, index: number) => ({
+        id: q.id || `question-${index + 1}`,
+        question: q.question || q.text || q,
+      }));
+    } else if (data && typeof data === 'object') {
+      // If data is a single question object
+      return [{
+        id: data.id || 'question-1',
+        question: data.question || data.text || JSON.stringify(data),
+      }];
+    } else {
+      // Fallback for unexpected formats - create at least one placeholder question
+      console.warn('Unexpected API response format:', data);
+      return [{
+        id: 'question-1',
+        question: 'The API returned data in an unexpected format. Please try again.',
+      }];
+    }
+  } catch (error) {
+    console.error('Failed to generate practice questions:', error);
+    throw error;
+  }
+}
+
+export async function evaluatePracticeAnswer(questionId: string, question: string, userAnswer: string): Promise<any> {
+  try {
+    const response = await fetch('https://python.iamscientist.ai/api/exam/evaluate_answer', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: questionId,
+        question,
+        answer: userAnswer,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error evaluating answer: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to evaluate answer:', error);
+    throw error;
+  }
+}
