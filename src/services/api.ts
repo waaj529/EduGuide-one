@@ -562,6 +562,7 @@ export interface PracticeQuestion {
   id: string;
   question: string;
   userAnswer?: string;
+  isInstruction?: boolean;
   evaluation?: {
     score: number;
     feedback: string;
@@ -583,33 +584,46 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
     const data = await response.json();
     console.log("API Response data:", data);
     
+    // Initialize the results array
+    let questionsArray: PracticeQuestion[] = [];
+    
     // Handle different response formats
     if (Array.isArray(data)) {
       // If data is already an array, format it directly
-      return data.map((q: any, index: number) => ({
+      const formattedQuestions = data.map((q: any, index: number) => ({
         id: q.id || `question-${index + 1}`,
         question: q.question || q.text || q,
+        isInstruction: false
       }));
+      questionsArray = [...questionsArray, ...formattedQuestions];
     } else if (data && data.questions && Array.isArray(data.questions)) {
       // If data has a 'questions' array property
-      return data.questions.map((q: any, index: number) => ({
+      const formattedQuestions = data.questions.map((q: any, index: number) => ({
         id: q.id || `question-${index + 1}`,
         question: q.question || q.text || q,
+        isInstruction: false
       }));
+      questionsArray = [...questionsArray, ...formattedQuestions];
     } else if (data && typeof data === 'object') {
       // If data is a single question object
-      return [{
+      questionsArray.push({
         id: data.id || 'question-1',
         question: data.question || data.text || JSON.stringify(data),
-      }];
+        isInstruction: false
+      });
     } else {
       // Fallback for unexpected formats - create at least one placeholder question
       console.warn('Unexpected API response format:', data);
-      return [{
+      
+      questionsArray.push({
         id: 'question-1',
         question: 'The API returned data in an unexpected format. Please try again.',
-      }];
+        isInstruction: false
+      });
     }
+    
+    // Filter out any instruction items
+    return questionsArray.filter(q => !q.isInstruction);
   } catch (error) {
     console.error('Failed to generate practice questions:', error);
     throw error;
@@ -618,6 +632,8 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
 
 export async function evaluatePracticeAnswer(questionId: string, question: string, userAnswer: string): Promise<any> {
   try {
+    console.log("Evaluating answer:", { questionId, question, userAnswer: userAnswer.substring(0, 20) + "..." });
+    
     const response = await fetch('https://python.iamscientist.ai/api/exam/evaluate_answer', {
       method: 'POST',
       headers: {
@@ -634,9 +650,417 @@ export async function evaluatePracticeAnswer(questionId: string, question: strin
       throw new Error(`Error evaluating answer: ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log("Raw API response:", data);
+    
+    // Extract score and feedback from the "Answer" field
+    if (data && data.Answer) {
+      const answerText = data.Answer;
+      
+      // Parse the score (format: "Score: X/10")
+      const scoreMatch = answerText.match(/Score:\s*(\d+(?:\.\d+)?)\s*\/\s*10/i);
+      const score = scoreMatch ? parseFloat(scoreMatch[1]) / 10 : 0; // Normalize to 0-1 range
+      
+      // Parse the feedback (format: "Feedback: text")
+      const feedbackMatch = answerText.match(/Feedback:\s*([\s\S]*)/i);
+      const feedback = feedbackMatch ? feedbackMatch[1].trim() : answerText;
+      
+      console.log("Parsed response:", { score, feedback });
+      
+      return {
+        score: score,
+        feedback: feedback,
+        // Any additional fields needed by the UI
+      };
+    }
+    
+    // Fallback if the response doesn't have the expected format
+    return {
+      score: 0,
+      feedback: "The evaluation service returned an unexpected response format."
+    };
   } catch (error) {
     console.error('Failed to evaluate answer:', error);
+    toast({
+      title: "Evaluation Failed",
+      description: "We couldn't evaluate your answer at this time. Please try again later.",
+      variant: "destructive",
+    });
+    throw error;
+  }
+}
+
+// View generated quiz PDF in a new tab
+export const viewQuizPdf = async (callback?: (url: string) => void) => {
+  try {
+    const pdfUrl = 'https://python.iamscientist.ai/api/quiz/quiz_view';
+    
+    if (callback) {
+      // If callback is provided, pass the URL to the callback function
+      callback(pdfUrl);
+    } else {
+      // Otherwise open in a new tab as before
+      window.open(pdfUrl, '_blank');
+      
+      toast({
+        title: "PDF viewer opened",
+        description: "The generated PDF content has been opened in a new tab.",
+      });
+    }
+  } catch (error) {
+    console.error("View quiz PDF error:", error);
+    toast({
+      title: "Error",
+      description: "Failed to open PDF viewer. Please try again.",
+      variant: "destructive",
+    });
+  }
+};
+
+// View quiz solution PDF 
+export const viewSolutionPdf = async (callback?: (url: string) => void) => {
+  try {
+    const pdfUrl = 'https://python.iamscientist.ai/api/quiz/sol_view';
+    
+    if (callback) {
+      // If callback is provided, pass the URL to the callback function
+      callback(pdfUrl);
+    } else {
+      // Otherwise open in a new tab as before
+      window.open(pdfUrl, '_blank');
+      
+      toast({
+        title: "Solution PDF opened",
+        description: "The quiz solution has been opened in a new tab.",
+      });
+    }
+  } catch (error) {
+    console.error("View solution PDF error:", error);
+    toast({
+      title: "Error",
+      description: "Failed to open solution PDF. Please try again.",
+      variant: "destructive",
+    });
+  }
+};
+
+export async function generateCheatSheet(formData: FormData): Promise<string[]> {
+  try {
+    console.log("Generating cheat sheet with form data:", Object.fromEntries(formData));
+    
+    const response = await fetch('https://python.iamscientist.ai/api/cheat_sheet/cheat_sheet', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error generating cheat sheet: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("API Response data:", data);
+    
+    // Handle response format from screenshot (questions array)
+    if (data && data.questions && Array.isArray(data.questions)) {
+      // Extract all items from the questions array
+      return data.questions.map((item: string) => item);
+    }
+    // Handle other potential response formats
+    else if (data && data.points && Array.isArray(data.points)) {
+      return data.points;
+    } else if (data && data.cheatSheet && Array.isArray(data.cheatSheet)) {
+      return data.cheatSheet;
+    } else if (data && typeof data.response === 'string') {
+      // Split by new lines or bullet points
+      return data.response.split(/\n+|\*\s+/).filter((point: string) => point.trim().length > 0);
+    } else if (Array.isArray(data)) {
+      return data.map((item: any) => typeof item === 'string' ? item : JSON.stringify(item));
+    } else {
+      // If response format doesn't match any expected formats, try to extract useful data
+      const extractedPoints: string[] = [];
+      
+      // Try to extract from any string properties in the object
+      if (data && typeof data === 'object') {
+        Object.entries(data).forEach(([key, value]) => {
+          if (typeof value === 'string' && value.trim().length > 0) {
+            extractedPoints.push(value);
+          } else if (Array.isArray(value)) {
+            value.forEach(item => {
+              if (typeof item === 'string' && item.trim().length > 0) {
+                extractedPoints.push(item);
+              } else if (typeof item === 'object' && item !== null) {
+                // If array contains objects, try to stringify them
+                extractedPoints.push(JSON.stringify(item));
+              }
+            });
+          }
+        });
+      }
+      
+      if (extractedPoints.length > 0) {
+        return extractedPoints;
+      }
+      
+      console.warn('Unexpected cheat sheet API response format:', data);
+      return [
+        "The API returned data in an unexpected format.",
+        "Please try again or contact support if this issue persists."
+      ];
+    }
+  } catch (error) {
+    console.error('Failed to generate cheat sheet:', error);
+    throw error;
+  }
+}
+
+// For development: Set this to true to enable detailed debug mode for speech generation
+const DEBUG_SPEECH_GENERATION = true;
+
+// Function to log the FormData contents for debugging
+function logFormData(formData: FormData) {
+  console.log("FormData entries:");
+  for (const pair of formData.entries()) {
+    if (pair[1] instanceof Blob) {
+      console.log(`${pair[0]}: [Blob] size=${(pair[1] as Blob).size}, type=${(pair[1] as Blob).type}`);
+    } else {
+      console.log(`${pair[0]}: ${pair[1]}`);
+    }
+  }
+}
+
+// Generate speech from text using the API
+export async function generateSpeechFromText(text: string): Promise<string> {
+  console.log("Generating speech for text:", text.substring(0, 50) + "...");
+  
+  if (DEBUG_SPEECH_GENERATION) {
+    console.log("DEBUG MODE: Speech generation debug is enabled");
+  }
+  
+  // Create FormData object for the request - exactly as shown in Postman
+  const formData = new FormData();
+  
+  // Create PDF blob with the specific name "DE.pdf" as shown in Postman screenshot
+  const textBlob = new Blob([text], { type: 'application/pdf' });
+  formData.append("file", textBlob, "DE.pdf");
+  
+  console.log("Sending speech generation request with file named 'DE.pdf'...");
+  
+  // Log the request details for debugging
+  console.log("FormData contents:", {
+    fileName: "DE.pdf",
+    contentType: "application/pdf",
+    textLength: text.length
+  });
+  
+  // Log the detailed FormData contents for debugging
+  if (DEBUG_SPEECH_GENERATION) {
+    logFormData(formData);
+  }
+  
+  // In DEBUG mode, show a sample of the text being sent
+  if (DEBUG_SPEECH_GENERATION) {
+    console.log("Text sample (first 200 chars):", text.substring(0, 200));
+    // Debug output showing exactly what's being sent
+    console.log("Request URL:", 'https://python.iamscientist.ai/api/generate-speech/generate-speech');
+    console.log("Request method:", 'POST');
+  }
+  
+  try {
+    // Make the API call to the exact URL from the screenshot
+    const response = await fetch('https://python.iamscientist.ai/api/generate-speech/generate-speech', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    // Log response details
+    console.log("Speech API Response status:", response.status);
+    
+    if (DEBUG_SPEECH_GENERATION) {
+      console.log("Speech API Response headers:", Object.fromEntries([...response.headers.entries()]));
+    }
+    
+    // Check response
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("API error response:", errorText);
+      
+      if (DEBUG_SPEECH_GENERATION) {
+        // For development: Return a mock audio URL to test the player
+        console.log("DEBUG MODE: Returning mock audio URL for testing");
+        return "https://res.cloudinary.com/demo/video/upload/v1613140765/dog_barking.mp3";
+      }
+      
+      throw new Error(`Server returned ${response.status}`);
+    }
+    
+    // Parse the response - expects {"audio_url": "https://...mp3"}
+    const data = await response.json();
+    console.log("Speech generation successful, response:", data);
+    
+    if (data && data.audio_url) {
+      return data.audio_url;
+    } else {
+      console.error("Missing audio_url in API response:", data);
+      
+      if (DEBUG_SPEECH_GENERATION) {
+        // For development: Return a mock audio URL to test the player
+        console.log("DEBUG MODE: Returning mock audio URL for missing data");
+        return "https://res.cloudinary.com/demo/video/upload/v1613140765/dog_barking.mp3";
+      }
+      
+      throw new Error("No audio URL returned from the API");
+    }
+  } catch (error) {
+    console.error("Speech API request failed with error:", error);
+    
+    if (DEBUG_SPEECH_GENERATION) {
+      // For development: Return a mock audio URL to test the player
+      console.log("DEBUG MODE: Returning mock audio URL for caught error");
+      return "https://res.cloudinary.com/demo/video/upload/v1613140765/dog_barking.mp3";
+    }
+    
+    throw error;
+  }
+}
+
+// Voice options for Eleven Labs
+export interface ElevenLabsVoice {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+export const elevenLabsVoices: ElevenLabsVoice[] = [
+  { id: "21m00Tcm4TlvDq8ikWAM", name: "Rachel", description: "Calm and clear female voice" },
+  { id: "AZnzlk1XvdvUeBnXmlld", name: "Domi", description: "Confident female voice" },
+  { id: "EXAVITQu4vr4xnSDxMaL", name: "Bella", description: "Soft female voice" },
+  { id: "ErXwobaYiN019PkySvjV", name: "Antoni", description: "Warm male voice" },
+  { id: "MF3mGyEYCl7XYWbV9V6O", name: "Elli", description: "Soft female narration" },
+  { id: "TxGEqnHWrfWFTfGW9XjX", name: "Josh", description: "Enthusiastic male voice" },
+  { id: "VR6AewLTigWG4xSOukaG", name: "Arnold", description: "Powerful male voice" },
+  { id: "pNInz6obpgDQGcFmaJgB", name: "Adam", description: "Deep male voice" },
+  { id: "yoZ06aMxZJJ28mfd3POQ", name: "Sam", description: "Serious male voice" }
+];
+
+// Function to generate speech using Eleven Labs API
+export async function generateElevenLabsSpeech(
+  text: string, 
+  voiceId: string = "EXAVITQu4vr4xnSDxMaL" // Default to Bella - soft female voice
+): Promise<string> {
+  console.log("Generating speech with Eleven Labs for text:", text.substring(0, 50) + "...");
+  console.log("Using voice ID:", voiceId);
+  
+  try {
+    // Get the API key from environment or local storage (in a real app, use environment variables)
+    // For this implementation, we'll assume the key is stored in localStorage for demonstration
+    const apiKey = localStorage.getItem("elevenLabsApiKey");
+    
+    if (!apiKey) {
+      throw new Error("Eleven Labs API key is not set. Please provide your API key.");
+    }
+    
+    // Prepare the request to Eleven Labs API
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'audio/mpeg',
+        'Content-Type': 'application/json',
+        'xi-api-key': apiKey
+      },
+      body: JSON.stringify({
+        text: text,
+        model_id: "eleven_monolingual_v1",
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.5
+        }
+      })
+    });
+    
+    // Log response details
+    console.log("Eleven Labs API Response status:", response.status);
+    
+    // Check response
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Eleven Labs API error response:", errorText);
+      throw new Error(`Server returned ${response.status}`);
+    }
+    
+    // Get the audio file as blob
+    const audioBlob = await response.blob();
+    
+    // Create a URL for the audio blob
+    const audioUrl = URL.createObjectURL(audioBlob);
+    
+    console.log("Eleven Labs speech generation successful, created blob URL:", audioUrl);
+    
+    return audioUrl;
+  } catch (error) {
+    console.error("Eleven Labs speech generation error:", error);
+    throw error;
+  }
+}
+
+// Function to convert speech to text using our server API that integrates with Eleven Labs
+export async function convertSpeechToText(audioFile: File, options: {
+  modelId?: string;
+  tagAudioEvents?: boolean;
+  languageCode?: string;
+  diarize?: boolean;
+} = {}): Promise<string> {
+  console.log("Converting speech to text with file:", audioFile.name);
+  
+  try {
+    // Build the FormData with the audio file and options
+    const formData = new FormData();
+    formData.append('file', audioFile);
+    
+    // Add optional parameters if provided
+    if (options.modelId) {
+      formData.append('model_id', options.modelId);
+    }
+    
+    if (options.tagAudioEvents !== undefined) {
+      formData.append('tag_audio_events', options.tagAudioEvents.toString());
+    }
+    
+    if (options.languageCode) {
+      formData.append('language_code', options.languageCode);
+    }
+    
+    if (options.diarize !== undefined) {
+      formData.append('diarize', options.diarize.toString());
+    }
+    
+    // Make the API call to our server
+    const response = await fetch('http://localhost:5001/api/speech-to-text', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    // Log response details
+    console.log("Speech-to-text API Response status:", response.status);
+    
+    // Check response
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Speech-to-text API error response:", errorData);
+      throw new Error(`Server returned ${response.status}: ${errorData.error || 'Unknown error'}`);
+    }
+    
+    // Parse the response
+    const data = await response.json();
+    console.log("Speech-to-text successful, response:", data);
+    
+    if (data && data.transcription) {
+      return data.transcription;
+    } else {
+      console.error("Missing transcription in API response:", data);
+      throw new Error("No transcription returned from the API");
+    }
+  } catch (error) {
+    console.error("Speech-to-text error:", error);
     throw error;
   }
 }
