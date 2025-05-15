@@ -1,0 +1,20 @@
+{
+  "name": "eleven-labs-examples",
+  "version": "1.0.0",
+  "description": "Examples for using Eleven Labs API",
+  "main": "speech_to_text_example.mts",
+  "type": "module",
+  "scripts": {
+    "start": "ts-node-esm speech_to_text_example.mts"
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "form-data": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.4",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.3"
+  }
+} 

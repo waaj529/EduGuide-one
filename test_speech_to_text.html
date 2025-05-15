@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Speech-to-Text API Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    h1 {
+      color: #333;
+    }
+    
+    .container {
+      margin-top: 20px;
+    }
+    
+    button {
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background-color: #45a049;
+    }
+    
+    #output {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+      min-height: 200px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Speech-to-Text API Test</h1>
+  
+  <div class="container">
+    <p>Test the speech-to-text API with a dummy audio file or record actual audio:</p>
+    
+    <div>
+      <button id="testDummy">Test with Dummy Audio</button>
+      <button id="recordAudio">Record Real Audio</button>
+      <button id="stopRecording" disabled>Stop Recording</button>
+    </div>
+    
+    <div id="output">Results will appear here...</div>
+  </div>
+  
+  <script>
+    const outputEl = document.getElementById('output');
+    const recordButton = document.getElementById('recordAudio');
+    const stopButton = document.getElementById('stopRecording');
+    
+    // Variables for recording
+    let mediaRecorder;
+    let audioChunks = [];
+    
+    // Test with dummy audio
+    document.getElementById('testDummy').addEventListener('click', () => {
+      outputEl.textContent = 'Sending test request with dummy audio data...\n';
+      
+      const formData = new FormData();
+      const audioBlob = new Blob(['test audio content'], { type: 'audio/wav' });
+      formData.append('file', audioBlob, 'test-audio.wav');
+      formData.append('language_code', 'eng');
+      formData.append('tag_audio_events', 'true');
+      formData.append('diarize', 'true');
+      
+      fetch('http://localhost:5001/api/speech-to-text', {
+        method: 'POST',
+        body: formData,
+      })
+        .then(response => {
+          outputEl.textContent += `Response status: ${response.status}\n`;
+          return response.json();
+        })
+        .then(data => {
+          outputEl.textContent += `API Response: ${JSON.stringify(data, null, 2)}\n`;
+        })
+        .catch(error => {
+          outputEl.textContent += `Error: ${error.message}\n`;
+          console.error('Error:', error);
+        });
+    });
+    
+    // Record actual audio
+    recordButton.addEventListener('click', async () => {
+      try {
+        outputEl.textContent = 'Requesting microphone access...\n';
+        
+        // Request microphone access
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // Create media recorder
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        
+        // Set up event handlers
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunks.push(event.data);
+          }
+        };
+        
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          
+          // Create audio element for preview
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = document.createElement('audio');
+          audio.src = audioUrl;
+          audio.controls = true;
+          
+          // Clear previous audio preview
+          const existingAudio = document.querySelector('audio');
+          if (existingAudio) {
+            existingAudio.remove();
+          }
+          
+          // Add audio preview
+          document.body.appendChild(audio);
+          
+          // Send to API
+          sendAudioToAPI(audioBlob);
+          
+          // Stop all tracks
+          stream.getTracks().forEach(track => track.stop());
+          
+          // Reset UI
+          recordButton.disabled = false;
+          stopButton.disabled = true;
+        };
+        
+        // Start recording
+        mediaRecorder.start();
+        outputEl.textContent += 'Recording started. Speak now...\n';
+        
+        // Update UI
+        recordButton.disabled = true;
+        stopButton.disabled = false;
+      } catch (error) {
+        outputEl.textContent += `Error: ${error.message}\n`;
+        console.error('Error:', error);
+      }
+    });
+    
+    // Stop recording
+    stopButton.addEventListener('click', () => {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        outputEl.textContent += 'Recording stopped.\n';
+      }
+    });
+    
+    // Send audio to API
+    function sendAudioToAPI(audioBlob) {
+      outputEl.textContent += 'Sending recorded audio to API...\n';
+      
+      const formData = new FormData();
+      formData.append('file', audioBlob, 'recorded-audio.wav');
+      formData.append('language_code', 'eng');
+      formData.append('tag_audio_events', 'true');
+      formData.append('diarize', 'true');
+      
+      fetch('http://localhost:5001/api/speech-to-text', {
+        method: 'POST',
+        body: formData,
+      })
+        .then(response => {
+          outputEl.textContent += `Response status: ${response.status}\n`;
+          return response.json();
+        })
+        .then(data => {
+          outputEl.textContent += `API Response: ${JSON.stringify(data, null, 2)}\n`;
+        })
+        .catch(error => {
+          outputEl.textContent += `Error: ${error.message}\n`;
+          console.error('Error:', error);
+        });
+    }
+  </script>
+</body>
+</html> 
