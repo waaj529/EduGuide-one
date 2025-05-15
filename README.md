@@ -90,7 +90,48 @@ npm i
 
 # Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
-```
+
+# FYP - Final Year Project
+
+This project is a web application for educational content generation and interaction, including features like Chat with PDF using speech-to-text capabilities.
+
+## Setup Instructions
+
+To run this project on your local machine, follow these steps:
+
+1. **Clone or Download the Repository**
+   - Clone this repository using `git clone https://github.com/waaj529/FYP.git` or download the zip file.
+
+2. **Install Dependencies**
+   - Navigate to the project directory: `cd FYP`
+   - Install the required npm packages: `npm install`
+
+3. **Set Up Environment Variables**
+   - Copy the `.env.example` file to `.env`: `cp .env.example .env`
+   - Open the `.env` file and add your ElevenLabs API key for speech-to-text functionality:
+     ```
+     VITE_ELEVENLABS_API_KEY=your_api_key_here
+     ```
+   - Add any other required API keys or environment variables as listed in `.env.example`.
+
+4. **Run the Application**
+   - Start the development server: `npm run dev`
+   - Open your browser and navigate to `http://localhost:5173` (or the port specified in your terminal).
+
+## Features
+
+- **Chat with PDF**: Upload a PDF and interact with its content via text or voice input.
+- **Practice Questions**: Generate and answer practice questions based on uploaded materials.
+- **Summary and Cheat Sheet**: Generate summaries and key points from educational content.
+
+## Troubleshooting
+
+- If the speech-to-text feature is not working, ensure your ElevenLabs API key is correctly set in the `.env` file.
+- For other API-related issues, check that all necessary keys are configured in your `.env` file.
+
+## Contributing
+
+Feel free to fork this repository, make changes, and submit pull requests. For major changes, please open an issue first to discuss what you would like to change.
 
 **Edit a file directly in GitHub**
 
