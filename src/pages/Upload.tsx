@@ -48,6 +48,7 @@ import questionGenerationService from "@/services/questionGeneration";
 import GeneratedQuestions from "@/components/features/GeneratedQuestions";
 import openaiService from "@/services/openaiService";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
   download_pdf,
@@ -59,12 +60,38 @@ import {
 } from "@/services/api";
 
 const Upload = () => {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  // Check user role and redirect students to study materials
+  useEffect(() => {
+    if (user?.role === 'student') {
+      navigate('/study-materials', { replace: true });
+      return;
+    }
+  }, [user, navigate]);
+
+  // Show loading state while auth is being determined
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-blue mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If user is student, don't render anything (will be redirected)
+  if (user?.role === 'student') {
+    return null;
+  }
+
   // Shared state variables
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState("assignment");
-  const navigate = useNavigate();
 
   // Assignment tab state
   const [assignmentFile, setAssignmentFile] = useState<File | null>(null);
@@ -139,10 +166,7 @@ const Upload = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("eduguide_user_token");
-    setIsAuthenticated(token !== null);
-
-    if (!token) {
+    if (!isAuthenticated) {
       toast({
         title: "Authentication required",
         description: "Please log in to access this feature",
@@ -155,7 +179,7 @@ const Upload = () => {
     if (tabParam && ['assignment', 'quiz', 'proximity'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

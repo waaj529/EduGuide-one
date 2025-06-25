@@ -5,7 +5,7 @@ interface FlashcardIconProps {
   className?: string;
 }
 
-const FlaskcardIcon: React.FC<FlashcardIconProps> = ({ className }) => {
+const FlashcardIcon: React.FC<FlashcardIconProps> = ({ className }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -27,4 +27,4 @@ const FlaskcardIcon: React.FC<FlashcardIconProps> = ({ className }) => {
   );
 };
 
-export default FlaskcardIcon;
+export default FlashcardIcon;

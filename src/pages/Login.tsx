@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -19,26 +18,39 @@ const Login = () => {
   const [role, setRole] = useState('student');
   const navigate = useNavigate();
 
-  // Check if user is already logged in
+  // Check if user is already logged in and clear corrupted state
   useEffect(() => {
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        // Get user role from metadata
-        const userRole = data.session.user?.user_metadata?.role || 'student';
-        localStorage.setItem('eduguide_user_role', userRole);
-        localStorage.setItem('eduguide_user_name', data.session.user?.user_metadata?.name || email.split('@')[0]);
+    const checkAndCleanSession = async () => {
+      try {
+        // Clear any corrupted localStorage data first
+        localStorage.removeItem('eduguide_user_token');
+        localStorage.removeItem('eduguide_user_role');
+        localStorage.removeItem('eduguide_user_name');
         
-        // Redirect to appropriate dashboard
-        if (userRole === 'teacher') {
-          navigate('/teacher-dashboard');
-        } else {
-          navigate('/dashboard');
+        // Sign out any existing session to start fresh
+        await supabase.auth.signOut();
+        
+        // Now check for a valid session
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          // Get user role from metadata
+          const userRole = data.session.user?.user_metadata?.role || 'student';
+          localStorage.setItem('eduguide_user_role', userRole);
+          localStorage.setItem('eduguide_user_name', data.session.user?.user_metadata?.name || email.split('@')[0]);
+          
+          // Redirect to appropriate dashboard
+          if (userRole === 'teacher') {
+            navigate('/teacher-dashboard');
+          } else {
+            navigate('/dashboard');
+          }
         }
+      } catch (error) {
+        console.log('Session cleanup completed');
       }
     };
     
-    checkSession();
+    checkAndCleanSession();
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
