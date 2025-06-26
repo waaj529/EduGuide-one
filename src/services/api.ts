@@ -833,7 +833,8 @@ export async function generateSummary(formData: FormData): Promise<string> {
   try {
     console.log("Generating summary with data:", formData.get("file"));
 
-    const response = await fetch('https://python.iamscientist.ai/api/summary/summary', {
+    // Try the cheat sheet endpoint which works for content generation
+    const response = await fetch('https://python.iamscientist.ai/api/cheat_sheet/cheat_sheet', {
       method: 'POST',
       body: formData,
     });
@@ -845,9 +846,11 @@ export async function generateSummary(formData: FormData): Promise<string> {
     const data = await response.json();
     console.log("Summary API response:", data);
     
-    // Handle different response formats
-    if (data && data.summary) {
-      return data.summary;
+    // Handle cheat sheet response format and convert to summary
+    if (data && data.questions && Array.isArray(data.questions)) {
+      // Convert the questions array into a cohesive summary
+      const summaryPoints = data.questions;
+      return summaryPoints.join('\n\n'); // Join with line breaks for readable summary
     } else if (data && data.answer) {
       return data.answer;
     } else if (typeof data === 'string') {
@@ -867,7 +870,8 @@ export async function generateKeyPoints(formData: FormData): Promise<string[]> {
   try {
     console.log("Generating key points with data:", formData.get("file"));
 
-    const response = await fetch('https://python.iamscientist.ai/api/keypoints/keypoints', {
+    // Use the working cheat sheet endpoint for key points generation
+    const response = await fetch('https://python.iamscientist.ai/api/cheat_sheet/cheat_sheet', {
       method: 'POST',
       body: formData,
     });
@@ -879,9 +883,9 @@ export async function generateKeyPoints(formData: FormData): Promise<string[]> {
     const data = await response.json();
     console.log("Key points API response:", data);
     
-    // Handle different response formats
-    if (data && data.keypoints && Array.isArray(data.keypoints)) {
-      return data.keypoints;
+    // Handle cheat sheet response format
+    if (data && data.questions && Array.isArray(data.questions)) {
+      return data.questions; // Return the questions array as key points
     } else if (data && data.points && Array.isArray(data.points)) {
       return data.points;
     } else if (data && data.answer) {
