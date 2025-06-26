@@ -25,6 +25,8 @@ import { motion } from "framer-motion";
 import {
   generatePracticeQuestions,
   evaluatePracticeAnswer,
+  generateSummary as apiGenerateSummary,
+  generateKeyPoints as apiGenerateKeyPoints,
   PracticeQuestion,
 } from "@/services/api";
 import axios from "axios";
@@ -291,9 +293,12 @@ const StudentContentGenerator = () => {
     setIsGeneratingSummary(true);
 
     try {
-      setGeneratedSummary(
-        "This is a generated summary of the uploaded document. In a real application, this would be a comprehensive summary of the key concepts and ideas presented in the document."
-      );
+      const form = new FormData();
+      form.append("file", summaryFile);
+      
+      // Call the API to generate summary
+      const summary = await apiGenerateSummary(form);
+      setGeneratedSummary(summary);
 
       toast({
         title: "Summary generated",
@@ -324,13 +329,12 @@ const StudentContentGenerator = () => {
     setIsGeneratingKeyPoints(true);
 
     try {
-      setGeneratedKeyPoints([
-        "Key point 1: Important concept from the document",
-        "Key point 2: Another critical idea worth remembering",
-        "Key point 3: A mathematical formula or definition",
-        "Key point 4: A practical application of the concept",
-        "Key point 5: A common misconception clarified",
-      ]);
+      const form = new FormData();
+      form.append("file", keyPointsFile);
+      
+      // Call the API to generate key points
+      const keyPoints = await apiGenerateKeyPoints(form);
+      setGeneratedKeyPoints(keyPoints);
 
       toast({
         title: "Key points generated",

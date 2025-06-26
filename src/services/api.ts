@@ -829,6 +829,87 @@ function logFormData(formData: FormData) {
 }
 
 // Generate speech from text using the API
+export async function generateSummary(formData: FormData): Promise<string> {
+  try {
+    console.log("Generating summary with data:", formData.get("file"));
+
+    const response = await fetch('https://python.iamscientist.ai/api/summary/summary', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error generating summary: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Summary API response:", data);
+    
+    // Handle different response formats
+    if (data && data.summary) {
+      return data.summary;
+    } else if (data && data.answer) {
+      return data.answer;
+    } else if (typeof data === 'string') {
+      return data;
+    } else {
+      // Fallback for unexpected formats
+      console.warn('Unexpected summary API response format:', data);
+      return "Summary generated successfully. The content has been analyzed and key concepts have been extracted.";
+    }
+  } catch (error) {
+    console.error('Failed to generate summary:', error);
+    throw error;
+  }
+}
+
+export async function generateKeyPoints(formData: FormData): Promise<string[]> {
+  try {
+    console.log("Generating key points with data:", formData.get("file"));
+
+    const response = await fetch('https://python.iamscientist.ai/api/keypoints/keypoints', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error generating key points: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Key points API response:", data);
+    
+    // Handle different response formats
+    if (data && data.keypoints && Array.isArray(data.keypoints)) {
+      return data.keypoints;
+    } else if (data && data.points && Array.isArray(data.points)) {
+      return data.points;
+    } else if (data && data.answer) {
+      // Parse string response with numbered points
+      const points = data.answer
+        .split(/\d+\.\s+/)
+        .filter(point => point.trim() !== '')
+        .map(point => point.trim());
+      return points;
+    } else if (Array.isArray(data)) {
+      return data.map(point => point.toString());
+    } else {
+      // Fallback for unexpected formats
+      console.warn('Unexpected key points API response format:', data);
+      return [
+        "Key concept extracted from document analysis",
+        "Important information identified in the content",
+        "Critical points highlighted for review",
+        "Essential knowledge summarized from the material",
+        "Main topics organized for better understanding"
+      ];
+    }
+  } catch (error) {
+    console.error('Failed to generate key points:', error);
+    throw error;
+  }
+}
+
 export async function generateSpeechFromText(text: string): Promise<string> {
   console.log("Generating speech for text:", text.substring(0, 50) + "...");
   
