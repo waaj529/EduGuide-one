@@ -642,55 +642,32 @@ const GeneratedKeyPoints: React.FC<GeneratedKeyPointsProps> = ({ keyPoints, isLo
         </p>
       </CardHeader>
       <CardContent className="pt-6">
-        <ScrollArea className="h-[500px] pr-4">
+        <ScrollArea className="h-[700px] pr-4">
           <div className="space-y-6">
             {organizedPoints.map((section, sectionIndex) => {
-              // Get appropriate icon based on section header
-              const SectionIcon = section.header ? getSectionIcon(section.header) : sectionIcons.default;
-              
+              const sectionNumber = sectionIndex + 1;
               return (
-                <div key={sectionIndex} className={cn(
-                  "space-y-3",
-                  section.header ? "bg-muted/30 p-4 rounded-lg" : ""
-                )}>
+                <div key={sectionIndex} className="space-y-3">
                   {section.header && (
-                    <div className="flex items-center space-x-2 border-b pb-2 mb-3">
-                      <SectionIcon className="h-5 w-5 text-primary" />
-                      <h3 className="text-lg font-bold text-primary tracking-tight">
-                        {section.header}
+                    <div className="mt-8 mb-4 first:mt-0 flex items-center">
+                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold mr-3">
+                        {sectionNumber}
+                      </span>
+                      <h3 className="text-xl font-bold text-primary">
+                        {section.header.replace(/[:]*$/,'')}
                       </h3>
                     </div>
                   )}
-                  
-                  <ul className="space-y-3">
-                    {section.points.map((point, index) => {
-                      const colorVariant = colorVariants[index % colorVariants.length];
-                      const BulletIcon = bulletIcons[index % bulletIcons.length];
-                      
-                      return (
-                        <li 
-                          key={index} 
-                          className={cn(
-                            "relative px-4 py-3 rounded-md border-l-4",
-                            colorVariant,
-                            "hover:shadow-md transition-shadow duration-200"
-                          )}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="flex-shrink-0 mt-0.5">
-                              <BulletIcon className="h-5 w-5" />
-                            </div>
-                            <div className={cn(
-                              "text-base",
-                              point.length < 100 ? "font-medium" : ""
-                            )}>
-                              {point}
-                            </div>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                  <div className="space-y-2 ml-6">
+                    {section.points.map((point, index) => (
+                      <div key={index} className="flex items-start">
+                        <span className="text-primary mr-3 mt-1.5 flex-shrink-0">•</span>
+                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                          {point}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               );
             })}
