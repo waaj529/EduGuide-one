@@ -848,35 +848,98 @@ export async function generateSummary(formData: FormData): Promise<string> {
     
     // Handle cheat sheet response format and convert to summary
     if (data && data.questions && Array.isArray(data.questions)) {
-      // Convert the questions array into a cohesive, well-formatted summary
+      // Convert to ChatGPT-style formatted summary
       const summaryPoints = data.questions;
       
-      // Clean up and format each point
-      const formattedPoints = summaryPoints.map((point, index) => {
-        let cleanPoint = point.toString().trim();
+      // Helper function to extract title from content
+      const extractTitle = (content) => {
+        const words = content.split(' ').slice(0, 8);
+        let title = words.join(' ');
         
-        // Remove markdown asterisks for better readability
-        cleanPoint = cleanPoint.replace(/\*\*/g, '');
+        // Clean up title
+        title = title.replace(/[.!?].*$/, '');
+        title = title.trim();
         
-        // Add proper spacing after periods and hyphens
-        cleanPoint = cleanPoint.replace(/\.\s*-/g, '.\n\n• ');
-        cleanPoint = cleanPoint.replace(/^-\s*/g, '• ');
-        
-        // Add line breaks before section headers (CAPS followed by **)
-        cleanPoint = cleanPoint.replace(/([.!?])\s*([A-Z][A-Z\s]{5,})/g, '$1\n\n## $2');
-        
-        return cleanPoint;
-      });
+        // Default titles based on content
+        if (title.includes('Algorithm') || title.includes('Parallel')) {
+          return 'Principles of Parallel Algorithm Design';
+        } else if (title.includes('Decomposition') || title.includes('Task')) {
+          return 'Task Decomposition and Dependency Graphs';
+        } else if (title.includes('Concurrency') || title.includes('Degree')) {
+          return 'Degree of Concurrency';
+        } else if (title.includes('Matrix') || title.includes('Example')) {
+          return 'Examples and Applications';
+        } else if (title.includes('Granularity')) {
+          return 'Granularity of Task Decomposition';
+        } else {
+          // Extract key concept from beginning
+          return title.charAt(0).toUpperCase() + title.slice(1);
+        }
+      };
       
-      // Join points with proper spacing and create a cohesive summary
-      let summary = formattedPoints.join('\n\n');
+      // Join all content and then intelligently parse it
+      let fullText = summaryPoints.join(' ').trim();
       
-      // Final formatting improvements
-      summary = summary.replace(/([.!?])\s*([A-Z][a-z])/g, '$1 $2'); // Fix spacing
-      summary = summary.replace(/\n{3,}/g, '\n\n'); // Remove excessive line breaks
-      summary = summary.replace(/^•\s*/gm, '• '); // Ensure consistent bullet formatting
+      // Remove markdown asterisks and clean up
+      fullText = fullText.replace(/\*\*/g, '');
       
-      return summary;
+      // Split into logical sections based on content patterns
+      const sections = [];
+      let currentSection = '';
+      let sectionNumber = 1;
+      
+      // Split by common section indicators
+      const sentences = fullText.split(/(?<=[.!?])\s+(?=[A-Z])/);
+      
+      for (let sentence of sentences) {
+        // Check if this looks like a new major topic/section
+        if (sentence.length > 50 && (
+          sentence.includes('Algorithm') || 
+          sentence.includes('Decomposition') ||
+          sentence.includes('Concurrency') ||
+          sentence.includes('Task') ||
+          sentence.includes('Matrix') ||
+          sentence.includes('Examples') ||
+          sentence.includes('Granularity')
+        )) {
+          // Save previous section if it exists
+          if (currentSection.trim()) {
+            sections.push({
+              number: sectionNumber,
+              title: extractTitle(currentSection),
+              content: currentSection.trim()
+            });
+            sectionNumber++;
+          }
+          currentSection = sentence;
+        } else {
+          currentSection += ' ' + sentence;
+        }
+      }
+      
+      // Add the last section
+      if (currentSection.trim()) {
+        sections.push({
+          number: sectionNumber,
+          title: extractTitle(currentSection),
+          content: currentSection.trim()
+        });
+      }
+      
+      // Format sections in ChatGPT style
+      const formattedSummary = sections.map(section => {
+        let content = section.content;
+        
+        // Convert dash points to bullet points
+        content = content.replace(/\s*-\s+/g, '\n• ');
+        
+        // Add proper spacing
+        content = content.replace(/\.\s*([A-Z])/g, '. $1');
+        
+        return `${section.number} ${section.title}\n\n${content}`;
+      }).join('\n\n');
+      
+      return formattedSummary;
     } else if (data && data.answer) {
       return data.answer;
     } else if (typeof data === 'string') {

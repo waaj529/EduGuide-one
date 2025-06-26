@@ -69,39 +69,53 @@ const GeneratedSummary: React.FC<GeneratedSummaryProps> = ({
             <p>We're creating a comprehensive summary of your document. This may take a moment.</p>
           </div>
         ) : summary ? (
-          <ScrollArea className="h-[500px] pr-4">
+          <ScrollArea className="h-[700px] pr-4">
             <div className="prose dark:prose-invert max-w-none">
-              <div className="text-base leading-relaxed whitespace-pre-line">
+              <div className="text-base leading-relaxed">
                 {summary.split('\n').map((line, index) => {
-                  // Handle section headers (lines starting with ##)
-                  if (line.trim().startsWith('## ')) {
-                    return (
-                      <h3 key={index} className="text-lg font-semibold mt-6 mb-3 text-primary">
-                        {line.replace('## ', '')}
-                      </h3>
-                    );
+                  const trimmedLine = line.trim();
+                  
+                  // Handle numbered section headers (e.g., "1 Principles of Parallel Algorithm Design")
+                  if (/^\d+\s+[A-Z]/.test(trimmedLine)) {
+                    const parts = trimmedLine.match(/^(\d+)\s+(.+)$/);
+                    if (parts) {
+                      return (
+                        <div key={index} className="mt-8 mb-4 first:mt-0">
+                          <h3 className="text-xl font-bold text-primary flex items-center">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold mr-3">
+                              {parts[1]}
+                            </span>
+                            {parts[2]}
+                          </h3>
+                        </div>
+                      );
+                    }
                   }
                   // Handle bullet points
-                  else if (line.trim().startsWith('• ')) {
+                  else if (trimmedLine.startsWith('• ')) {
                     return (
-                      <p key={index} className="ml-4 mb-2">
-                        <span className="text-primary mr-2">•</span>
-                        {line.replace('• ', '')}
-                      </p>
+                      <div key={index} className="ml-6 mb-3 flex items-start">
+                        <span className="text-primary mr-3 mt-1.5 flex-shrink-0">•</span>
+                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                          {trimmedLine.replace('• ', '')}
+                        </p>
+                      </div>
                     );
                   }
                   // Handle empty lines
-                  else if (line.trim() === '') {
-                    return <br key={index} />;
+                  else if (trimmedLine === '') {
+                    return <div key={index} className="h-2" />;
                   }
                   // Handle regular paragraphs
-                  else {
+                  else if (trimmedLine.length > 0) {
                     return (
-                      <p key={index} className="mb-3">
-                        {line}
+                      <p key={index} className="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed ml-6">
+                        {trimmedLine}
                       </p>
                     );
                   }
+                  
+                  return null;
                 })}
               </div>
             </div>
