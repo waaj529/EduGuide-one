@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookText, Copy, Download, Clock, CheckCircle, ChevronDown, ChevronUp, Lightbulb, Target, Brain } from 'lucide-react';
+import { BookText, Copy, Download, Clock, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
@@ -26,7 +26,6 @@ const GeneratedSummary: React.FC<GeneratedSummaryProps> = ({
     number: number;
     title: string;
     content: string[];
-    icon: React.ReactNode;
   }>>([]);
 
   // Parse summary into sections when it changes
@@ -50,8 +49,7 @@ const GeneratedSummary: React.FC<GeneratedSummaryProps> = ({
             currentSection = {
               number: parseInt(parts[1]),
               title: parts[2],
-              content: [],
-              icon: getSectionIcon(parts[2])
+              content: []
             };
           }
         } else if (currentSection && trimmedLine.length > 0) {
@@ -72,18 +70,7 @@ const GeneratedSummary: React.FC<GeneratedSummaryProps> = ({
     }
   }, [summary]);
 
-  // Get appropriate icon for section
-  const getSectionIcon = (title: string) => {
-    if (title.toLowerCase().includes('principle') || title.toLowerCase().includes('design')) {
-      return <Target className="h-4 w-4" />;
-    } else if (title.toLowerCase().includes('task') || title.toLowerCase().includes('decomposition')) {
-      return <Brain className="h-4 w-4" />;
-    } else if (title.toLowerCase().includes('example') || title.toLowerCase().includes('application')) {
-      return <Lightbulb className="h-4 w-4" />;
-    } else {
-      return <BookText className="h-4 w-4" />;
-    }
-  };
+
 
   // Toggle section completion
   const toggleSectionCompletion = (sectionNumber: number) => {
@@ -243,12 +230,11 @@ const GeneratedSummary: React.FC<GeneratedSummaryProps> = ({
                               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
                                 {section.title}
                               </h3>
-                              <div className="flex items-center space-x-2">
-                                {section.icon}
-                                <span className="text-sm text-gray-500 dark:text-gray-400">
-                                  {section.content.length} key points
-                                </span>
-                              </div>
+                                                             <div className="flex items-center space-x-2">
+                                 <span className="text-sm text-gray-500 dark:text-gray-400">
+                                   {section.content.length} key points
+                                 </span>
+                               </div>
                             </div>
                           </div>
                           
