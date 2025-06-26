@@ -21,8 +21,7 @@ const Index = () => {
               EduGuide AI
             </h1>
             <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-6 sm:mb-8 max-w-3xl mx-auto font-body px-2">
-              Your AI-powered education assistant for exam prep, university guidance, 
-              and optimized study resources
+              Upload your study materials and get instant practice questions, summaries, and study guides
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <Link to="/login" className="w-full sm:w-auto">
@@ -47,7 +46,7 @@ const Index = () => {
               </div>
               <h3 className="text-xl sm:text-2xl font-semibold mb-3">Exam Preparation</h3>
               <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                Upload study materials for AI-generated questions, quizzes, flashcards, and personalized learning resources.
+                Turn your lecture notes and textbooks into practice questions and quizzes automatically.
               </p>
               <ul className="space-y-2 mb-4">
                 <li className="flex items-center gap-2 text-xs sm:text-sm">
@@ -75,7 +74,7 @@ const Index = () => {
               </div>
               <h3 className="text-xl sm:text-2xl font-semibold mb-3">University Guide</h3>
               <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                Personalized university recommendations based on your academic profile, test scores and interests.
+                Get suggestions for universities based on your grades and interests.
               </p>
               <ul className="space-y-2 mb-4">
                 <li className="flex items-center gap-2 text-xs sm:text-sm">
@@ -103,7 +102,7 @@ const Index = () => {
               </div>
               <h3 className="text-xl sm:text-2xl font-semibold mb-3">Resource Allocation</h3>
               <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                Optimize your study time with smart schedules, priority management, and personalized learning paths.
+                Plan your study schedule and focus on the topics that matter most for your exams.
               </p>
               <ul className="space-y-2 mb-4">
                 <li className="flex items-center gap-2 text-xs sm:text-sm">
@@ -139,10 +138,10 @@ const Index = () => {
           <div className="glass-card p-5 sm:p-8 rounded-lg mb-12 sm:mb-16 animated-gradient">
             <div className="flex flex-col lg:flex-row gap-8 items-center">
               <div className="lg:w-1/2">
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 text-gradient">Find Your Perfect University Match</h2>
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 text-gradient">University Finder</h2>
                 <p className="text-sm sm:text-base text-muted-foreground mb-5 sm:mb-6">
-                  Our AI-powered university recommendation system analyzes your academic profile, standardized test scores, 
-                  and personal interests to match you with institutions where you'll thrive.
+                  Not sure which universities to apply to? This feature looks at your grades and interests 
+                  to suggest schools that might be a good fit.
                 </p>
                 
                 <div className="space-y-4 mb-5 sm:mb-6">
@@ -227,7 +226,7 @@ const Index = () => {
           
           {/* Resource Allocation Section */}
           <div className="glass-card p-5 sm:p-8 rounded-lg mb-12 sm:mb-16">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-5 sm:mb-6 text-center text-gradient">Optimize Your Study Time</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-5 sm:mb-6 text-center text-gradient">Better Study Planning</h2>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8 staggered-fade-in">
               <div className="bg-background p-4 sm:p-6 rounded-lg border border-border hover-scale">
@@ -246,7 +245,7 @@ const Index = () => {
                 </div>
                 <h3 className="text-base sm:text-lg font-medium mb-2">Time Management Tools</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">
-                  Track study sessions, analyze productivity patterns, and optimize your focus time with pomodoro techniques.
+                  Track your study sessions and see when you're most productive during the day.
                 </p>
               </div>
               
@@ -272,10 +271,10 @@ const Index = () => {
           
           {/* Final CTA Section */}
           <div className="bg-gradient-to-r from-primary/20 to-brand-lightBlue/20 rounded-xl p-6 sm:p-10 text-center transform transition-all duration-700 hover:scale-[1.02] sm:hover:scale-105">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 font-heading text-gray-800 dark:text-gray-100">Start Your Educational Journey Today</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 font-heading text-gray-800 dark:text-gray-100">Ready to Try It Out?</h2>
             <p className="text-sm sm:text-lg text-muted-foreground mb-5 sm:mb-6 max-w-2xl mx-auto font-body px-1">
-              Join thousands of students using EduGuide AI to optimize their learning experience 
-              and achieve their academic goals.
+              Sign up and see how it can help make studying a bit easier. 
+              It's free to try with your own documents.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <Link to="/login" className="w-full sm:w-auto">

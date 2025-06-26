@@ -122,7 +122,7 @@ const LearningMaterialsSection = () => {
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
           {userRole === 'teacher' 
             ? "Generate high-quality educational content with our AI-powered tools for your students."
-            : "Enhance your learning experience with AI-powered study tools and personalized feedback."
+                            : "Upload your documents and get study materials generated automatically."
           }
         </p>
         

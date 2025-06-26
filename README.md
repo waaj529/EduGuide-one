@@ -1,297 +1,141 @@
-# 🎓 EduGuide AI - Final Year Project
+# EduGuide AI - My Final Year Project
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)]()
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.5.3-blue)]()
-[![React](https://img.shields.io/badge/React-18.3.1-blue)]()
-[![Supabase](https://img.shields.io/badge/Supabase-2.49.4-green)]()
+A study helper app I built for my final year project. It uses AI to help students create practice questions and study materials from their documents.
 
-> **An AI-powered educational assistant leveraging multiple AI models for personalized learning**
+## What it does
 
-## 📋 Table of Contents
+Basically, you upload your lecture notes or textbooks (PDFs, Word docs, etc.) and the app generates:
+- Practice questions with different difficulty levels
+- Quick summaries of the content
+- Flashcards for memorization
+- You can even chat with your PDFs to ask specific questions
 
-- [Project Overview](#project-overview)
-- [Key Features](#key-features)
-- [Technology Stack](#technology-stack)
-- [Architecture](#architecture)
-- [Installation](#installation)
-- [Usage](#usage)
-- [API Documentation](#api-documentation)
-- [Contributing](#contributing)
-- [Research & Academic Context](#research--academic-context)
-- [License](#license)
+I made separate views for students and teachers since they have different needs.
 
-## 🚀 Project Overview
+## Why I built this
 
-EduGuide AI is a comprehensive educational platform that integrates multiple AI models (OpenAI GPT-4 and Google Gemini) to provide:
+I was struggling with creating good practice questions for exams and thought "there has to be a better way than manually making flashcards all the time." Plus, I wanted to learn more about integrating AI APIs into web apps for my FYP.
 
-- **Automated Content Generation**: Practice questions, summaries, and key points from uploaded documents
-- **Interactive PDF Chat**: Real-time Q&A with document content
-- **Role-Based Learning**: Separate interfaces for students and teachers
-- **Progress Tracking**: Comprehensive learning analytics and performance monitoring
-- **Multi-Modal Support**: PDF, DOCX, PPTX document processing
+The idea came from my own experience - I'd spend hours making practice questions from textbooks when I could be actually studying. So I built this to automate that part.
 
-### 🎯 Research Objectives
+## Tech stuff I used
 
-1. **Personalized Learning**: Develop AI-driven content generation tailored to individual learning needs
-2. **Multi-AI Integration**: Implement robust fallback systems using multiple AI providers
-3. **Educational Impact**: Measure effectiveness of AI-generated content vs traditional methods
-4. **User Experience**: Create intuitive interfaces for both students and educators
+**Frontend:**
+- React with TypeScript (wanted to learn TS properly)
+- Tailwind CSS for styling
+- Vite for building (way faster than Create React App)
+- Some UI components from shadcn/ui
 
-## ✨ Key Features
+**Backend:**
+- Supabase for the database and authentication
+- Edge Functions for the AI API calls
+- PostgreSQL database
 
-### 🧑‍🎓 Student Features
-- **Study Materials Generator**: Upload documents and generate practice questions
-- **PDF Chat Interface**: Interactive Q&A with uploaded PDFs
-- **Automatic Summarization**: AI-generated summaries and key points
-- **Progress Tracking**: Monitor learning progress and performance
-- **Study Tools**: Flashcards, timers, and review systems
+**AI Integration:**
+- OpenAI GPT-4 API (main one)
+- Google Gemini API (backup when OpenAI is down)
+- Custom PDF processing for the chat feature
 
-### 👨‍🏫 Teacher Features
-- **Content Management**: Upload and organize teaching materials
-- **Student Monitoring**: Track student progress and engagement
-- **Question Bank**: Access to AI-generated question repositories
-- **Analytics Dashboard**: Comprehensive learning analytics
+## Getting it running
 
-### 🤖 AI Integration
-- **Multi-Model Architecture**: OpenAI GPT-4 + Google Gemini
-- **Intelligent Fallbacks**: Robust error handling and alternative responses
-- **Real-time Processing**: Instant content generation and feedback
-- **Context Awareness**: Document-specific AI responses
+You'll need:
+- Node.js (I used v18)
+- A Supabase account (free tier works)
+- OpenAI API key (costs money but not much for testing)
 
-## 🛠 Technology Stack
-
-### Frontend
-- **React 18** - Modern component-based UI library
-- **TypeScript** - Type-safe JavaScript development
-- **Vite** - Fast build tool and development server
-- **Tailwind CSS** - Utility-first CSS framework
-- **shadcn/ui** - High-quality component library
-- **Framer Motion** - Advanced animations and interactions
-
-### Backend & Infrastructure
-- **Supabase** - Backend-as-a-Service platform
-  - Authentication & Authorization
-  - Real-time database
-  - Edge Functions for AI processing
-- **Supabase Edge Functions** - Serverless AI integration
-- **PostgreSQL** - Primary database
-
-### AI & ML Services
-- **OpenAI GPT-4** - Primary content generation
-- **Google Gemini** - Secondary AI provider
-- **Custom PDF API** - Document processing and chat
-- **Fallback Systems** - Error handling and alternatives
-
-### Development Tools
-- **ESLint** - Code linting and quality
-- **Prettier** - Code formatting
-- **React Query** - Data fetching and caching
-- **React Router** - Client-side routing
-
-## 🏗 Architecture
-
-```mermaid
-graph TB
-    A[React Frontend] --> B[Supabase Auth]
-    A --> C[Supabase Database]
-    A --> D[Edge Functions]
-    
-    D --> E[OpenAI GPT-4]
-    D --> F[Google Gemini]
-    D --> G[PDF Processing API]
-    
-    H[User Upload] --> I[Document Parser]
-    I --> J[AI Content Generator]
-    J --> K[Response Handler]
-    K --> A
-    
-    L[Error Handler] --> M[Fallback System]
-    M --> N[Alternative Response]
-```
-
-### Component Architecture
-```
-src/
-├── components/
-│   ├── auth/           # Authentication components
-│   ├── features/       # Core AI features
-│   ├── layout/         # Layout components
-│   └── ui/             # Reusable UI components
-├── context/            # React context providers
-├── hooks/              # Custom React hooks
-├── pages/              # Page components
-├── services/           # API and service integrations
-└── utils/              # Utility functions
-```
-
-## 🚀 Installation
-
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-- Supabase account
-- OpenAI API key
-- Google Gemini API key
-
-### Setup Instructions
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/wajidabbas33/edu-guide.git
-   cd edu-guide
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Environment Configuration**
-   Create a `.env.local` file:
-   ```env
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   VITE_OPENAI_API_KEY=your_openai_key
-   VITE_GEMINI_API_KEY=your_gemini_key
-   ```
-
-4. **Database Setup**
-   ```bash
-   # Initialize Supabase
-   npx supabase init
-   npx supabase start
-   npx supabase db push
-   ```
-
-5. **Start Development Server**
-   ```bash
-   npm run dev
-   ```
-
-6. **Build for Production**
-   ```bash
-   npm run build
-   ```
-
-## 📖 Usage
-
-### For Students
-1. **Register/Login** with student role
-2. **Upload Documents** (PDF, DOCX, PPTX)
-3. **Generate Content** - Choose from:
-   - Practice Questions
-   - Document Summaries  
-   - Key Points
-   - PDF Chat
-4. **Practice & Learn** with AI-generated materials
-5. **Track Progress** through analytics dashboard
-
-### For Teachers
-1. **Register/Login** with teacher role
-2. **Upload Course Materials**
-3. **Generate Question Banks**
-4. **Monitor Student Progress**
-5. **Access Teaching Analytics**
-
-### API Usage Example
-```typescript
-// Generate practice questions
-const questions = await generatePracticeQuestions(formData);
-
-// Chat with PDF
-const response = await chatWithPDF(pdfFile, userQuery);
-
-// Evaluate answers
-const evaluation = await evaluateAnswer(question, userAnswer);
-```
-
-## 📚 Research & Academic Context
-
-### Research Questions
-1. How effectively can multi-AI systems generate educational content?
-2. What is the impact of instant AI feedback on learning outcomes?
-3. How does role-based AI assistance improve educational experiences?
-
-### Methodology
-- **Agile Development** with iterative user testing
-- **Comparative Analysis** of AI-generated vs traditional content
-- **User Studies** with students and educators
-- **Performance Benchmarking** across different AI models
-
-### Academic Contributions
-- Novel multi-AI integration architecture
-- Comprehensive role-based educational platform
-- Real-time document interaction system
-- Learning analytics and progress tracking
-
-### Related Work
-- Intelligent Tutoring Systems (VanLehn, 2011)
-- AI in Educational Technology (Kasneci et al., 2023)
-- Question Generation from Text (Du et al., 2017)
-
-## 🧪 Testing
-
-### Unit Tests
 ```bash
-npm run test
+git clone https://github.com/waaj529/FYP.git
+cd FYP
+npm install
 ```
 
-### Integration Tests
+Create a `.env.local` file with your API keys:
+```
+VITE_SUPABASE_URL=your_supabase_url_here
+VITE_SUPABASE_ANON_KEY=your_supabase_key_here
+VITE_OPENAI_API_KEY=your_openai_key_here
+```
+
+Then just run:
 ```bash
-npm run test:integration
+npm run dev
 ```
 
-### E2E Tests
-```bash
-npm run test:e2e
-```
+## How to use it
 
-## 📊 Performance Metrics
+**For Students:**
+1. Sign up with a student account
+2. Upload your study materials (PDFs work best)
+3. Choose what you want - practice questions, summaries, or flashcards
+4. Start studying with the generated content
 
-- **Content Generation**: <3 seconds average response time
-- **Document Processing**: Support for files up to 50MB
-- **Uptime**: 99.5% service availability
-- **User Satisfaction**: 4.7/5 average rating
+**For Teachers:**
+1. Sign up with a teacher account  
+2. Upload course materials
+3. Generate question banks for assignments
+4. Monitor how students are doing
 
-## 🤝 Contributing
+## The AI part (technical details)
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+The core feature is the question generation. Here's how it works:
 
-### Development Guidelines
-- Follow TypeScript best practices
-- Write comprehensive tests
-- Update documentation
-- Follow commit message conventions
+1. User uploads a document
+2. Extract text using PDF parsing APIs
+3. Send chunks to OpenAI/Gemini with prompts I fine-tuned
+4. Parse the AI response into structured questions
+5. Store everything in Supabase
 
-## 📝 License
+I added error handling and fallbacks because AI APIs can be unreliable sometimes.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Problems I ran into
 
-## 👥 Team
+- **API Rate Limits**: Had to add request queuing and retry logic
+- **PDF Text Extraction**: Some PDFs are just images, so OCR doesn't always work perfectly
+- **AI Response Parsing**: Sometimes the AI returns malformed JSON, so I had to add validation
+- **Cost Management**: OpenAI API calls add up quickly during testing
 
-**Developer**: Wajid Abbas  
-**Institution**: [Your University]  
-**Project Type**: Final Year Project (FYP)  
-**Academic Year**: 2024-2025
+## Current limitations
 
-## 📞 Contact
+- Only works with text-based PDFs (not scanned images)
+- Question quality depends on how well-written the source material is
+- Can be slow with very large documents
+- Costs money to run because of API usage
 
-- **Email**: wajidabbas33@gmail.com
-- **GitHub**: [@wajidabbas33](https://github.com/wajidabbas33)
-- **Project Link**: [https://github.com/wajidabbas33/edu-guide](https://github.com/wajidabbas33/edu-guide)
+## What I learned
 
-## 🙏 Acknowledgments
+This project taught me a lot about:
+- Working with AI APIs and handling their quirks
+- Building responsive web apps with React
+- Database design and user authentication
+- Error handling and user experience design
+- Managing API costs and rate limits
 
-- Supervisor: [Supervisor Name]
-- University: [University Name]
-- AI Providers: OpenAI, Google
-- Open Source Community
+## Future improvements
+
+If I had more time, I'd add:
+- Better mobile support
+- More question types (multiple choice, true/false, etc.)
+- Study session tracking and analytics
+- Collaborative features for study groups
+- Better PDF text extraction for scanned documents
+
+## Academic context
+
+This was my FYP for Computer Science at [University]. The goal was to explore how AI can be used to enhance education and reduce the manual effort in creating study materials.
+
+My supervisor was [Supervisor Name] who helped guide the technical architecture decisions.
+
+## Contact
+
+If you have questions about the code or want to collaborate:
+- Email: waqj333@gmail.com
+- GitHub: [@waaj529](https://github.com/waaj529)
+
+## License
+
+MIT License - feel free to use this code for your own projects or learning.
 
 ---
 
-**Note**: This is an academic project developed for educational purposes. All AI integrations comply with respective service terms and conditions.
+**Note:** This is a student project built for educational purposes. The AI features require API keys and will incur costs during usage.
 

@@ -15,7 +15,7 @@ const Footer = () => {
               <span className="text-lg font-bold">EduGuide AI</span>
             </Link>
             <p className="text-sm text-muted-foreground">
-              AI-powered learning for students
+              A study helper I built for my final year project
             </p>
             
             {/* API Integration Point - Add authentication status */}
@@ -57,26 +57,21 @@ const Footer = () => {
           </div>
           
           <div className="space-y-3">
-            <h3 className="text-sm font-medium">Company</h3>
+            <h3 className="text-sm font-medium">Project</h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground">
-                  About Us
+                  About
                 </Link>
               </li>
               <li>
-                <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link to="/careers" className="text-sm text-muted-foreground hover:text-foreground">
-                  Careers
-                </Link>
+                <a href="https://github.com/waaj529/FYP" className="text-sm text-muted-foreground hover:text-foreground">
+                  Source Code
+                </a>
               </li>
               <li>
                 <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground">
-                  Contact Us
+                  Contact Me
                 </Link>
               </li>
             </ul>
@@ -120,10 +115,10 @@ const Footer = () => {
         
         <div className="mt-8 border-t border-border pt-6 flex flex-col md:flex-row justify-between items-center">
           <p className="text-xs text-muted-foreground mb-4 md:mb-0 text-center md:text-left">
-            © {new Date().getFullYear()} EduGuide AI. All rights reserved.
+            Built by Wajid Abbas for Final Year Project 2024
           </p>
           <p className="text-xs text-muted-foreground text-center md:text-right">
-            Designed with <span className="text-red-500">♥</span> for students
+            Made with <span className="text-red-500">♥</span> and lots of coffee
           </p>
         </div>
       </div>

@@ -650,11 +650,11 @@ const StudentContentGenerator = () => {
                           {chatMessages.map((message, index) => (
                             <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                               {message.role === 'user' ? (
-                                <div className="max-w-[80%] rounded-lg px-4 py-2 bg-[#2563EB] text-white shadow-sm">
-                                  <div className="text-base text-white break-words">{message.content}</div>
+                                <div className="max-w-[80%] rounded-lg px-4 py-2 bg-primary text-primary-foreground shadow-sm">
+                                  <div className="text-base break-words">{message.content}</div>
                                 </div>
                               ) : (
-                                <div className="max-w-[80%] rounded-lg px-4 py-2 shadow-sm bg-[#F3F4F6] text-[#1F2937]">
+                                <div className="max-w-[80%] rounded-lg px-4 py-2 shadow-sm bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                                   <div className="flex items-center gap-2 mb-1">
                                     <BotIcon className="h-4 w-4" />
                                     <span className="text-sm font-medium">AI Assistant</span>
