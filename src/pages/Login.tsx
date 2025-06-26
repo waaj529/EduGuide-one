@@ -31,19 +31,19 @@ const Login = () => {
         await supabase.auth.signOut();
         
         // Now check for a valid session
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          // Get user role from metadata
-          const userRole = data.session.user?.user_metadata?.role || 'student';
-          localStorage.setItem('eduguide_user_role', userRole);
-          localStorage.setItem('eduguide_user_name', data.session.user?.user_metadata?.name || email.split('@')[0]);
-          
-          // Redirect to appropriate dashboard
-          if (userRole === 'teacher') {
-            navigate('/teacher-dashboard');
-          } else {
-            navigate('/dashboard');
-          }
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        // Get user role from metadata
+        const userRole = data.session.user?.user_metadata?.role || 'student';
+        localStorage.setItem('eduguide_user_role', userRole);
+        localStorage.setItem('eduguide_user_name', data.session.user?.user_metadata?.name || email.split('@')[0]);
+        
+        // Redirect to appropriate dashboard
+        if (userRole === 'teacher') {
+          navigate('/teacher-dashboard');
+        } else {
+          navigate('/dashboard');
+        }
         }
       } catch (error) {
         console.log('Session cleanup completed');

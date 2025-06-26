@@ -226,16 +226,16 @@ const GeneratedSummary: React.FC<GeneratedSummaryProps> = ({
                               )}
                             </div>
                             
-                            <div className="flex-1">
-                              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                                {section.title}
-                              </h3>
-                                                             <div className="flex items-center space-x-2">
+                                                         <div className="flex-1">
+                               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                                 {section.title}
+                               </h3>
+                               <div className="flex items-center space-x-2">
                                  <span className="text-sm text-gray-500 dark:text-gray-400">
                                    {section.content.length} key points
                                  </span>
                                </div>
-                            </div>
+                             </div>
                           </div>
                           
                           <div className="flex items-center space-x-2">

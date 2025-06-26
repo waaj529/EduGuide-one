@@ -53,81 +53,81 @@ const App = () => {
           <BrowserRouter>
             <AuthProvider>
               <ErrorBoundary>
-                <div className="flex flex-col min-h-screen overflow-x-hidden">
-                  <Navbar />
-                  <main className="flex-1 w-full page-transition">
-                    <Routes>
-                      {/* Public routes */}
-                      <Route path="/" element={<Index />} />
-                      <Route path="/login" element={<Login />} />
-                      
-                      {/* Role-based redirect */}
-                      <Route path="/dashboard-redirect" element={<RoleBasedRedirect />} />
-                      
-                      {/* Student routes */}
-                      <Route path="/dashboard" element={
-                        <ProtectedRoute allowedRoles={['student']}>
-                          <Dashboard />
-                        </ProtectedRoute>
-                      } />
-                      
-                      {/* New Student Content Generator route */}
-                      <Route path="/study-materials" element={
-                        <ProtectedRoute allowedRoles={['student']}>
-                          <StudentContentGenerator />
-                        </ProtectedRoute>
-                      } />
-                      
-                      {/* Teacher routes */}
-                      <Route path="/teacher-dashboard" element={
-                        <ProtectedRoute allowedRoles={['teacher']}>
-                          <TeacherDashboard />
-                        </ProtectedRoute>
-                      } />
-                      
+              <div className="flex flex-col min-h-screen overflow-x-hidden">
+                <Navbar />
+                <main className="flex-1 w-full page-transition">
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/" element={<Index />} />
+                    <Route path="/login" element={<Login />} />
+                    
+                    {/* Role-based redirect */}
+                    <Route path="/dashboard-redirect" element={<RoleBasedRedirect />} />
+                    
+                    {/* Student routes */}
+                    <Route path="/dashboard" element={
+                      <ProtectedRoute allowedRoles={['student']}>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* New Student Content Generator route */}
+                    <Route path="/study-materials" element={
+                      <ProtectedRoute allowedRoles={['student']}>
+                        <StudentContentGenerator />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Teacher routes */}
+                    <Route path="/teacher-dashboard" element={
+                      <ProtectedRoute allowedRoles={['teacher']}>
+                        <TeacherDashboard />
+                      </ProtectedRoute>
+                    } />
+                    
                       {/* Upload route - now properly handled with role-based access */}
                       <Route path="/upload" element={<UploadRouteWrapper />} />
-                      
-                      {/* Other routes - primarily student focused */}
-                      <Route path="/practice" element={
-                        <ProtectedRoute allowedRoles={['student']}>
-                          <Practice />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/flashcards" element={
-                        <ProtectedRoute allowedRoles={['student']}>
-                          <FlashcardPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/timer" element={
-                        <ProtectedRoute allowedRoles={['student']}>
-                          <StudyTimerPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/review" element={
-                        <ProtectedRoute allowedRoles={['student']}>
-                          <ReviewMistakes />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/progress" element={
-                        <ProtectedRoute allowedRoles={['student']}>
-                          <ProgressTracker />
-                        </ProtectedRoute>
-                      } />
-                      
-                      {/* Shared routes */}
-                      <Route path="/profile" element={
-                        <ProtectedRoute>
-                          <Profile />
-                        </ProtectedRoute>
-                      } />
-                      
-                      {/* Catch-all route */}
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </main>
-                  <Footer />
-                </div>
+                    
+                    {/* Other routes - primarily student focused */}
+                    <Route path="/practice" element={
+                      <ProtectedRoute allowedRoles={['student']}>
+                        <Practice />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/flashcards" element={
+                      <ProtectedRoute allowedRoles={['student']}>
+                        <FlashcardPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/timer" element={
+                      <ProtectedRoute allowedRoles={['student']}>
+                        <StudyTimerPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/review" element={
+                      <ProtectedRoute allowedRoles={['student']}>
+                        <ReviewMistakes />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/progress" element={
+                      <ProtectedRoute allowedRoles={['student']}>
+                        <ProgressTracker />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Shared routes */}
+                    <Route path="/profile" element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Catch-all route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
+                <Footer />
+              </div>
               </ErrorBoundary>
             </AuthProvider>
           </BrowserRouter>
