@@ -71,7 +71,39 @@ const GeneratedSummary: React.FC<GeneratedSummaryProps> = ({
         ) : summary ? (
           <ScrollArea className="h-[500px] pr-4">
             <div className="prose dark:prose-invert max-w-none">
-              <p className="text-base leading-relaxed">{summary}</p>
+              <div className="text-base leading-relaxed whitespace-pre-line">
+                {summary.split('\n').map((line, index) => {
+                  // Handle section headers (lines starting with ##)
+                  if (line.trim().startsWith('## ')) {
+                    return (
+                      <h3 key={index} className="text-lg font-semibold mt-6 mb-3 text-primary">
+                        {line.replace('## ', '')}
+                      </h3>
+                    );
+                  }
+                  // Handle bullet points
+                  else if (line.trim().startsWith('• ')) {
+                    return (
+                      <p key={index} className="ml-4 mb-2">
+                        <span className="text-primary mr-2">•</span>
+                        {line.replace('• ', '')}
+                      </p>
+                    );
+                  }
+                  // Handle empty lines
+                  else if (line.trim() === '') {
+                    return <br key={index} />;
+                  }
+                  // Handle regular paragraphs
+                  else {
+                    return (
+                      <p key={index} className="mb-3">
+                        {line}
+                      </p>
+                    );
+                  }
+                })}
+              </div>
             </div>
           </ScrollArea>
         ) : (

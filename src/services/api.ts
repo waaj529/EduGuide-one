@@ -848,9 +848,35 @@ export async function generateSummary(formData: FormData): Promise<string> {
     
     // Handle cheat sheet response format and convert to summary
     if (data && data.questions && Array.isArray(data.questions)) {
-      // Convert the questions array into a cohesive summary
+      // Convert the questions array into a cohesive, well-formatted summary
       const summaryPoints = data.questions;
-      return summaryPoints.join('\n\n'); // Join with line breaks for readable summary
+      
+      // Clean up and format each point
+      const formattedPoints = summaryPoints.map((point, index) => {
+        let cleanPoint = point.toString().trim();
+        
+        // Remove markdown asterisks for better readability
+        cleanPoint = cleanPoint.replace(/\*\*/g, '');
+        
+        // Add proper spacing after periods and hyphens
+        cleanPoint = cleanPoint.replace(/\.\s*-/g, '.\n\n• ');
+        cleanPoint = cleanPoint.replace(/^-\s*/g, '• ');
+        
+        // Add line breaks before section headers (CAPS followed by **)
+        cleanPoint = cleanPoint.replace(/([.!?])\s*([A-Z][A-Z\s]{5,})/g, '$1\n\n## $2');
+        
+        return cleanPoint;
+      });
+      
+      // Join points with proper spacing and create a cohesive summary
+      let summary = formattedPoints.join('\n\n');
+      
+      // Final formatting improvements
+      summary = summary.replace(/([.!?])\s*([A-Z][a-z])/g, '$1 $2'); // Fix spacing
+      summary = summary.replace(/\n{3,}/g, '\n\n'); // Remove excessive line breaks
+      summary = summary.replace(/^•\s*/gm, '• '); // Ensure consistent bullet formatting
+      
+      return summary;
     } else if (data && data.answer) {
       return data.answer;
     } else if (typeof data === 'string') {
