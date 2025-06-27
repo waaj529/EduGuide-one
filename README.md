@@ -1,6 +1,8 @@
-# EduGuide AI - My Final Year Project
+# EduGuide AI - Final Year Project 2025
 
-A study helper app I built for my final year project. It uses AI to help students create practice questions and study materials from their documents.
+<!-- Trigger deployment -->
+
+An AI-powered educational platform that helps students generate personalized study materials from their uploaded content.
 
 ## What it does
 
