@@ -357,7 +357,7 @@ export const generateQuiz = async (formData: FormData) => {
     });
     
     // Make the API call to the quiz generation endpoint
-    const response = await fetch('https://python.iamscientist.ai/api/quiz/quiz', {
+    const response = await fetch(`${PYTHON_API_BASE}/quiz/quiz`, {
       method: 'POST',
       body: validatedFormData
     });
@@ -472,7 +472,7 @@ export const downloadQuiz = async (formData: FormData) => {
     }
     
     // Use the corrected download endpoint
-    const response = await fetch(`https://python.iamscientist.ai/api/quiz/quiz_download?${params.toString()}`, {
+    const response = await fetch(`${PYTHON_API_BASE}/quiz/quiz_download?${params.toString()}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/pdf'
@@ -513,7 +513,7 @@ export const downloadQuizSolution = async (formData: FormData) => {
     }
     
     // Use the quiz solution download endpoint
-    const response = await fetch(`https://python.iamscientist.ai/api/quiz/quiz_solution_download?${params.toString()}`, {
+    const response = await fetch(`${PYTHON_API_BASE}/quiz/quiz_solution_download?${params.toString()}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/pdf'
@@ -992,7 +992,7 @@ export async function generateCheatSheet(formData: FormData): Promise<string[]> 
   try {
     console.log("Generating cheat sheet with form data:", Object.fromEntries(formData));
     
-    const response = await fetch('https://python.iamscientist.ai/api/cheat_sheet/cheat_sheet', {
+    const response = await fetch(`${PYTHON_API_BASE}/cheat_sheet/cheat_sheet`, {
       method: 'POST',
       body: formData,
     });
@@ -1078,7 +1078,7 @@ export async function generateSummary(formData: FormData): Promise<string> {
     console.log("Generating summary with data:", formData.get("file"));
 
     // Try the cheat sheet endpoint which works for content generation
-    const response = await fetch('https://python.iamscientist.ai/api/cheat_sheet/cheat_sheet', {
+    const response = await fetch(`${PYTHON_API_BASE}/cheat_sheet/cheat_sheet`, {
       method: 'POST',
       body: formData,
     });
@@ -1204,7 +1204,7 @@ export async function generateKeyPoints(formData: FormData): Promise<string[]> {
     console.log("Generating key points with data:", formData.get("file"));
 
     // Use the working cheat sheet endpoint for key points generation
-    const response = await fetch('https://python.iamscientist.ai/api/cheat_sheet/cheat_sheet', {
+    const response = await fetch(`${PYTHON_API_BASE}/cheat_sheet/cheat_sheet`, {
       method: 'POST',
       body: formData,
     });
