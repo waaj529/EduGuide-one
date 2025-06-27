@@ -115,7 +115,7 @@ const Footer = () => {
         
         <div className="mt-8 border-t border-border pt-6 flex flex-col md:flex-row justify-between items-center">
           <p className="text-xs text-muted-foreground mb-4 md:mb-0 text-center md:text-left">
-            Built by Wajid Abbas for Final Year Project 2024
+            Built by Wajid Abbas, Zain Israr, Soban Hameed for Final Year Project 2025
           </p>
           <p className="text-xs text-muted-foreground text-center md:text-right">
             Made with <span className="text-red-500">♥</span> and lots of coffee
