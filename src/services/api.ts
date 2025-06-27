@@ -48,6 +48,11 @@ const devError = (...args: any[]) => {
   }
 };
 
+// Resolve the Python backend base URL.
+//  • In development we call the Vite proxy (relative "/api" path) so the browser sees a same-origin request and CORS is bypassed.
+//  • In production we hit the absolute public URL.
+const PYTHON_API_BASE = import.meta.env.DEV ? "/api" : "https://python.iamscientist.ai/api";
+
 // Auth APIs
 export const loginUser = async (email: string, password: string) => {
   try {
@@ -234,18 +239,18 @@ export const generateAssignment = async (formData: FormData) => {
     }
     
     // Make the API call to the assignment generation endpoint
-    const response = await fetch('https://python.iamscientist.ai/api/assignment/assignment', {
+    const generateResponse = await fetch(`${PYTHON_API_BASE}/assignment/assignment`, {
       method: 'POST',
       body: validatedFormData
     });
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      devError(`Assignment API failed with status ${response.status}:`, errorText);
-      throw new Error(`API error (${response.status}): ${errorText}`);
+    if (!generateResponse.ok) {
+      const errorText = await generateResponse.text();
+      devError(`Assignment API failed with status ${generateResponse.status}:`, errorText);
+      throw new Error(`API error (${generateResponse.status}): ${errorText}`);
     }
     
-    const data = await response.json();
+    const data = await generateResponse.json();
     console.log("Assignment generation response:", data);
     
     // Process the response data into a standardized question format
@@ -646,7 +651,7 @@ export const downloadAssignment = async (formData: FormData) => {
     }
     
     // Use the corrected download endpoint
-    const response = await fetch(`https://python.iamscientist.ai/api/assignment/assignment_download?${params.toString()}`, {
+    const response = await fetch(`${PYTHON_API_BASE}/assignment/assignment_download?${params.toString()}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/pdf'
@@ -687,7 +692,7 @@ export const downloadAssignmentSolution = async (formData: FormData) => {
     }
     
     // Use the assignment solution download endpoint
-    const response = await fetch(`https://python.iamscientist.ai/api/assignment/assignment_solution_download?${params.toString()}`, {
+    const response = await fetch(`${PYTHON_API_BASE}/assignment/assignment_solution_download?${params.toString()}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/pdf'
@@ -847,30 +852,10 @@ export async function evaluatePracticeAnswer(questionId: string, question: strin
 // View generated quiz PDF in a new tab using corrected endpoint
 export const viewQuizPdf = async (formData?: FormData, callback?: (url: string) => void) => {
   try {
-    console.log("🚀 Starting quiz PDF preview generation...");
+    console.log("🚀 Opening quiz PDF view...");
     
-    if (formData) {
-      // First generate the quiz, then view it
-      console.log("📤 Calling quiz generation API first...");
-      
-      const generateResponse = await fetch('https://python.iamscientist.ai/api/quiz/quiz', {
-        method: 'POST',
-        body: formData
-      });
-      
-      console.log("📨 Quiz generation response status:", generateResponse.status);
-      
-      if (!generateResponse.ok) {
-        const errorText = await generateResponse.text();
-        console.error("❌ Quiz generation failed:", errorText);
-        throw new Error(`Failed to generate quiz: ${generateResponse.status}`);
-      }
-      
-      console.log("✅ Quiz generation successful, proceeding to view...");
-    }
-    
-    // Use the corrected view endpoint
-    const pdfUrl = 'https://python.iamscientist.ai/api/quiz/quiz_view';
+    // Go directly to the view endpoint since quiz is already generated
+    const pdfUrl = `${PYTHON_API_BASE}/quiz/quiz_view`;
     
     if (callback) {
       callback(pdfUrl);
@@ -886,7 +871,7 @@ export const viewQuizPdf = async (formData?: FormData, callback?: (url: string) 
     
   } catch (error) {
     // Fallback: just try to open the view URL directly
-    const pdfUrl = 'https://python.iamscientist.ai/api/quiz/quiz_view';
+    const pdfUrl = `${PYTHON_API_BASE}/quiz/quiz_view`;
     
     if (callback) {
       callback(pdfUrl);
@@ -911,8 +896,8 @@ export const viewQuizPdf = async (formData?: FormData, callback?: (url: string) 
 // View quiz solution PDF using corrected endpoint
 export const viewQuizSolutionPdf = async (callback?: (url: string) => void) => {
   try {
-    // Use the corrected quiz solution view endpoint
-    const pdfUrl = 'https://python.iamscientist.ai/api/quiz/quiz_solution_view';
+    // Use the quiz solution view endpoint
+    const pdfUrl = `${PYTHON_API_BASE}/quiz/quiz_solution_view`;
     
     if (callback) {
       callback(pdfUrl);
@@ -939,88 +924,10 @@ export const viewQuizSolutionPdf = async (callback?: (url: string) => void) => {
 // View generated assignment PDF in a new tab using corrected endpoint
 export const viewAssignmentPdf = async (formData?: FormData, callback?: (url: string) => void) => {
   try {
-    console.log("🚀 Starting assignment PDF preview generation...");
+    console.log("🚀 Opening assignment PDF view...");
     
-    if (formData) {
-      // Apply the same validation as in generateAssignment
-      console.log("📤 Calling assignment generation API first...");
-      
-      // Helper function to validate and clean numeric fields
-      const validateNumericField = (value: string | null, defaultValue: string): string => {
-        const cleanValue = (value || defaultValue).trim();
-        return cleanValue === "" || isNaN(Number(cleanValue)) ? defaultValue : cleanValue;
-      };
-
-      // Validate file field
-      const file = formData.get("file") as File;
-      if (!file || !(file instanceof File)) {
-        throw new Error("Valid file is required for assignment generation");
-      }
-
-      // Ensure all required fields are present and properly formatted
-      const requiredFields = {
-        file: file,
-        department: (formData.get("department") as string || "UIIT").trim() || "UIIT",
-        subject: (formData.get("subject") as string || "IFT").trim() || "IFT", 
-        class: (formData.get("class") as string || "BSCS-1B").trim() || "BSCS-1B",
-        due_date: (formData.get("due_date") as string || "10-12-2021").trim() || "10-12-2021",
-        points: validateNumericField(formData.get("points") as string, "10"),
-        Assignment_no: (formData.get("Assignment_no") as string || "Assignment_no 1").trim() || "Assignment_no 1",
-        number_of_questions: validateNumericField(formData.get("number_of_questions") as string, "5"),
-        num_conceptual: validateNumericField(formData.get("num_conceptual") as string, "2"),
-        num_theoretical: validateNumericField(formData.get("num_theoretical") as string, "2"), 
-        num_scenario: validateNumericField(formData.get("num_scenario") as string, "1"),
-        difficulty_level: (formData.get("difficulty_level") as string || "hard").trim() || "hard"
-      };
-
-      // Create validated FormData 
-      const validatedFormData = new FormData();
-      validatedFormData.append("file", requiredFields.file);
-      validatedFormData.append("department", requiredFields.department);
-      validatedFormData.append("subject", requiredFields.subject);
-      validatedFormData.append("class", requiredFields.class);
-      validatedFormData.append("due_date", requiredFields.due_date);
-      validatedFormData.append("points", requiredFields.points);
-      validatedFormData.append("Assignment_no", requiredFields.Assignment_no);
-      validatedFormData.append("number_of_questions", requiredFields.number_of_questions);
-      validatedFormData.append("num_conceptual", requiredFields.num_conceptual);
-      validatedFormData.append("num_theoretical", requiredFields.num_theoretical);
-      validatedFormData.append("num_scenario", requiredFields.num_scenario);
-      validatedFormData.append("difficulty_level", requiredFields.difficulty_level);
-
-      console.log("🔍 PDF preview validated fields:", {
-        department: requiredFields.department,
-        subject: requiredFields.subject,
-        class: requiredFields.class,
-        due_date: requiredFields.due_date,
-        points: requiredFields.points,
-        Assignment_no: requiredFields.Assignment_no,
-        number_of_questions: requiredFields.number_of_questions,
-        num_conceptual: requiredFields.num_conceptual,
-        num_theoretical: requiredFields.num_theoretical,
-        num_scenario: requiredFields.num_scenario,
-        difficulty_level: requiredFields.difficulty_level,
-        file_name: requiredFields.file.name
-      });
-
-      const generateResponse = await fetch('https://python.iamscientist.ai/api/assignment/assignment', {
-        method: 'POST',
-        body: validatedFormData
-      });
-      
-      console.log("📨 Assignment generation response status:", generateResponse.status);
-      
-      if (!generateResponse.ok) {
-        const errorText = await generateResponse.text();
-        console.error("❌ Assignment generation failed:", errorText);
-        throw new Error(`Failed to generate assignment: ${generateResponse.status}`);
-      }
-      
-      console.log("✅ Assignment generation successful, proceeding to view...");
-    }
-    
-    // Use the corrected view endpoint
-    const pdfUrl = 'https://python.iamscientist.ai/api/assignment/assignment_view';
+    // Go directly to the view endpoint since assignment is already generated
+    const pdfUrl = `${PYTHON_API_BASE}/assignment/assignment_view`;
     
     if (callback) {
       callback(pdfUrl);
@@ -1036,7 +943,7 @@ export const viewAssignmentPdf = async (formData?: FormData, callback?: (url: st
     
   } catch (error) {
     // Fallback: just try to open the view URL directly
-    const pdfUrl = 'https://python.iamscientist.ai/api/assignment/assignment_view';
+    const pdfUrl = `${PYTHON_API_BASE}/assignment/assignment_view`;
     
     if (callback) {
       callback(pdfUrl);
@@ -1057,7 +964,7 @@ export const viewAssignmentPdf = async (formData?: FormData, callback?: (url: st
 export const viewAssignmentSolutionPdf = async (callback?: (url: string) => void) => {
   try {
     // Use the corrected assignment solution view endpoint
-    const pdfUrl = 'https://python.iamscientist.ai/api/assignment/assignment_solution_view';
+    const pdfUrl = `${PYTHON_API_BASE}/assignment/assignment_solution_view`;
     
     if (callback) {
       callback(pdfUrl);
