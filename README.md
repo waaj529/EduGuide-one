@@ -2,7 +2,7 @@
 
 A comprehensive AI-powered educational platform that helps teachers generate assignments, quizzes, and provides students with interactive learning tools.
 
-## 🎯 Features
+##  Features
 
 ### For Teachers:
 - **Assignment Generator**: Create custom assignments from uploaded documents
@@ -18,7 +18,7 @@ A comprehensive AI-powered educational platform that helps teachers generate ass
 - **Progress Tracking**: Monitor learning progress
 - **Review Mistakes**: Learn from previous errors
 
-## 🚀 Tech Stack
+##  Tech Stack
 
 - **Frontend**: React 18, TypeScript, Vite
 - **Styling**: Tailwind CSS, shadcn/ui
@@ -28,7 +28,7 @@ A comprehensive AI-powered educational platform that helps teachers generate ass
 - **Audio**: ElevenLabs TTS, Speech Recognition API
 - **Deployment**: Vercel/Netlify ready
 
-## 📋 Production Deployment Checklist
+##  Production Deployment Checklist
 
 ### Environment Variables
 Ensure these environment variables are set in production:
