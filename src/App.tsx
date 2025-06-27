@@ -19,6 +19,7 @@ import ReviewMistakes from "./pages/ReviewMistakes";
 import ProgressTracker from "./pages/ProgressTracker";
 import Profile from "./pages/Profile";
 import StudentContentGenerator from "./pages/StudentContentGenerator";
+import SubjectStudy from "./pages/SubjectStudy";
 import { ThemeProvider } from "./context/ThemeContext";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
@@ -75,6 +76,13 @@ const App = () => {
                     <Route path="/study-materials" element={
                       <ProtectedRoute allowedRoles={['student']}>
                         <StudentContentGenerator />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Subject Study with YouTube Videos */}
+                    <Route path="/study/:subject" element={
+                      <ProtectedRoute allowedRoles={['student']}>
+                        <SubjectStudy />
                       </ProtectedRoute>
                     } />
                     
