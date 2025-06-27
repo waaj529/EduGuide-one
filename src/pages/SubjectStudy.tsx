@@ -1,10 +1,10 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import YouTubePlaylist from '@/components/features/YouTubePlaylist';
-import { YouTubeVideo } from '@/components/features/YouTubePlayer';
+import SimpleVideoList from '@/components/features/SimpleVideoList';
+import { SimpleVideo } from '@/components/features/SimpleVideoList';
 
-// Sample video data for each subject
-const subjectVideos: Record<string, { title: string; videos: YouTubeVideo[]; playlistUrl: string }> = {
+// Real video data from provided playlist URLs
+const subjectVideos: Record<string, { title: string; videos: SimpleVideo[]; playlistUrl: string }> = {
   calculus: {
     title: 'Calculus',
     playlistUrl: 'https://www.youtube.com/playlist?list=PLaEKsRk2Nd792XnQOBaKoLtTivT8dhBH0',
@@ -12,37 +12,50 @@ const subjectVideos: Record<string, { title: string; videos: YouTubeVideo[]; pla
       {
         id: '1',
         title: 'Lecture 1 | Introduction to Calculus',
-        thumbnail: 'https://i.ytimg.com/vi/WUvTyaaNkzM/mqdefault.jpg',
-        duration: '1:09:26',
-        url: 'https://www.youtube.com/watch?v=WUvTyaaNkzM'
+        url: 'https://www.youtube.com/watch?v=Pr_EveoAW7A',
+        index: 1
       },
       {
         id: '2',
         title: 'Lecture 2 | Intervals and Inequality',
-        thumbnail: 'https://i.ytimg.com/vi/A0OHUAtOh8g/mqdefault.jpg',
-        duration: '1:16:58',
-        url: 'https://www.youtube.com/watch?v=A0OHUAtOh8g'
+        url: 'https://www.youtube.com/watch?v=zVZxxrzEza8',
+        index: 2
       },
       {
         id: '3',
-        title: 'Lecture 3 Part A | Domain, Co-Domain, Range, Function, and graph of a function',
-        thumbnail: 'https://i.ytimg.com/vi/HUxOBVOqWdM/mqdefault.jpg',
-        duration: '1:12:08',
-        url: 'https://www.youtube.com/watch?v=HUxOBVOqWdM'
+        title: 'Lecture 3 | Domain, Co-Domain, Range, Function',
+        url: 'https://www.youtube.com/watch?v=mwSX5FCkfn8',
+        index: 3
       },
       {
         id: '4',
-        title: 'Lecture 3 Part B | Function, Cartesian plane, domain and range graphically',
-        thumbnail: 'https://i.ytimg.com/vi/A6T3tZCUWts/mqdefault.jpg',
-        duration: '57:15',
-        url: 'https://www.youtube.com/watch?v=A6T3tZCUWts'
+        title: 'Lecture 4 | Function, Cartesian plane',
+        url: 'https://www.youtube.com/watch?v=YY3G2uMFmzk',
+        index: 4
       },
       {
         id: '5',
-        title: 'Lecture 4 | Graphs of Various Functions | Vertical and Horizontal line test',
-        thumbnail: 'https://i.ytimg.com/vi/qR5V5LqCfGY/mqdefault.jpg',
-        duration: '1:19:22',
-        url: 'https://www.youtube.com/watch?v=qR5V5LqCfGY'
+        title: 'Lecture 5 | Graphs of Various Functions',
+        url: 'https://www.youtube.com/watch?v=DrQnvbbudGc',
+        index: 5
+      },
+      {
+        id: '6',
+        title: 'Lecture 6 | Advanced Functions',
+        url: 'https://www.youtube.com/watch?v=7yoPFyGXGqg',
+        index: 6
+      },
+      {
+        id: '7',
+        title: 'Lecture 7 | Function Analysis',
+        url: 'https://www.youtube.com/watch?v=GY9_Uke6xNY',
+        index: 7
+      },
+      {
+        id: '8',
+        title: 'Lecture 8 | Calculus Applications',
+        url: 'https://www.youtube.com/watch?v=rrx8W89KeKc',
+        index: 8
       }
     ]
   },
@@ -53,9 +66,8 @@ const subjectVideos: Record<string, { title: string; videos: YouTubeVideo[]; pla
       {
         id: '1',
         title: 'Introduction to Information and Communication Technology',
-        thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
-        duration: '45:30',
-        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        index: 1
       }
     ]
   },
@@ -66,9 +78,8 @@ const subjectVideos: Record<string, { title: string; videos: YouTubeVideo[]; pla
       {
         id: '1',
         title: 'Programming Fundamentals - Lecture 1',
-        thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
-        duration: '60:00',
-        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        index: 1
       }
     ]
   },
@@ -79,9 +90,8 @@ const subjectVideos: Record<string, { title: string; videos: YouTubeVideo[]; pla
       {
         id: '1',
         title: 'OOP Concepts - Lecture 1',
-        thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
-        duration: '50:00',
-        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        index: 1
       }
     ]
   },
@@ -92,9 +102,8 @@ const subjectVideos: Record<string, { title: string; videos: YouTubeVideo[]; pla
       {
         id: '1',
         title: 'Data Structures - Introduction',
-        thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
-        duration: '55:00',
-        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        index: 1
       }
     ]
   },
@@ -105,9 +114,8 @@ const subjectVideos: Record<string, { title: string; videos: YouTubeVideo[]; pla
       {
         id: '1',
         title: 'Applied Physics - Fundamentals',
-        thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
-        duration: '48:00',
-        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        index: 1
       }
     ]
   },
@@ -118,9 +126,8 @@ const subjectVideos: Record<string, { title: string; videos: YouTubeVideo[]; pla
       {
         id: '1',
         title: 'Linear Algebra - Introduction',
-        thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
-        duration: '52:00',
-        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        index: 1
       }
     ]
   }
@@ -159,11 +166,11 @@ const SubjectStudy: React.FC = () => {
   }
 
   return (
-    <YouTubePlaylist
-      title={subjectData.title}
+    <SimpleVideoList
       videos={subjectData.videos}
       onBack={handleBack}
       playlistUrl={subjectData.playlistUrl}
+      subjectTitle={subjectData.title}
     />
   );
 };
