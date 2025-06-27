@@ -114,18 +114,30 @@ export const download_pdf = async () => {
 // Module APIs
 export const generateAssignment = async (formData: FormData) => {
   try {
-    console.log(
-      "Generating assignment with data:",
-      Object.fromEntries(formData)
-    );
+    console.log("Generating assignment with form data:");
+    
+    // Log the form data contents for debugging
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+      } else {
+        console.log(`${key}: ${value}`);
+      }
+    }
 
+    console.log("Making request to assignment API...");
     const response = await fetch('https://python.iamscientist.ai/api/assignment/assignment', {
       method: 'POST',
       body: formData,
     });
 
+    console.log("Response status:", response.status);
+    console.log("Response headers:", Object.fromEntries([...response.headers.entries()]));
+
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`Assignment API failed with status ${response.status}:`, errorText);
+      throw new Error(`API error (${response.status}): ${errorText}`);
     }
 
     const responseData = await response.json();
