@@ -1208,17 +1208,8 @@ const Upload = () => {
               </CardFooter>
             </Card>
 
-            <Card className="h-[800px] flex flex-col">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <FileText className="h-5 w-5 mr-2" />
-                  Assignment PDF Preview
-                </CardTitle>
-                <CardDescription>
-                  {assignmentFile ? `${assignmentFile.name}` : "Generated assignment will appear here."}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col p-6 overflow-hidden">
+            <Card className="h-[900px] flex flex-col">
+              <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
                 {isProcessing && activeTab === "assignment" ? (
                   <div className="flex flex-col items-center justify-center h-full">
                     <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -1232,28 +1223,6 @@ const Upload = () => {
                   </div>
                 ) : assignmentProcessingComplete && assignmentPdfUrl ? (
                   <div className="relative flex-1 flex flex-col">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center">
-                        <FileText className="h-5 w-5 mr-2 text-primary" />
-                        <span className="font-medium">
-                          Assignment: {assignmentSubject || "Generated Assignment"}
-                        </span>
-                      </div>
-                      <div className="flex items-center text-sm text-muted-foreground gap-4">
-                        <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          <span>Due: {assignmentDueDate || "Not specified"}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Hash className="h-4 w-4 mr-1" />
-                          <span>#{assignmentNumber || "1"}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <LibraryBig className="h-4 w-4 mr-1" />
-                          <span>Points: {assignmentPoints || "20"}</span>
-                        </div>
-                      </div>
-                    </div>
                     <div className="flex-1 bg-muted rounded-md overflow-hidden">
                       <iframe 
                         src={assignmentPdfUrl} 
@@ -1276,17 +1245,9 @@ const Upload = () => {
                 )}
               </CardContent>
               {assignmentProcessingComplete && assignmentPdfUrl && (
-                <CardFooter className="flex justify-between gap-4">
-                  <Button
-                    variant="outline"
-                    className="flex-1 flex items-center justify-center"
-                    onClick={() => copyToClipboard()}
-                  >
-                    <ClipboardCopy className="h-4 w-4 mr-2" />
-                    Copy to Clipboard
-                  </Button>
+                <CardFooter className="p-4">
                   <Button 
-                    className="flex-1 flex items-center justify-center"
+                    className="w-full flex items-center justify-center"
                     onClick={() => handleDownload()}
                   >
                     <Download className="h-4 w-4 mr-2" />
@@ -1558,17 +1519,8 @@ const Upload = () => {
               </CardFooter>
             </Card>
 
-            <Card className="h-[800px] flex flex-col">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <FileText className="h-5 w-5 mr-2" />
-                  Quiz PDF Preview
-                </CardTitle>
-                <CardDescription>
-                  {quizFile ? `${quizFile.name}` : "Generated quiz will appear here."}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col p-6 overflow-hidden">
+            <Card className="h-[900px] flex flex-col">
+              <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
                 {isProcessing && activeTab === "quiz" ? (
                   <div className="flex flex-col items-center justify-center h-full">
                     <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -1582,28 +1534,6 @@ const Upload = () => {
                   </div>
                 ) : quizProcessingComplete && quizPdfUrl ? (
                   <div className="relative flex-1 flex flex-col">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center">
-                        <FileText className="h-5 w-5 mr-2 text-primary" />
-                        <span className="font-medium">
-                          Quiz: {quizSubject || "Generated Quiz"}
-                        </span>
-                      </div>
-                      <div className="flex items-center text-sm text-muted-foreground gap-4">
-                        <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          <span>Due: {quizDueDate || "Not specified"}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Hash className="h-4 w-4 mr-1" />
-                          <span>#{quizNumber || "1"}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <LibraryBig className="h-4 w-4 mr-1" />
-                          <span>Points: {quizPoints || "10"}</span>
-                        </div>
-                      </div>
-                    </div>
                     <div className="flex-1 bg-muted rounded-md overflow-hidden">
                       <iframe 
                         src={quizPdfUrl} 
@@ -1626,17 +1556,9 @@ const Upload = () => {
                 )}
               </CardContent>
               {quizProcessingComplete && quizPdfUrl && (
-                <CardFooter className="flex justify-between gap-4">
-                  <Button
-                    variant="outline"
-                    className="flex-1 flex items-center justify-center"
-                    onClick={() => copyToClipboard()}
-                  >
-                    <ClipboardCopy className="h-4 w-4 mr-2" />
-                    Copy to Clipboard
-                  </Button>
+                <CardFooter className="p-4">
                   <Button 
-                    className="flex-1 flex items-center justify-center"
+                    className="w-full flex items-center justify-center"
                     onClick={() => handleDownload()}
                   >
                     <Download className="h-4 w-4 mr-2" />
