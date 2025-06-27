@@ -121,13 +121,55 @@ const subjectVideos: Record<string, { title: string; videos: SimpleVideo[]; play
   },
   'linear-algebra': {
     title: 'Linear Algebra',
-    playlistUrl: '',
+    playlistUrl: 'https://youtube.com/playlist?list=PLxCzCOWd7aiHnkPiCulMX5SIHMl2ZMmzL',
     videos: [
       {
         id: '1',
-        title: 'Linear Algebra - Introduction',
-        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        title: 'Linear Algebra Lecture 1 - Introduction to Vectors',
+        url: 'https://www.youtube.com/watch?v=xyAuNHPsq-g',
         index: 1
+      },
+      {
+        id: '2', 
+        title: 'Linear Algebra Lecture 2 - Vector Operations',
+        url: 'https://www.youtube.com/watch?v=rHLEWRxRGiM',
+        index: 2
+      },
+      {
+        id: '3',
+        title: 'Linear Algebra Lecture 3 - Dot Product and Cross Product',
+        url: 'https://www.youtube.com/watch?v=WNuIhXo39_k',
+        index: 3
+      },
+      {
+        id: '4',
+        title: 'Linear Algebra Lecture 4 - Matrix Operations',
+        url: 'https://www.youtube.com/watch?v=XkY2DOUCWMU',
+        index: 4
+      },
+      {
+        id: '5',
+        title: 'Linear Algebra Lecture 5 - Matrix Multiplication',
+        url: 'https://www.youtube.com/watch?v=kT4Mp9EdVqs',
+        index: 5
+      },
+      {
+        id: '6',
+        title: 'Linear Algebra Lecture 6 - Determinants',
+        url: 'https://www.youtube.com/watch?v=Ip3X9LOh2dk',
+        index: 6
+      },
+      {
+        id: '7',
+        title: 'Linear Algebra Lecture 7 - Inverse Matrices',
+        url: 'https://www.youtube.com/watch?v=uQhTuRlWMxw',
+        index: 7
+      },
+      {
+        id: '8',
+        title: 'Linear Algebra Lecture 8 - Systems of Linear Equations',
+        url: 'https://www.youtube.com/watch?v=2IdtqGM6KWU',
+        index: 8
       }
     ]
   }
