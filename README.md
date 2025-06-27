@@ -56,6 +56,43 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 - ✅ Responsive design for mobile/tablet
 - ✅ Accessibility features included
 
+## 🚀 CI/CD Deployment
+
+### Vercel Deployment (Recommended)
+
+This project is configured for automatic deployment to Vercel:
+
+1. **Connect Repository**: Import project from GitHub to Vercel
+2. **Environment Variables**: Set in Vercel dashboard
+3. **Automatic Deployments**: Every push to `main` triggers deployment
+4. **Preview Deployments**: Pull requests get preview URLs
+
+### Deployment Configuration
+
+```json
+Framework: Vite
+Build Command: npm run build
+Output Directory: dist
+Node.js Version: 18.x
+```
+
+### Environment Variables Needed
+
+```bash
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### Deployment URLs
+
+- **Production**: https://eduguide-ai.vercel.app (auto-updated from main branch)
+- **Preview**: Generated for each pull request
+- **Development**: http://localhost:5173
+
+### Build Status
+
+[![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/waaj529/FYP)
+
 ## 🛠️ Development Setup
 
 1. **Clone the repository**

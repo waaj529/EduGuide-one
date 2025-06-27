@@ -856,11 +856,11 @@ export const viewQuizPdf = async (formData?: FormData, callback?: (url: string) 
       // Open in new tab
       window.open(pdfUrl, '_blank');
     }
-    
-    toast({
+      
+      toast({
       title: "Quiz PDF opened",
       description: "The generated quiz has been opened in a new tab.",
-    });
+      });
     
   } catch (error) {
     // Fallback: just try to open the view URL directly
@@ -898,11 +898,11 @@ export const viewQuizSolutionPdf = async (callback?: (url: string) => void) => {
       // Open in new tab
       window.open(pdfUrl, '_blank');
     }
-    
-    toast({
+      
+      toast({
       title: "Quiz Solution PDF opened",
-      description: "The quiz solution has been opened in a new tab.",
-    });
+        description: "The quiz solution has been opened in a new tab.",
+      });
     
   } catch (error) {
     console.error("View quiz solution PDF error:", error);
