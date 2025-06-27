@@ -36,6 +36,8 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Production-ready logging utility
 const isDevelopment = import.meta.env.DEV;
+
+// Production-ready logging functions
 const devLog = (...args: any[]) => {
   if (isDevelopment) {
     console.log(...args);
@@ -43,8 +45,13 @@ const devLog = (...args: any[]) => {
 };
 
 const devError = (...args: any[]) => {
-  if (isDevelopment) {
-    console.error(...args);
+  console.error(...args); // Always log errors
+};
+
+const prodLog = (message: string, data?: any) => {
+  if (!isDevelopment) {
+    // In production, you might want to send to a logging service
+    // console.info(message, data);
   }
 };
 

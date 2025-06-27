@@ -1,6 +1,6 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import React, { Component, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -10,65 +10,85 @@ interface Props {
 interface State {
   hasError: boolean;
   error?: Error;
+  errorInfo?: any;
 }
 
 class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false
-  };
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false, error: undefined, errorInfo: undefined };
+  }
 
-  public static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Uncaught error:', error, errorInfo);
+  componentDidCatch(error: Error, errorInfo: any) {
+    if (import.meta.env.DEV) {
+      console.error('Uncaught error:', error, errorInfo);
+    } else {
+      // In production, you might want to send to a logging service like Sentry
+      // logErrorToService(error, errorInfo);
+    }
     
-    // In production, you'd send this to your error reporting service
-    // Example: Sentry.captureException(error, { contexts: { react: errorInfo } });
+    this.setState({ errorInfo });
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: undefined });
+    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
   };
 
-  public render() {
+  render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
       return (
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-md mx-auto text-center">
-            <div className="mb-6">
-              <AlertTriangle className="mx-auto h-12 w-12 text-red-500" />
-            </div>
-            <h1 className="text-2xl font-bold mb-4">Something went wrong</h1>
-            <p className="text-gray-600 mb-6">
-              We're sorry, but something unexpected happened. Please try refreshing the page.
-            </p>
-            <div className="space-y-4">
-              <Button onClick={this.handleReset} className="w-full">
-                Try again
-              </Button>
-              <Button variant="outline" onClick={() => window.location.href = '/'} className="w-full">
-                Go home
-              </Button>
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+          <div className="max-w-md w-full text-center space-y-6">
+            <div className="flex justify-center">
+              <AlertTriangle className="h-16 w-16 text-destructive" />
             </div>
             
-            {import.meta.env.DEV && (
-              <details className="mt-6 text-left">
-                <summary className="cursor-pointer font-medium">
-                  Error Details (Development Only)
-                </summary>
-                <pre className="mt-2 text-xs bg-gray-100 p-4 rounded overflow-auto">
-                  {this.state.error?.message}
-                  {'\n\n'}
-                  {this.state.error?.stack}
-                </pre>
-              </details>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold text-foreground">
+                Oops! Something went wrong
+              </h1>
+              <p className="text-muted-foreground">
+                We're sorry for the inconvenience. The application encountered an unexpected error.
+              </p>
+            </div>
+
+            {import.meta.env.DEV && this.state.error && (
+              <div className="text-left bg-muted p-4 rounded-md text-sm">
+                <p className="font-mono text-destructive">
+                  {this.state.error.message}
+                </p>
+              </div>
             )}
+
+            <div className="flex flex-col gap-2">
+              <Button 
+                onClick={this.handleReset}
+                className="w-full"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Try Again
+              </Button>
+              
+              <Button 
+                variant="outline"
+                onClick={() => window.location.reload()}
+                className="w-full"
+              >
+                Reload Page
+              </Button>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              If the problem persists, please contact support.
+            </p>
           </div>
         </div>
       );

@@ -411,7 +411,6 @@ const Upload = () => {
           
           console.log("🚀 Attempting assignment generation...");
           questions = await generateAssignment(assignmentForm);
-          console.log("✅ Assignment generation completed successfully:", questions?.length, "questions");
         } 
         else if (type === "quiz") {
           // Create quiz form with properly validated parameters
@@ -464,28 +463,14 @@ const Upload = () => {
               assignmentForm.append("difficulty_level", assignmentDifficulty);
               assignmentForm.append("number_of_questions", assignmentTotalQuestions);
               
-              console.log("🔥 Assignment generation successful, attempting PDF preview...");
-              console.log("🔥 About to call viewAssignmentPdf with form data:", Object.fromEntries(assignmentForm.entries()));
-              
               viewAssignmentPdf(assignmentForm, (url) => {
-                console.log("🔥 Assignment PDF callback received URL:", url);
-                console.log("🔥 Setting assignmentPdfUrl to:", url);
-                
                 if (url) {
                   setAssignmentPdfUrl(url);
-                  console.log("✅ Assignment PDF URL set successfully");
-                } else {
-                  console.log("⚠️ Assignment PDF preview failed - URL is null/undefined");
+                  console.warn("Assignment PDF preview failed - URL is null/undefined");
                 }
-                
-                // Debug: Check if the state was actually updated
-                setTimeout(() => {
-                  console.log("🔍 Assignment processing complete:", assignmentProcessingComplete);
-                  console.log("🔍 Assignment PDF URL after state update:", url);
-                }, 100);
               });
             } catch (previewError) {
-              console.log("⚠️ Assignment PDF preview failed, but assignment generation was successful:", previewError);
+              console.warn("Assignment PDF preview failed, but assignment generation was successful:", previewError);
               // Don't fail the whole process if only preview fails
             }
           } else if (type === "quiz") {
@@ -507,9 +492,7 @@ const Upload = () => {
             quizForm.append("difficulty_level", quizDifficulty);
             quizForm.append("number_of_questions", quizTotalQuestions || "10");
             
-            console.log("🟦 About to call viewQuizPdf with form data:", Object.fromEntries(quizForm.entries()));
             viewQuizPdf(quizForm, (url) => {
-              console.log("🟦 Quiz PDF callback received URL:", url);
               setQuizPdfUrl(url);
             });
           } else if (type === "proximity") {

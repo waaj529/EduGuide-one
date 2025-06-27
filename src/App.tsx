@@ -42,9 +42,7 @@ const UploadRouteWrapper = () => {
   );
 };
 
-const App = () => {
-  console.log('App component rendering');
-  
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -143,6 +141,6 @@ const App = () => {
       </ThemeProvider>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;

@@ -38,8 +38,6 @@ const QuestionAnswerInput = () => {
   };
 
   const submitAnswer = async () => {
-    console.log("Nigggggger");
-
     if (!selectedQuestion) {
       toast({
         title: "No question selected",
@@ -63,7 +61,6 @@ const QuestionAnswerInput = () => {
       if (answer) {
         // Evaluate text answer
         // const result = await openaiService.evaluateAnswer(selectedQuestion, answer);
-        console.log("Niveeeeee  ");
         const result = await evaluateAnswer({
           question: selectedQuestion,
           answer,

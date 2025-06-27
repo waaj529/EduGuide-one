@@ -42,14 +42,32 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-accordion', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          ui: [
+            '@radix-ui/react-accordion', 
+            '@radix-ui/react-dialog', 
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-progress'
+          ],
           supabase: ['@supabase/supabase-js'],
           router: ['react-router-dom'],
           query: ['@tanstack/react-query'],
+          icons: ['lucide-react'],
+          utils: ['clsx', 'tailwind-merge'],
         },
       },
     },
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 800,
     sourcemap: mode === 'development',
+    minify: mode === 'production' ? 'terser' : false,
+    ...(mode === 'production' && {
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+        },
+      },
+    }),
   },
 }));
