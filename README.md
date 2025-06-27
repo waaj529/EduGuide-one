@@ -141,3 +141,4 @@ MIT License - feel free to use this code for your own projects or learning.
 
 **Note:** This is a student project built for educational purposes. The AI features require API keys and will incur costs during usage.
 
+<!-- Force Vercel deployment Fri Jun 27 07:17:00 PKT 2025 -->
