@@ -706,35 +706,37 @@ export async function evaluatePracticeAnswer(questionId: string, question: strin
 export const viewQuizPdf = async (formData?: FormData, callback?: (url: string) => void) => {
   try {
     if (formData) {
-      console.log("Generating quiz PDF for preview using download approach...");
+      console.log("🚀 Starting quiz PDF preview generation...");
+      console.log("📋 Form data entries:", Object.fromEntries(formData.entries()));
       
-      // Use the same approach as downloadQuiz but for viewing
-      // Convert FormData to query params for GET request
-      const params = new URLSearchParams();
-      for (const [key, value] of formData.entries()) {
-        // Skip file entry in URL parameters - files can't be sent in GET requests
-        if (key !== 'file') {
-          params.append(key, value.toString());
-        }
-      }
+      // The issue might be that we need to use the same endpoint that generates the questions
+      // Let's try using the quiz generation endpoint first, then view
+      console.log("📤 Calling quiz generation API first...");
       
-      // First call the download endpoint to ensure PDF is generated
-      const downloadResponse = await fetch(`https://python.iamscientist.ai/api/quiz/quiz_download?${params.toString()}`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/pdf'
-        }
+      const generateResponse = await fetch('https://python.iamscientist.ai/api/quiz/quiz', {
+        method: 'POST',
+        body: formData
       });
       
-      if (!downloadResponse.ok) {
-        console.error(`Quiz generation failed: ${downloadResponse.status}`);
-        throw new Error(`Failed to generate quiz: ${downloadResponse.status}`);
+      console.log("📨 Quiz generation response status:", generateResponse.status);
+      
+      if (!generateResponse.ok) {
+        const errorText = await generateResponse.text();
+        console.error("❌ Quiz generation failed:", errorText);
+        throw new Error(`Failed to generate quiz: ${generateResponse.status}`);
       }
       
-      console.log("Quiz PDF generated successfully, now setting view URL...");
+      // Now wait a moment for the server to process
+      console.log("⏳ Waiting for server processing...");
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Now the quiz should be available for viewing
+      // Now try the view URL
       const pdfUrl = 'https://python.iamscientist.ai/api/quiz/quiz_view';
+      console.log("🔗 Setting PDF URL:", pdfUrl);
+      
+      // Test if the view URL is accessible
+      const testResponse = await fetch(pdfUrl, { method: 'HEAD' });
+      console.log("🔍 PDF view URL test response:", testResponse.status);
       
       if (callback) {
         callback(pdfUrl);
@@ -748,6 +750,7 @@ export const viewQuizPdf = async (formData?: FormData, callback?: (url: string) 
     } else {
       // No form data provided, just try the view URL
       const pdfUrl = 'https://python.iamscientist.ai/api/quiz/quiz_view';
+      console.log("🔗 Using default PDF URL:", pdfUrl);
       
       if (callback) {
         callback(pdfUrl);
@@ -760,7 +763,7 @@ export const viewQuizPdf = async (formData?: FormData, callback?: (url: string) 
       }
     }
   } catch (error) {
-    console.error("View quiz PDF error:", error);
+    console.error("❌ View quiz PDF error:", error);
     toast({
       title: "Error",
       description: "Failed to generate or view quiz PDF. Please try again.",
@@ -805,35 +808,37 @@ export const viewSolutionPdf = async (callback?: (url: string) => void) => {
 export const viewAssignmentPdf = async (formData?: FormData, callback?: (url: string) => void) => {
   try {
     if (formData) {
-      console.log("Generating assignment PDF for preview using download approach...");
+      console.log("🚀 Starting assignment PDF preview generation...");
+      console.log("📋 Form data entries:", Object.fromEntries(formData.entries()));
       
-      // Use the same approach as downloadAssignment but for viewing
-      // Convert FormData to query params for GET request
-      const params = new URLSearchParams();
-      for (const [key, value] of formData.entries()) {
-        // Skip file entry in URL parameters - files can't be sent in GET requests
-        if (key !== 'file') {
-          params.append(key, value.toString());
-        }
-      }
+      // The issue might be that we need to use the same endpoint that generates the questions
+      // Let's try using the assignment generation endpoint first, then view
+      console.log("📤 Calling assignment generation API first...");
       
-      // First call the download endpoint to ensure PDF is generated
-      const downloadResponse = await fetch(`https://python.iamscientist.ai/api/assignment/assignment_download?${params.toString()}`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/pdf'
-        }
+      const generateResponse = await fetch('https://python.iamscientist.ai/api/assignment/assignment', {
+        method: 'POST',
+        body: formData
       });
       
-      if (!downloadResponse.ok) {
-        console.error(`Assignment generation failed: ${downloadResponse.status}`);
-        throw new Error(`Failed to generate assignment: ${downloadResponse.status}`);
+      console.log("📨 Assignment generation response status:", generateResponse.status);
+      
+      if (!generateResponse.ok) {
+        const errorText = await generateResponse.text();
+        console.error("❌ Assignment generation failed:", errorText);
+        throw new Error(`Failed to generate assignment: ${generateResponse.status}`);
       }
       
-      console.log("Assignment PDF generated successfully, now setting view URL...");
+      // Now wait a moment for the server to process
+      console.log("⏳ Waiting for server processing...");
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Now the assignment should be available for viewing
+      // Now try the view URL
       const pdfUrl = 'https://python.iamscientist.ai/api/assignment/assignment_view';
+      console.log("🔗 Setting PDF URL:", pdfUrl);
+      
+      // Test if the view URL is accessible
+      const testResponse = await fetch(pdfUrl, { method: 'HEAD' });
+      console.log("🔍 PDF view URL test response:", testResponse.status);
       
       if (callback) {
         callback(pdfUrl);
@@ -847,6 +852,7 @@ export const viewAssignmentPdf = async (formData?: FormData, callback?: (url: st
     } else {
       // No form data provided, just try the view URL
       const pdfUrl = 'https://python.iamscientist.ai/api/assignment/assignment_view';
+      console.log("🔗 Using default PDF URL:", pdfUrl);
       
       if (callback) {
         callback(pdfUrl);
@@ -859,7 +865,7 @@ export const viewAssignmentPdf = async (formData?: FormData, callback?: (url: st
       }
     }
   } catch (error) {
-    console.error("View assignment PDF error:", error);
+    console.error("❌ View assignment PDF error:", error);
     toast({
       title: "Error",
       description: "Failed to generate or view assignment PDF. Please try again.",
