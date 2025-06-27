@@ -56,9 +56,13 @@ import {
   generateQuiz,
   generateExam,
   downloadAssignment,
+  downloadAssignmentSolution,
   downloadQuiz,
+  downloadQuizSolution,
   viewAssignmentPdf,
-  viewQuizPdf
+  viewAssignmentSolutionPdf,
+  viewQuizPdf,
+  viewQuizSolutionPdf
 } from "@/services/api";
 
 const Upload = () => {
@@ -139,30 +143,30 @@ const Upload = () => {
   const [proximityLocation, setProximityLocation] = useState("");
 
   // Assignment form state
-  const [assignmentDepartment, setAssignmentDepartment] = useState("213");
-  const [assignmentSubject, setAssignmentSubject] = useState("");
-  const [assignmentClassName, setAssignmentClassName] = useState("213");
-  const [assignmentDueDate, setAssignmentDueDate] = useState("");
-  const [assignmentNumber, setAssignmentNumber] = useState("1213");
+  const [assignmentDepartment, setAssignmentDepartment] = useState("UIIT");
+  const [assignmentSubject, setAssignmentSubject] = useState("IFT");
+  const [assignmentClassName, setAssignmentClassName] = useState("BSCS-1B");
+  const [assignmentDueDate, setAssignmentDueDate] = useState("2024-12-31");
+  const [assignmentNumber, setAssignmentNumber] = useState("Assignment_no 1");
   const [assignmentPoints, setAssignmentPoints] = useState("10");
   const [assignmentConceptual, setAssignmentConceptual] = useState("2");
-  const [assignmentTheoretical, setAssignmentTheoretical] = useState("5");
-  const [assignmentScenario, setAssignmentScenario] = useState("3");
-  const [assignmentDifficulty, setAssignmentDifficulty] = useState("Medium");
-  const [assignmentTotalQuestions, setAssignmentTotalQuestions] = useState("10");
+  const [assignmentTheoretical, setAssignmentTheoretical] = useState("2");
+  const [assignmentScenario, setAssignmentScenario] = useState("1");
+  const [assignmentDifficulty, setAssignmentDifficulty] = useState("hard");
+  const [assignmentTotalQuestions, setAssignmentTotalQuestions] = useState("5");
   
-  // Quiz form state
-  const [quizDepartment, setQuizDepartment] = useState("213");
-  const [quizSubject, setQuizSubject] = useState("");
-  const [quizClassName, setQuizClassName] = useState("213");
-  const [quizDueDate, setQuizDueDate] = useState("");
-  const [quizNumber, setQuizNumber] = useState("2");
+  // Quiz form state - with proper placeholders matching API expectations
+  const [quizDepartment, setQuizDepartment] = useState("Computer Science");
+  const [quizSubject, setQuizSubject] = useState("IFT");
+  const [quizClassName, setQuizClassName] = useState("BSCS-1B");
+  const [quizDueDate, setQuizDueDate] = useState("2024-12-31");
+  const [quizNumber, setQuizNumber] = useState("Quiz No 1");
   const [quizPoints, setQuizPoints] = useState("10");
-  const [quizConceptual, setQuizConceptual] = useState("1");
+  const [quizConceptual, setQuizConceptual] = useState("0");
   const [quizTheoretical, setQuizTheoretical] = useState("2");
   const [quizScenario, setQuizScenario] = useState("1");
-  const [quizDifficulty, setQuizDifficulty] = useState("Medium");
-  const [quizTotalQuestions, setQuizTotalQuestions] = useState("");
+  const [quizDifficulty, setQuizDifficulty] = useState("hard");
+  const [quizTotalQuestions, setQuizTotalQuestions] = useState("3");
   
   // Handle tab switching
   const handleTabChange = (value: string) => {
@@ -396,8 +400,8 @@ const Upload = () => {
           assignmentForm.append("department", assignmentDepartment);
           assignmentForm.append("subject", assignmentSubject);
           assignmentForm.append("class", assignmentClassName);
-          assignmentForm.append("due_date", assignmentDueDate);
-          assignmentForm.append("assignment_no", assignmentNumber);
+          assignmentForm.append("due_date", formatDateForAPI(assignmentDueDate));
+          assignmentForm.append("Assignment_no", assignmentNumber);
           assignmentForm.append("points", assignmentPoints);
           assignmentForm.append("num_conceptual", assignmentConceptual);
           assignmentForm.append("num_theoretical", assignmentTheoretical);
@@ -416,7 +420,7 @@ const Upload = () => {
           quizForm.append("department", quizDepartment);
           quizForm.append("subject", quizSubject);
           quizForm.append("class", quizClassName);
-          quizForm.append("due_date", quizDueDate);
+          quizForm.append("due_date", formatDateForAPI(quizDueDate));
           quizForm.append("quiz_no", quizNumber);
           quizForm.append("points", quizPoints);
           quizForm.append("num_conceptual", quizConceptual);
@@ -425,8 +429,8 @@ const Upload = () => {
           quizForm.append("difficulty_level", quizDifficulty);
           quizForm.append("number_of_questions", quizTotalQuestions || "10");
           
-          // Call the quiz API
-          questions = await generateQuiz(quizForm);
+            // Call the quiz API
+            questions = await generateQuiz(quizForm);
         } 
         else if (type === "proximity") {
           // Create proximity form with proximity-specific fields
@@ -451,8 +455,8 @@ const Upload = () => {
               assignmentForm.append("department", assignmentDepartment);
               assignmentForm.append("subject", assignmentSubject);
               assignmentForm.append("class", assignmentClassName);
-              assignmentForm.append("due_date", assignmentDueDate);
-              assignmentForm.append("assignment_no", assignmentNumber);
+              assignmentForm.append("due_date", formatDateForAPI(assignmentDueDate));
+              assignmentForm.append("Assignment_no", assignmentNumber);
               assignmentForm.append("points", assignmentPoints);
               assignmentForm.append("num_conceptual", assignmentConceptual);
               assignmentForm.append("num_theoretical", assignmentTheoretical);
@@ -494,7 +498,7 @@ const Upload = () => {
             quizForm.append("department", quizDepartment);
             quizForm.append("subject", quizSubject);
             quizForm.append("class", quizClassName);
-            quizForm.append("due_date", quizDueDate);
+            quizForm.append("due_date", formatDateForAPI(quizDueDate));
             quizForm.append("quiz_no", quizNumber);
             quizForm.append("points", quizPoints);
             quizForm.append("num_conceptual", quizConceptual);
@@ -621,16 +625,16 @@ const Upload = () => {
       try {
         console.log(`🌐 Calling YOLO API: ${apiUrl} (${process.env.NODE_ENV} mode)`);
         response = await fetch(apiUrl, {
-          method: "POST",
-          body: formData,
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-        
-        if (!response.ok) {
-          console.error(`API response status: ${response.status}`);
-          throw new Error(`API error: ${response.status}`);
+        method: "POST",
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        console.error(`API response status: ${response.status}`);
+        throw new Error(`API error: ${response.status}`);
         }
       } catch (fetchError) {
         console.error("CORS or network error:", fetchError);
@@ -819,6 +823,19 @@ const Upload = () => {
   };
 
   // Helper function to generate demo questions when API is down
+  // Helper function to convert date from YYYY-MM-DD to DD-MM-YYYY format
+  const formatDateForAPI = (dateString: string): string => {
+    if (!dateString) return "10-12-2021"; // Default fallback
+    
+    try {
+      const [year, month, day] = dateString.split('-');
+      return `${day}-${month}-${year}`;
+    } catch (error) {
+      console.warn("Date formatting error:", error);
+      return "10-12-2021"; // Default fallback
+    }
+  };
+
   const generateDemoQuestions = (totalQuestionsStr: string, extractedText: string): any[] => {
     const totalQuestions = parseInt(totalQuestionsStr) || 4;
     
@@ -903,8 +920,8 @@ const Upload = () => {
       form.append("department", assignmentDepartment);
       form.append("subject", assignmentSubject);
       form.append("class", assignmentClassName);
-      form.append("due_date", assignmentDueDate);
-      form.append("assignment_no", assignmentNumber);
+      form.append("due_date", formatDateForAPI(assignmentDueDate));
+      form.append("Assignment_no", assignmentNumber);
       form.append("points", assignmentPoints);
       form.append("num_conceptual", assignmentConceptual);
       form.append("num_theoretical", assignmentTheoretical);
@@ -925,7 +942,7 @@ const Upload = () => {
       form.append("department", quizDepartment);
       form.append("subject", quizSubject);
       form.append("class", quizClassName);
-      form.append("due_date", quizDueDate);
+      form.append("due_date", formatDateForAPI(quizDueDate));
       form.append("quiz_no", quizNumber);
       form.append("points", quizPoints);
       form.append("num_conceptual", quizConceptual);
@@ -949,6 +966,92 @@ const Upload = () => {
       form.append("class", proximityClassName);
       
       download_pdf();
+    }
+  };
+
+  const handleDownloadSolution = async () => {
+    try {
+      if (activeTab === "quiz") {
+        const quizForm = new FormData();
+        quizForm.append("department", quizDepartment);
+        quizForm.append("subject", quizSubject);
+        quizForm.append("class", quizClassName);
+        quizForm.append("due_date", formatDateForAPI(quizDueDate));
+        quizForm.append("quiz_no", quizNumber);
+        quizForm.append("points", quizPoints);
+        quizForm.append("num_conceptual", quizConceptual);
+        quizForm.append("num_theoretical", quizTheoretical);
+        quizForm.append("num_scenario", quizScenario);
+        quizForm.append("difficulty_level", quizDifficulty);
+        quizForm.append("number_of_questions", quizTotalQuestions || "10");
+        
+        await downloadQuizSolution(quizForm);
+      }
+    } catch (error) {
+      console.error("Download solution error:", error);
+      toast({
+        title: "Download failed",
+        description: "Could not download the quiz solution. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleViewSolution = async () => {
+    try {
+      if (activeTab === "quiz") {
+        await viewQuizSolutionPdf();
+      }
+    } catch (error) {
+      console.error("View solution error:", error);
+      toast({
+        title: "View failed",
+        description: "Could not open the quiz solution. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDownloadAssignmentSolution = async () => {
+    try {
+      if (activeTab === "assignment") {
+        const assignmentForm = new FormData();
+        assignmentForm.append("department", assignmentDepartment);
+        assignmentForm.append("subject", assignmentSubject);
+        assignmentForm.append("class", assignmentClassName);
+                  assignmentForm.append("due_date", formatDateForAPI(assignmentDueDate));
+          assignmentForm.append("Assignment_no", assignmentNumber);
+          assignmentForm.append("points", assignmentPoints);
+        assignmentForm.append("num_conceptual", assignmentConceptual);
+        assignmentForm.append("num_theoretical", assignmentTheoretical);
+        assignmentForm.append("num_scenario", assignmentScenario);
+        assignmentForm.append("difficulty_level", assignmentDifficulty);
+        assignmentForm.append("number_of_questions", assignmentTotalQuestions);
+        
+        await downloadAssignmentSolution(assignmentForm);
+      }
+    } catch (error) {
+      console.error("Download assignment solution error:", error);
+      toast({
+        title: "Download failed",
+        description: "Could not download the assignment solution. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleViewAssignmentSolution = async () => {
+    try {
+      if (activeTab === "assignment") {
+        await viewAssignmentSolutionPdf();
+      }
+    } catch (error) {
+      console.error("View assignment solution error:", error);
+      toast({
+        title: "View failed",
+        description: "Could not open the assignment solution. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -983,14 +1086,14 @@ const Upload = () => {
         {/* Assignment Tab */}
         <TabsContent value="assignment" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card>
+            <Card className="h-[900px] flex flex-col">
               <CardHeader>
                 <CardTitle>Generate Assignment</CardTitle>
                 <CardDescription>
                   Fill in the details below to generate a custom assignment
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="flex-1 overflow-y-auto space-y-6">
                 {!isAuthenticated ? (
                   <div className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg bg-muted/40 border-gray-300 dark:border-gray-700">
                     <ShieldAlert className="w-12 h-12 mb-3 text-yellow-500" />
@@ -1233,9 +1336,9 @@ const Upload = () => {
                             <SelectValue placeholder="Select difficulty" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Easy">Easy</SelectItem>
-                            <SelectItem value="Medium">Medium</SelectItem>
-                            <SelectItem value="Hard">Hard</SelectItem>
+                            <SelectItem value="easy">Easy</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="hard">Hard</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1243,9 +1346,9 @@ const Upload = () => {
                   </>
                 )}
               </CardContent>
-              <CardFooter>
+              <CardFooter className="p-4 flex gap-2 border-t">
                 <Button
-                  className="w-full h-10 flex items-center justify-center"
+                  className="flex-1 h-10 flex items-center justify-center"
                   onClick={() => handleUpload("assignment")}
                   disabled={
                     !assignmentFile ||
@@ -1265,10 +1368,6 @@ const Upload = () => {
 
             <Card className="h-[900px] flex flex-col">
               <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-                {(() => {
-                  console.log("🔍 Assignment iframe condition check:", { isProcessing, activeTab, assignmentProcessingComplete, assignmentPdfUrl });
-                  return null;
-                })()}
                 {isProcessing && activeTab === "assignment" ? (
                   <div className="flex flex-col items-center justify-center h-full">
                     <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -1283,10 +1382,6 @@ const Upload = () => {
                 ) : assignmentProcessingComplete && assignmentPdfUrl ? (
                   <div className="relative flex-1 flex flex-col">
                     <div className="flex-1 bg-muted rounded-md overflow-hidden">
-                      {(() => {
-                        console.log("🖼️ Rendering assignment iframe with URL:", assignmentPdfUrl);
-                        return null;
-                      })()}
                       <iframe 
                         src={assignmentPdfUrl}
                         className="w-full h-full border-0"
@@ -1308,14 +1403,30 @@ const Upload = () => {
                 )}
               </CardContent>
               {assignmentProcessingComplete && assignmentPdfUrl && (
-                <CardFooter className="p-4">
-                  <Button 
-                    className="w-full flex items-center justify-center"
-                    onClick={() => handleDownload()}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
+                <CardFooter className="p-4 flex gap-2">
+                    <Button
+                      className="flex-1 flex items-center justify-center"
+                      onClick={() => handleDownload()}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Assignment
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1 flex items-center justify-center"
+                      onClick={() => handleDownloadAssignmentSolution()}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Solution
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      className="flex-1 flex items-center justify-center"
+                      onClick={() => handleViewAssignmentSolution()}
+                    >
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      View Solution
+                    </Button>
                 </CardFooter>
               )}
             </Card>
@@ -1325,14 +1436,14 @@ const Upload = () => {
         {/* Quiz Tab */}
         <TabsContent value="quiz" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card>
+            <Card className="h-[900px] flex flex-col">
               <CardHeader>
                 <CardTitle>Generate Quiz</CardTitle>
                 <CardDescription>
                   Fill in the details below to generate a custom quiz.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="flex-1 overflow-y-auto space-y-6">
                 {!isAuthenticated ? (
                   <div className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg bg-muted/40 border-gray-300 dark:border-gray-700">
                     <ShieldAlert className="w-12 h-12 mb-3 text-yellow-500" />
@@ -1445,16 +1556,16 @@ const Upload = () => {
                           <Label htmlFor="department">Department</Label>
                           <Input
                             id="department"
-                            placeholder="IFT"
+                            placeholder="Computer Science"
                             value={quizDepartment}
                             onChange={(e) => setQuizDepartment(e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="subject">Subject</Label>
+                          <Label htmlFor="subject">Subject Code</Label>
                           <Input
                             id="subject"
-                            placeholder="IFT"
+                            placeholder="Enter subject code (e.g., IFT)"
                             value={quizSubject}
                             onChange={(e) => setQuizSubject(e.target.value)}
                           />
@@ -1463,19 +1574,19 @@ const Upload = () => {
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="class">Class</Label>
+                          <Label htmlFor="class">Class Section</Label>
                           <Input
                             id="class"
-                            placeholder="BSCS-1B"
+                            placeholder="Enter class section (e.g., BSCS-1B)"
                             value={quizClassName}
                             onChange={(e) => setQuizClassName(e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="due_date">Due Date</Label>
+                          <Label htmlFor="due_date">Quiz Due Date</Label>
                           <Input
                             id="due_date"
-                            placeholder="10-12-2021"
+                            type="date"
                             value={quizDueDate}
                             onChange={(e) => setQuizDueDate(e.target.value)}
                           />
@@ -1484,19 +1595,19 @@ const Upload = () => {
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="points">Points</Label>
+                          <Label htmlFor="points">Total Points</Label>
                           <Input
                             id="points"
-                            placeholder="10"
+                            placeholder="Enter total points (e.g., 10)"
                             value={quizPoints}
                             onChange={(e) => setQuizPoints(e.target.value)}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="quiz_no">Quiz No</Label>
+                          <Label htmlFor="quiz_no">Quiz Number</Label>
                           <Input
                             id="quiz_no"
-                            placeholder="Quiz No 1"
+                            placeholder="Enter quiz number (e.g., Quiz No 1)"
                             value={quizNumber}
                             onChange={(e) => setQuizNumber(e.target.value)}
                           />
@@ -1504,10 +1615,10 @@ const Upload = () => {
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="number_of_questions">Number of Questions</Label>
+                        <Label htmlFor="number_of_questions">Total Questions</Label>
                         <Input
                           id="number_of_questions"
-                          placeholder=""
+                          placeholder="Enter total number of questions (e.g., 3)"
                           value={quizTotalQuestions}
                           onChange={(e) => setQuizTotalQuestions(e.target.value)}
                         />
@@ -1515,10 +1626,10 @@ const Upload = () => {
 
                       <div className="grid grid-cols-3 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="num_conceptual">Num Conceptual</Label>
+                          <Label htmlFor="num_conceptual">Conceptual Questions</Label>
                           <Input
                             id="num_conceptual"
-                            placeholder="1"
+                            placeholder="0"
                             value={quizConceptual}
                             onChange={(e) =>
                               setQuizConceptual(e.target.value)
@@ -1526,7 +1637,7 @@ const Upload = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="num_theoretical">Num Theoretical</Label>
+                          <Label htmlFor="num_theoretical">Theoretical Questions</Label>
                           <Input
                             id="num_theoretical"
                             placeholder="2"
@@ -1537,7 +1648,7 @@ const Upload = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="num_scenario">Num Scenario</Label>
+                          <Label htmlFor="num_scenario">Scenario Questions</Label>
                           <Input
                             id="num_scenario"
                             placeholder="1"
@@ -1551,20 +1662,27 @@ const Upload = () => {
 
                       <div className="space-y-2">
                         <Label htmlFor="difficulty_level">Difficulty Level</Label>
-                        <Input
-                          id="difficulty_level"
-                          placeholder="hard"
+                        <Select
                           value={quizDifficulty}
-                          onChange={(e) => setQuizDifficulty(e.target.value)}
-                        />
+                          onValueChange={setQuizDifficulty}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select difficulty level" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="easy">Easy</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="hard">Hard</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </>
                 )}
               </CardContent>
-              <CardFooter>
+              <CardFooter className="p-4 flex gap-2 border-t">
                 <Button
-                  className="w-full h-10 flex items-center justify-center"
+                  className="flex-1 h-10 flex items-center justify-center"
                   onClick={() => handleUpload("quiz")}
                   disabled={
                     !quizFile ||
@@ -1619,15 +1737,31 @@ const Upload = () => {
                 )}
               </CardContent>
               {quizProcessingComplete && quizPdfUrl && (
-                <CardFooter className="p-4">
-                  <Button 
-                    className="w-full flex items-center justify-center"
-                    onClick={() => handleDownload()}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
-                </CardFooter>
+                <CardFooter className="p-4 flex gap-2">
+                    <Button
+                      className="flex-1 flex items-center justify-center"
+                      onClick={() => handleDownload()}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Quiz
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1 flex items-center justify-center"
+                      onClick={() => handleDownloadSolution()}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Solution
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      className="flex-1 flex items-center justify-center"
+                      onClick={() => handleViewSolution()}
+                    >
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      View Solution
+                    </Button>
+              </CardFooter>
               )}
             </Card>
           </div>

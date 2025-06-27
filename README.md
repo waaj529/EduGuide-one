@@ -1,144 +1,181 @@
-# EduGuide AI - Final Year Project 2025
+# EduGuide AI - Educational Content Generator
 
-<!-- Trigger deployment -->
+A comprehensive AI-powered educational platform that helps teachers generate assignments, quizzes, and provides students with interactive learning tools.
 
-An AI-powered educational platform that helps students generate personalized study materials from their uploaded content.
+## 🎯 Features
 
-## What it does
+### For Teachers:
+- **Assignment Generator**: Create custom assignments from uploaded documents
+- **Quiz Generator**: Generate interactive quizzes with various question types
+- **PDF Generation**: Download assignments and solutions as PDF files
+- **Proximity Detection**: Count students in classroom images using YOLO
 
-Basically, you upload your lecture notes or textbooks (PDFs, Word docs, etc.) and the app generates:
-- Practice questions with different difficulty levels
-- Quick summaries of the content
-- Flashcards for memorization
-- You can even chat with your PDFs to ask specific questions
+### For Students:
+- **Practice Questions**: AI-generated practice materials
+- **Flashcards**: Interactive learning cards
+- **Speech-to-Text**: Voice input for answers
+- **Text-to-Speech**: Audio generation from content
+- **Progress Tracking**: Monitor learning progress
+- **Review Mistakes**: Learn from previous errors
 
-I made separate views for students and teachers since they have different needs.
+## 🚀 Tech Stack
 
-## Why I built this
+- **Frontend**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS, shadcn/ui
+- **Authentication**: Supabase Auth
+- **Database**: Supabase (PostgreSQL)
+- **AI Integration**: OpenAI GPT-4, Google Gemini
+- **Audio**: ElevenLabs TTS, Speech Recognition API
+- **Deployment**: Vercel/Netlify ready
 
-I was struggling with creating good practice questions for exams and thought "there has to be a better way than manually making flashcards all the time." Plus, I wanted to learn more about integrating AI APIs into web apps for my FYP.
+## 📋 Production Deployment Checklist
 
-The idea came from my own experience - I'd spend hours making practice questions from textbooks when I could be actually studying. So I built this to automate that part.
-
-## Tech stuff I used
-
-**Frontend:**
-- React with TypeScript (wanted to learn TS properly)
-- Tailwind CSS for styling
-- Vite for building (way faster than Create React App)
-- Some UI components from shadcn/ui
-
-**Backend:**
-- Supabase for the database and authentication
-- Edge Functions for the AI API calls
-- PostgreSQL database
-
-**AI Integration:**
-- OpenAI GPT-4 API (main one)
-- Google Gemini API (backup when OpenAI is down)
-- Custom PDF processing for the chat feature
-
-## Getting it running
-
-You'll need:
-- Node.js (I used v18)
-- A Supabase account (free tier works)
-- OpenAI API key (costs money but not much for testing)
-
+### Environment Variables
+Ensure these environment variables are set in production:
 ```bash
-git clone https://github.com/waaj529/FYP.git
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### Security Checklist
+- ✅ No hardcoded API keys in source code
+- ✅ Environment-based console logging (dev only)
+- ✅ Error boundaries with production-safe error display
+- ✅ Form validation and sanitization
+- ✅ CORS properly configured
+
+### Performance Optimization
+- ✅ Code splitting implemented
+- ✅ Large bundle size warning addressed
+- ✅ Image optimization
+- ✅ Lazy loading for components
+- ✅ Proper error handling and loading states
+
+### Browser Compatibility
+- ✅ Modern browsers (Chrome, Firefox, Safari, Edge)
+- ✅ Responsive design for mobile/tablet
+- ✅ Accessibility features included
+
+## 🛠️ Development Setup
+
+1. **Clone the repository**
+```bash
+git clone <repository-url>
 cd FYP
+```
+
+2. **Install dependencies**
+```bash
 npm install
 ```
 
-Create a `.env.local` file with your API keys:
-```
-VITE_SUPABASE_URL=your_supabase_url_here
-VITE_SUPABASE_ANON_KEY=your_supabase_key_here
-VITE_OPENAI_API_KEY=your_openai_key_here
+3. **Environment setup**
+```bash
+cp .env.example .env.local
+# Add your environment variables
 ```
 
-Then just run:
+4. **Start development server**
 ```bash
 npm run dev
 ```
 
-## How to use it
+## 📦 Production Build
 
-**For Students:**
-1. Sign up with a student account
-2. Upload your study materials (PDFs work best)
-3. Choose what you want - practice questions, summaries, or flashcards
-4. Start studying with the generated content
+```bash
+# Build for production
+npm run build
 
-**For Teachers:**
-1. Sign up with a teacher account  
-2. Upload course materials
-3. Generate question banks for assignments
-4. Monitor how students are doing
+# Preview production build
+npm run preview
+```
 
-## The AI part (technical details)
+## 🔧 Available Scripts
 
-The core feature is the question generation. Here's how it works:
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run build:dev` - Build in development mode
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
 
-1. User uploads a document
-2. Extract text using PDF parsing APIs
-3. Send chunks to OpenAI/Gemini with prompts I fine-tuned
-4. Parse the AI response into structured questions
-5. Store everything in Supabase
+## 📁 Project Structure
 
-I added error handling and fallbacks because AI APIs can be unreliable sometimes.
+```
+src/
+├── components/         # Reusable UI components
+│   ├── auth/          # Authentication components
+│   ├── common/        # Common utilities
+│   ├── features/      # Feature-specific components
+│   ├── icons/         # Custom icons
+│   ├── layout/        # Layout components
+│   └── ui/            # shadcn/ui components
+├── context/           # React context providers
+├── hooks/             # Custom React hooks
+├── integrations/      # Third-party integrations
+├── lib/               # Utility libraries
+├── pages/             # Page components
+├── services/          # API services
+└── utils/             # Helper utilities
+```
 
-## Problems I ran into
+## 🔑 Key Features Implementation
 
-- **API Rate Limits**: Had to add request queuing and retry logic
-- **PDF Text Extraction**: Some PDFs are just images, so OCR doesn't always work perfectly
-- **AI Response Parsing**: Sometimes the AI returns malformed JSON, so I had to add validation
-- **Cost Management**: OpenAI API calls add up quickly during testing
+### AI Integration
+- Multiple AI providers (OpenAI, Gemini)
+- Fallback mechanisms for API failures
+- Proper error handling and user feedback
 
-## Current limitations
+### Authentication
+- Supabase Auth integration
+- Protected routes
+- Role-based access (Student/Teacher)
 
-- Only works with text-based PDFs (not scanned images)
-- Question quality depends on how well-written the source material is
-- Can be slow with very large documents
-- Costs money to run because of API usage
+### Document Processing
+- PDF text extraction
+- Image OCR capabilities
+- Multiple file format support
 
-## What I learned
+### Real-time Features
+- Live document processing
+- Instant PDF generation
+- Real-time progress tracking
 
-This project taught me a lot about:
-- Working with AI APIs and handling their quirks
-- Building responsive web apps with React
-- Database design and user authentication
-- Error handling and user experience design
-- Managing API costs and rate limits
+## 🐛 Known Issues & Solutions
 
-## Future improvements
+### Large Bundle Size
+The application has a large bundle size due to multiple AI integrations and PDF processing libraries. Consider:
+- Implementing dynamic imports for AI services
+- Code splitting by routes
+- Lazy loading heavy components
 
-If I had more time, I'd add:
-- Better mobile support
-- More question types (multiple choice, true/false, etc.)
-- Study session tracking and analytics
-- Collaborative features for study groups
-- Better PDF text extraction for scanned documents
+### Browser Compatibility
+- Requires modern browser with ES2020 support
+- PDF.js may need polyfills for older browsers
 
-## Academic context
+## 📈 Future Enhancements
 
-This was my FYP for Computer Science at [University]. The goal was to explore how AI can be used to enhance education and reduce the manual effort in creating study materials.
+- [ ] Offline mode support
+- [ ] PWA implementation
+- [ ] Real-time collaboration
+- [ ] Advanced analytics dashboard
+- [ ] Multi-language support
 
-My supervisor was [Supervisor Name] who helped guide the technical architecture decisions.
+## 🤝 Contributing
 
-## Contact
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-If you have questions about the code or want to collaborate:
-- Email: waqj333@gmail.com
-- GitHub: [@waaj529](https://github.com/waaj529)
+## 📄 License
 
-## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-MIT License - feel free to use this code for your own projects or learning.
+## 🙏 Acknowledgments
 
----
-
-**Note:** This is a student project built for educational purposes. The AI features require API keys and will incur costs during usage.
-
-<!-- Force Vercel deployment Fri Jun 27 07:17:00 PKT 2025 -->
+- OpenAI for GPT-4 API
+- Google for Gemini AI
+- Supabase for backend services
+- shadcn/ui for component library
+- ElevenLabs for text-to-speech

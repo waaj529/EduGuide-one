@@ -662,11 +662,11 @@ const GeneratedKeyPoints: React.FC<GeneratedKeyPointsProps> = ({ keyPoints, isLo
                       <div key={index} className="flex items-start">
                         <span className="text-primary mr-3 mt-1.5 flex-shrink-0">•</span>
                         <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                          {point}
+                              {point}
                         </p>
-                      </div>
+                            </div>
                     ))}
-                  </div>
+                          </div>
                 </div>
               );
             })}

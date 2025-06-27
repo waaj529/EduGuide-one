@@ -1,7 +1,8 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import QuestionItem from "./QuestionItem";
-import { downloadAssignment, downloadQuiz } from "@/services/api";
+import { downloadAssignment, downloadQuiz, downloadQuizSolution, viewQuizSolutionPdf } from "@/services/api";
+import { BookOpen, Download } from "lucide-react";
 
 interface GeneratedQuestionsViewProps {
   title: string;

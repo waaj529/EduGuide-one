@@ -12,6 +12,20 @@ const getAuthHeaders = () => {
 // Simulate network delay for development
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Production-ready logging utility
+const isDevelopment = import.meta.env.DEV;
+const devLog = (...args: any[]) => {
+  if (isDevelopment) {
+    console.log(...args);
+  }
+};
+
+const devError = (...args: any[]) => {
+  if (isDevelopment) {
+    console.error(...args);
+  }
+};
+
 // Auth APIs
 export const loginUser = async (email: string, password: string) => {
   try {
@@ -114,107 +128,147 @@ export const download_pdf = async () => {
 // Module APIs
 export const generateAssignment = async (formData: FormData) => {
   try {
-    console.log("Generating assignment with form data:");
+    devLog("Generating assignment with form data:", Object.fromEntries(formData.entries()));
     
-    // Log the form data contents for debugging
-    for (const [key, value] of formData.entries()) {
-      if (value instanceof File) {
-        console.log(`${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-      } else {
-        console.log(`${key}: ${value}`);
-      }
+    // Helper function to validate and clean numeric fields
+    const validateNumericField = (value: string | null, defaultValue: string): string => {
+      const cleanValue = (value || defaultValue).trim();
+      return cleanValue === "" || isNaN(Number(cleanValue)) ? defaultValue : cleanValue;
+    };
+
+    // Validate file field
+    const file = formData.get("file") as File;
+    if (!file || !(file instanceof File)) {
+      throw new Error("Valid file is required for assignment generation");
     }
 
-    console.log("Making request to assignment API...");
+    // Ensure all required fields are present and properly formatted
+    const requiredFields = {
+      file: file,
+      department: (formData.get("department") as string || "UIIT").trim() || "UIIT",
+      subject: (formData.get("subject") as string || "IFT").trim() || "IFT", 
+      class: (formData.get("class") as string || "BSCS-1B").trim() || "BSCS-1B",
+      due_date: (formData.get("due_date") as string || "10-12-2021").trim() || "10-12-2021",
+      points: validateNumericField(formData.get("points") as string, "10"),
+      Assignment_no: (formData.get("Assignment_no") as string || "Assignment_no 1").trim() || "Assignment_no 1",
+      number_of_questions: validateNumericField(formData.get("number_of_questions") as string, "5"),
+      num_conceptual: validateNumericField(formData.get("num_conceptual") as string, "2"),
+      num_theoretical: validateNumericField(formData.get("num_theoretical") as string, "2"), 
+      num_scenario: validateNumericField(formData.get("num_scenario") as string, "1"),
+      difficulty_level: (formData.get("difficulty_level") as string || "hard").trim() || "hard"
+    };
+    
+    // Create validated FormData with exact field names from API
+    const validatedFormData = new FormData();
+    
+    // Add file
+    if (requiredFields.file) {
+      validatedFormData.append("file", requiredFields.file);
+    }
+    
+    // Add all other fields with proper names matching the API
+    validatedFormData.append("department", requiredFields.department);
+    validatedFormData.append("subject", requiredFields.subject);
+    validatedFormData.append("class", requiredFields.class);
+    validatedFormData.append("due_date", requiredFields.due_date);
+    validatedFormData.append("points", requiredFields.points);
+    validatedFormData.append("Assignment_no", requiredFields.Assignment_no);
+    validatedFormData.append("number_of_questions", requiredFields.number_of_questions);
+    validatedFormData.append("num_conceptual", requiredFields.num_conceptual);
+    validatedFormData.append("num_theoretical", requiredFields.num_theoretical);
+    validatedFormData.append("num_scenario", requiredFields.num_scenario);
+    validatedFormData.append("difficulty_level", requiredFields.difficulty_level);
+    
+    devLog("🔍 Assignment API request fields:", {
+      department: requiredFields.department,
+      subject: requiredFields.subject,
+      class: requiredFields.class,
+      due_date: requiredFields.due_date,
+      points: requiredFields.points,
+      Assignment_no: requiredFields.Assignment_no,
+      number_of_questions: requiredFields.number_of_questions,
+      num_conceptual: requiredFields.num_conceptual,
+      num_theoretical: requiredFields.num_theoretical,
+      num_scenario: requiredFields.num_scenario,
+      difficulty_level: requiredFields.difficulty_level,
+      file: requiredFields.file ? `${requiredFields.file.name} (${requiredFields.file.size} bytes)` : 'No file'
+    });
+
+    // Validate all numeric fields are actually numbers
+    const numericFields = {
+      points: requiredFields.points,
+      number_of_questions: requiredFields.number_of_questions,
+      num_conceptual: requiredFields.num_conceptual,
+      num_theoretical: requiredFields.num_theoretical,
+      num_scenario: requiredFields.num_scenario
+    };
+
+    for (const [key, value] of Object.entries(numericFields)) {
+      if (isNaN(Number(value)) || value.trim() === "") {
+        devError(`❌ Invalid numeric value for ${key}: "${value}"`);
+        throw new Error(`Invalid numeric value for ${key}: "${value}"`);
+      }
+      devLog(`✅ ${key}: "${value}" -> ${Number(value)}`);
+    }
+    
+    // Make the API call to the assignment generation endpoint
     const response = await fetch('https://python.iamscientist.ai/api/assignment/assignment', {
       method: 'POST',
-      body: formData,
+      body: validatedFormData
     });
-
-    console.log("Response status:", response.status);
-    console.log("Response headers:", Object.fromEntries([...response.headers.entries()]));
-
+    
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Assignment API failed with status ${response.status}:`, errorText);
+      devError(`Assignment API failed with status ${response.status}:`, errorText);
       throw new Error(`API error (${response.status}): ${errorText}`);
     }
-
-    const responseData = await response.json();
-    console.log("Assignment API response:", responseData);
     
-    const requestedQuestionCount = parseInt(formData.get("number_of_questions") as string) || 10;
-    const numConceptual = parseInt(formData.get("num_conceptual") as string) || 0;
-    const numTheoretical = parseInt(formData.get("num_theoretical") as string) || 0;
-    const numScenario = parseInt(formData.get("num_scenario") as string) || 0;
+    const data = await response.json();
+    console.log("Assignment generation response:", data);
     
-    console.log("User requested params:", {
-      totalQuestions: requestedQuestionCount,
-      conceptual: numConceptual,
-      theoretical: numTheoretical,
-      scenario: numScenario
-    });
+    // Process the response data into a standardized question format
+    let questions = [];
     
-    const questions = [];
-    
-    let apiQuestions = [];
-    if (responseData && responseData.questions && Array.isArray(responseData.questions)) {
-      apiQuestions = responseData.questions;
-    } else if (responseData && responseData.answer) {
-      apiQuestions = responseData.answer
+    if (data.questions && Array.isArray(data.questions)) {
+      questions = data.questions.map((q, idx) => ({
+        id: idx + 1,
+        question: q.question || q.text || q,
+        questionType: idx % 3 === 0 ? "conceptual" : 
+                     idx % 3 === 1 ? "theoretical" : "scenario"
+      }));
+    } else if (data.answer && typeof data.answer === 'string') {
+      questions = data.answer
         .split(/\d+\.\s+/)
         .filter(q => q.trim() !== '')
-        .map(q => q.trim());
+        .map((q, idx) => ({
+          id: idx + 1,
+          question: q.trim(),
+          questionType: idx % 3 === 0 ? "conceptual" : 
+                       idx % 3 === 1 ? "theoretical" : "scenario"
+        }));
     }
     
-    apiQuestions = apiQuestions.slice(0, requestedQuestionCount);
-    
-    let questionCounter = 1;
-    let conceptualCount = 0;
-    let theoreticalCount = 0;
-    let scenarioCount = 0;
-    
-    apiQuestions.forEach((question, index) => {
-      let questionType = "conceptual";
-      
-      if (conceptualCount < numConceptual) {
-        questionType = "conceptual";
-        conceptualCount++;
-      } else if (theoreticalCount < numTheoretical) {
-        questionType = "theoretical";
-        theoreticalCount++;
-      } else if (scenarioCount < numScenario) {
-        questionType = "scenario";
-        scenarioCount++;
-      } else {
-        questionType = index % 3 === 0 ? "conceptual" : 
-                       index % 3 === 1 ? "theoretical" : "scenario";
-      }
-      
-      questions.push({
-        id: questionCounter++,
-        question: question,
-        questionType: questionType
+    if (questions && questions.length > 0) {
+      const requestedQuestionCount = parseInt(requiredFields.number_of_questions) || 10;
+      console.log(`Successfully generated ${questions.length} assignment questions from API`);
+      toast({
+        title: "Assignment Generated",
+        description: `Successfully created ${questions.length} questions from your document`,
       });
-    });
-    
-    if (questions.length === 0) {
-      questions.push({
-        id: 1,
-        question: "Assignment Successfully Generated",
-        questionType: "conceptual"
-      });
+      
+      return questions.slice(0, requestedQuestionCount);
+    } else {
+      console.log("API returned empty questions array");
+      throw new Error("Assignment API returned no questions");
     }
-    
-    return questions;
   } catch (error) {
     console.error("Generate assignment error:", error);
     toast({
-      title: "Error",
-      description: "Failed to generate assignment. Please try again.",
+      title: "Failed to Generate Assignment",
+      description: "Unable to generate assignment questions from your document. The API service may be temporarily unavailable.",
       variant: "destructive",
     });
-    throw new Error("Failed to generate assignment");
+    throw error;
   }
 };
 
@@ -223,49 +277,59 @@ export const generateQuiz = async (formData: FormData) => {
   try {
     console.log("Generating quiz with form data:", Object.fromEntries(formData.entries()));
     
-    // Ensure all numeric fields have valid values
-    const requestedQuestionCount = parseInt(formData.get("number_of_questions") as string) || 10;
-    const numConceptual = parseInt(formData.get("num_conceptual") as string) || 3;
-    const numTheoretical = parseInt(formData.get("num_theoretical") as string) || 4;
-    const numScenario = parseInt(formData.get("num_scenario") as string) || 3;
+    // Ensure all required fields are present and properly formatted
+    const requiredFields = {
+      file: formData.get("file") as File,
+      department: formData.get("department") as string || "Computer Science",
+      subject: formData.get("subject") as string || "IFT", 
+      class: formData.get("class") as string || "BSCS-1B",
+      due_date: formData.get("due_date") as string || "10-12-2021",
+      points: formData.get("points") as string || "10",
+      quiz_no: formData.get("quiz_no") as string || "Quiz No 1",
+      number_of_questions: formData.get("number_of_questions") as string || "3",
+      num_conceptual: formData.get("num_conceptual") as string || "0",
+      num_theoretical: formData.get("num_theoretical") as string || "2", 
+      num_scenario: formData.get("num_scenario") as string || "1",
+      difficulty_level: formData.get("difficulty_level") as string || "hard"
+    };
     
-    // Create a new FormData with validated numeric values
+    // Create validated FormData with exact field names from API
     const validatedFormData = new FormData();
     
-    // Copy file
-    if (formData.get("file")) {
-      validatedFormData.append("file", formData.get("file") as File);
+    // Add file
+    if (requiredFields.file) {
+      validatedFormData.append("file", requiredFields.file);
     }
     
-    // Add validated numeric fields with proper string values
-    validatedFormData.append("number_of_questions", requestedQuestionCount.toString());
-    validatedFormData.append("num_conceptual", numConceptual.toString());
-    validatedFormData.append("num_theoretical", numTheoretical.toString());
-    validatedFormData.append("num_scenario", numScenario.toString());
+    // Add all other fields with proper names matching the API
+    validatedFormData.append("department", requiredFields.department);
+    validatedFormData.append("subject", requiredFields.subject);
+    validatedFormData.append("class", requiredFields.class);
+    validatedFormData.append("due_date", requiredFields.due_date);
+    validatedFormData.append("points", requiredFields.points);
+    validatedFormData.append("quiz_no", requiredFields.quiz_no);
+    validatedFormData.append("number_of_questions", requiredFields.number_of_questions);
+    validatedFormData.append("num_conceptual", requiredFields.num_conceptual);
+    validatedFormData.append("num_theoretical", requiredFields.num_theoretical);
+    validatedFormData.append("num_scenario", requiredFields.num_scenario);
+    validatedFormData.append("difficulty_level", requiredFields.difficulty_level);
     
-    // Copy remaining fields
-    for (const [key, value] of formData.entries()) {
-      if (!["file", "number_of_questions", "num_conceptual", "num_theoretical", "num_scenario"].includes(key)) {
-        validatedFormData.append(key, value);
-      }
-    }
-    
-    console.log("User requested quiz params:", {
-      totalQuestions: requestedQuestionCount,
-      conceptual: numConceptual,
-      theoretical: numTheoretical,
-      scenario: numScenario
+    console.log("Quiz API request fields:", {
+      department: requiredFields.department,
+      subject: requiredFields.subject,
+      class: requiredFields.class,
+      due_date: requiredFields.due_date,
+      points: requiredFields.points,
+      quiz_no: requiredFields.quiz_no,
+      number_of_questions: requiredFields.number_of_questions,
+      num_conceptual: requiredFields.num_conceptual,
+      num_theoretical: requiredFields.num_theoretical,
+      num_scenario: requiredFields.num_scenario,
+      difficulty_level: requiredFields.difficulty_level,
+      file: requiredFields.file ? `${requiredFields.file.name} (${requiredFields.file.size} bytes)` : 'No file'
     });
     
-    // Create a log of what we're sending to the API for debugging
-    const fileDetails = formData.get("file") ? {
-      fileName: (formData.get("file") as File).name,
-      fileSize: (formData.get("file") as File).size,
-      fileType: (formData.get("file") as File).type
-    } : "No file provided";
-    console.log("Sending to quiz API:", fileDetails);
-    
-    // Make the API call to ONLY the specified endpoint
+    // Make the API call to the quiz generation endpoint
     const response = await fetch('https://python.iamscientist.ai/api/quiz/quiz', {
       method: 'POST',
       body: validatedFormData
@@ -303,43 +367,14 @@ export const generateQuiz = async (formData: FormData) => {
     }
     
     if (questions && questions.length > 0) {
+      const requestedQuestionCount = parseInt(requiredFields.number_of_questions) || 10;
       console.log(`Successfully generated ${questions.length} quiz questions from API`);
       toast({
         title: "Quiz Generated",
         description: `Successfully created ${questions.length} questions from your document`,
       });
       
-      // Distribute questions by type according to user specifications
-      let questionCounter = 1;
-      let conceptualCount = 0;
-      let theoreticalCount = 0;
-      let scenarioCount = 0;
-      
-      const typedQuestions = questions.map((question, index) => {
-        let questionType = "conceptual";
-        
-        if (conceptualCount < numConceptual) {
-          questionType = "conceptual";
-          conceptualCount++;
-        } else if (theoreticalCount < numTheoretical) {
-          questionType = "theoretical";
-          theoreticalCount++;
-        } else if (scenarioCount < numScenario) {
-          questionType = "scenario";
-          scenarioCount++;
-        } else {
-          questionType = index % 3 === 0 ? "conceptual" : 
-                        index % 3 === 1 ? "theoretical" : "scenario";
-        }
-        
-        return {
-          id: questionCounter++,
-          question: question.question || question,
-          questionType: questionType
-        };
-      });
-      
-      return typedQuestions.slice(0, requestedQuestionCount);
+      return questions.slice(0, requestedQuestionCount);
     } else {
       console.log("API returned empty questions array");
       throw new Error("Quiz API returned no questions");
@@ -394,7 +429,7 @@ function distributeQuestionTypes(questions, conceptualCount, theoreticalCount, s
   return distributedQuestions;
 }
 
-// Download generated quiz from the API
+// Download generated quiz from the API using new endpoint
 export const downloadQuiz = async (formData: FormData) => {
   try {
     console.log("Downloading quiz with form data:", Object.fromEntries(formData.entries()));
@@ -409,7 +444,7 @@ export const downloadQuiz = async (formData: FormData) => {
       }
     }
     
-    // Only use GET method since the server doesn't accept POST for this endpoint
+    // Use the corrected download endpoint
     const response = await fetch(`https://python.iamscientist.ai/api/quiz/quiz_download?${params.toString()}`, {
       method: 'GET',
       headers: {
@@ -429,6 +464,47 @@ export const downloadQuiz = async (formData: FormData) => {
     toast({
       title: "Error",
       description: "Failed to download quiz. Please try again.",
+      variant: "destructive",
+    });
+    return null;
+  }
+};
+
+// Download quiz solution using new endpoint
+export const downloadQuizSolution = async (formData: FormData) => {
+  try {
+    console.log("Downloading quiz solution with form data:", Object.fromEntries(formData.entries()));
+    
+    // Convert FormData to query params for GET request
+    const params = new URLSearchParams();
+    for (const [key, value] of formData.entries()) {
+      // Skip file entry in URL parameters - files can't be sent in GET requests
+      if (key !== 'file') {
+        params.append(key, value.toString());
+        console.log(`Including in quiz solution download: ${key}=${value}`);
+      }
+    }
+    
+    // Use the quiz solution download endpoint
+    const response = await fetch(`https://python.iamscientist.ai/api/quiz/quiz_solution_download?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/pdf'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    
+    const blob = await response.blob();
+    downloadPDF(blob, "quiz_solution.pdf");
+    return blob;
+  } catch (error) {
+    console.error("Download quiz solution error:", error);
+    toast({
+      title: "Error",
+      description: "Failed to download quiz solution. Please try again.",
       variant: "destructive",
     });
     return null;
@@ -485,6 +561,7 @@ export const generateExam = async (formData: FormData) => {
     throw new Error("Failed to generate exam");
   }
 };
+
 function parseResponse(response: string) {
   const obj = {
     Score: "",
@@ -501,6 +578,7 @@ function parseResponse(response: string) {
   });
   return { score: obj.Score, feedback: obj.Feedback };
 }
+
 export const evaluateAnswer = async (questionData: {
   question: string;
   answer: string;
@@ -529,7 +607,8 @@ export const evaluateAnswer = async (questionData: {
     throw new Error("Failed to evaluate answer");
   }
 };
-// Download generated assignment from the API
+
+// Download generated assignment from the API using new endpoint
 export const downloadAssignment = async (formData: FormData) => {
   try {
     console.log("Downloading assignment with form data:", Object.fromEntries(formData.entries()));
@@ -544,7 +623,7 @@ export const downloadAssignment = async (formData: FormData) => {
       }
     }
     
-    // Only use GET method since the server doesn't accept POST for this endpoint
+    // Use the corrected download endpoint
     const response = await fetch(`https://python.iamscientist.ai/api/assignment/assignment_download?${params.toString()}`, {
       method: 'GET',
       headers: {
@@ -564,6 +643,47 @@ export const downloadAssignment = async (formData: FormData) => {
     toast({
       title: "Error",
       description: "Failed to download assignment. Please try again.",
+      variant: "destructive",
+    });
+    return null;
+  }
+};
+
+// Download assignment solution using new endpoint
+export const downloadAssignmentSolution = async (formData: FormData) => {
+  try {
+    console.log("Downloading assignment solution with form data:", Object.fromEntries(formData.entries()));
+    
+    // Convert FormData to query params for GET request
+    const params = new URLSearchParams();
+    for (const [key, value] of formData.entries()) {
+      // Skip file entry in URL parameters - files can't be sent in GET requests
+      if (key !== 'file') {
+        params.append(key, value.toString());
+        console.log(`Including in assignment solution download: ${key}=${value}`);
+      }
+    }
+    
+    // Use the assignment solution download endpoint
+    const response = await fetch(`https://python.iamscientist.ai/api/assignment/assignment_solution_download?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/pdf'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    
+    const blob = await response.blob();
+    downloadPDF(blob, "assignment_solution.pdf");
+    return blob;
+  } catch (error) {
+    console.error("Download assignment solution error:", error);
+    toast({
+      title: "Error",
+      description: "Failed to download assignment solution. Please try again.",
       variant: "destructive",
     });
     return null;
@@ -702,15 +822,13 @@ export async function evaluatePracticeAnswer(questionId: string, question: strin
   }
 }
 
-// View generated quiz PDF in a new tab
+// View generated quiz PDF in a new tab using corrected endpoint
 export const viewQuizPdf = async (formData?: FormData, callback?: (url: string) => void) => {
   try {
+    console.log("🚀 Starting quiz PDF preview generation...");
+    
     if (formData) {
-      console.log("🚀 Starting quiz PDF preview generation...");
-      console.log("📋 Form data entries:", Object.fromEntries(formData.entries()));
-      
-      // The issue might be that we need to use the same endpoint that generates the questions
-      // Let's try using the quiz generation endpoint first, then view
+      // First generate the quiz, then view it
       console.log("📤 Calling quiz generation API first...");
       
       const generateResponse = await fetch('https://python.iamscientist.ai/api/quiz/quiz', {
@@ -726,135 +844,218 @@ export const viewQuizPdf = async (formData?: FormData, callback?: (url: string) 
         throw new Error(`Failed to generate quiz: ${generateResponse.status}`);
       }
       
-      // Now wait a moment for the server to process
-      console.log("⏳ Waiting for server processing...");
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Now try the view URL
-      const pdfUrl = 'https://python.iamscientist.ai/api/quiz/quiz_view';
-      console.log("🔗 Setting PDF URL:", pdfUrl);
-      
-      // Test if the view URL is accessible
-      const testResponse = await fetch(pdfUrl, { method: 'HEAD' });
-      console.log("🔍 PDF view URL test response:", testResponse.status);
-      
-      if (callback) {
-        callback(pdfUrl);
-      } else {
-        window.open(pdfUrl, '_blank');
-        toast({
-          title: "Quiz PDF opened",
-          description: "The generated quiz has been opened in a new tab.",
-        });
-      }
-    } else {
-      // No form data provided, just try the view URL
-      const pdfUrl = 'https://python.iamscientist.ai/api/quiz/quiz_view';
-      console.log("🔗 Using default PDF URL:", pdfUrl);
-      
-      if (callback) {
-        callback(pdfUrl);
-      } else {
-        window.open(pdfUrl, '_blank');
-        toast({
-          title: "Quiz PDF opened",
-          description: "The quiz viewer has been opened.",
-        });
-      }
+      console.log("✅ Quiz generation successful, proceeding to view...");
     }
+    
+    // Use the corrected view endpoint
+    const pdfUrl = 'https://python.iamscientist.ai/api/quiz/quiz_view';
+    
+    if (callback) {
+      callback(pdfUrl);
+    } else {
+      // Open in new tab
+      window.open(pdfUrl, '_blank');
+    }
+    
+    toast({
+      title: "Quiz PDF opened",
+      description: "The generated quiz has been opened in a new tab.",
+    });
+    
   } catch (error) {
+    // Fallback: just try to open the view URL directly
+    const pdfUrl = 'https://python.iamscientist.ai/api/quiz/quiz_view';
+    
+    if (callback) {
+      callback(pdfUrl);
+    } else {
+      window.open(pdfUrl, '_blank');
+    }
+    
+    toast({
+      title: "Quiz PDF opened",
+      description: "The quiz viewer has been opened.",
+    });
+    
     console.error("❌ View quiz PDF error:", error);
     toast({
       title: "Error",
       description: "Failed to generate or view quiz PDF. Please try again.",
       variant: "destructive",
     });
-    
-    // Don't set the PDF URL if there's an error
-    if (callback) {
-      callback(null);
-    }
   }
 };
 
-// View quiz solution PDF 
-export const viewSolutionPdf = async (callback?: (url: string) => void) => {
+// View quiz solution PDF using corrected endpoint
+export const viewQuizSolutionPdf = async (callback?: (url: string) => void) => {
   try {
-    const pdfUrl = 'https://python.iamscientist.ai/api/quiz/sol_view';
+    // Use the corrected quiz solution view endpoint
+    const pdfUrl = 'https://python.iamscientist.ai/api/quiz/quiz_solution_view';
     
     if (callback) {
-      // If callback is provided, pass the URL to the callback function
       callback(pdfUrl);
     } else {
-      // Otherwise open in a new tab as before
+      // Open in new tab
       window.open(pdfUrl, '_blank');
-      
-      toast({
-        title: "Solution PDF opened",
-        description: "The quiz solution has been opened in a new tab.",
-      });
     }
-  } catch (error) {
-    console.error("View solution PDF error:", error);
+    
     toast({
-      title: "Error",
-      description: "Failed to open solution PDF. Please try again.",
+      title: "Quiz Solution PDF opened",
+      description: "The quiz solution has been opened in a new tab.",
+    });
+    
+  } catch (error) {
+    console.error("View quiz solution PDF error:", error);
+    toast({
+      title: "Error", 
+      description: "Failed to view quiz solution PDF. Please try again.",
       variant: "destructive",
     });
   }
 };
 
-// View generated assignment PDF
+// View generated assignment PDF in a new tab using corrected endpoint
 export const viewAssignmentPdf = async (formData?: FormData, callback?: (url: string) => void) => {
-  console.log("🔥 USING UPDATED viewAssignmentPdf FUNCTION - v3.0 (same as working download)");
   try {
+    console.log("🚀 Starting assignment PDF preview generation...");
+    
     if (formData) {
-      console.log("🚀 Starting assignment PDF preview (using download approach)...");
-      console.log("📋 Form data entries:", Object.fromEntries(formData.entries()));
+      // Apply the same validation as in generateAssignment
+      console.log("📤 Calling assignment generation API first...");
       
-      // Use the exact same approach as downloadAssignment (which works)
-      // Convert FormData to query params for GET request (skip POST generation)
-      console.log("🔍 Converting to query params (same as working download)...");
-      const params = new URLSearchParams();
-      for (const [key, value] of formData.entries()) {
-        // Skip file entry in URL parameters - files can't be sent in GET requests
-        if (key !== 'file') {
-          params.append(key, value.toString());
-          console.log(`📎 Including in assignment preview URL: ${key}=${value}`);
-        }
+      // Helper function to validate and clean numeric fields
+      const validateNumericField = (value: string | null, defaultValue: string): string => {
+        const cleanValue = (value || defaultValue).trim();
+        return cleanValue === "" || isNaN(Number(cleanValue)) ? defaultValue : cleanValue;
+      };
+
+      // Validate file field
+      const file = formData.get("file") as File;
+      if (!file || !(file instanceof File)) {
+        throw new Error("Valid file is required for assignment generation");
+      }
+
+      // Ensure all required fields are present and properly formatted
+      const requiredFields = {
+        file: file,
+        department: (formData.get("department") as string || "UIIT").trim() || "UIIT",
+        subject: (formData.get("subject") as string || "IFT").trim() || "IFT", 
+        class: (formData.get("class") as string || "BSCS-1B").trim() || "BSCS-1B",
+        due_date: (formData.get("due_date") as string || "10-12-2021").trim() || "10-12-2021",
+        points: validateNumericField(formData.get("points") as string, "10"),
+        Assignment_no: (formData.get("Assignment_no") as string || "Assignment_no 1").trim() || "Assignment_no 1",
+        number_of_questions: validateNumericField(formData.get("number_of_questions") as string, "5"),
+        num_conceptual: validateNumericField(formData.get("num_conceptual") as string, "2"),
+        num_theoretical: validateNumericField(formData.get("num_theoretical") as string, "2"), 
+        num_scenario: validateNumericField(formData.get("num_scenario") as string, "1"),
+        difficulty_level: (formData.get("difficulty_level") as string || "hard").trim() || "hard"
+      };
+
+      // Create validated FormData 
+      const validatedFormData = new FormData();
+      validatedFormData.append("file", requiredFields.file);
+      validatedFormData.append("department", requiredFields.department);
+      validatedFormData.append("subject", requiredFields.subject);
+      validatedFormData.append("class", requiredFields.class);
+      validatedFormData.append("due_date", requiredFields.due_date);
+      validatedFormData.append("points", requiredFields.points);
+      validatedFormData.append("Assignment_no", requiredFields.Assignment_no);
+      validatedFormData.append("number_of_questions", requiredFields.number_of_questions);
+      validatedFormData.append("num_conceptual", requiredFields.num_conceptual);
+      validatedFormData.append("num_theoretical", requiredFields.num_theoretical);
+      validatedFormData.append("num_scenario", requiredFields.num_scenario);
+      validatedFormData.append("difficulty_level", requiredFields.difficulty_level);
+
+      console.log("🔍 PDF preview validated fields:", {
+        department: requiredFields.department,
+        subject: requiredFields.subject,
+        class: requiredFields.class,
+        due_date: requiredFields.due_date,
+        points: requiredFields.points,
+        Assignment_no: requiredFields.Assignment_no,
+        number_of_questions: requiredFields.number_of_questions,
+        num_conceptual: requiredFields.num_conceptual,
+        num_theoretical: requiredFields.num_theoretical,
+        num_scenario: requiredFields.num_scenario,
+        difficulty_level: requiredFields.difficulty_level,
+        file_name: requiredFields.file.name
+      });
+
+      const generateResponse = await fetch('https://python.iamscientist.ai/api/assignment/assignment', {
+        method: 'POST',
+        body: validatedFormData
+      });
+      
+      console.log("📨 Assignment generation response status:", generateResponse.status);
+      
+      if (!generateResponse.ok) {
+        const errorText = await generateResponse.text();
+        console.error("❌ Assignment generation failed:", errorText);
+        throw new Error(`Failed to generate assignment: ${generateResponse.status}`);
       }
       
-      // Use the same URL as download but for preview
-      const pdfUrl = `https://python.iamscientist.ai/api/assignment/assignment_download?${params.toString()}`;
-      console.log("🔗 Setting assignment PDF URL for preview (same as download):", pdfUrl);
-      
-      if (callback) {
-        callback(pdfUrl);
-      } else {
-        window.open(pdfUrl, '_blank');
-        toast({
-          title: "Assignment PDF opened",
-          description: "The generated assignment has been opened in a new tab.",
-        });
-      }
-    } else {
-      console.log("⚠️ No form data provided for assignment preview");
-      if (callback) {
-        callback(null);
-      }
+      console.log("✅ Assignment generation successful, proceeding to view...");
     }
+    
+    // Use the corrected view endpoint
+    const pdfUrl = 'https://python.iamscientist.ai/api/assignment/assignment_view';
+    
+    if (callback) {
+      callback(pdfUrl);
+    } else {
+      // Open in new tab
+      window.open(pdfUrl, '_blank');
+    }
+    
+    toast({
+      title: "Assignment PDF opened",
+      description: "The generated assignment has been opened in a new tab.",
+    });
+    
   } catch (error) {
+    // Fallback: just try to open the view URL directly
+    const pdfUrl = 'https://python.iamscientist.ai/api/assignment/assignment_view';
+    
+    if (callback) {
+      callback(pdfUrl);
+    } else {
+      window.open(pdfUrl, '_blank');
+    }
+    
     console.error("❌ View assignment PDF error:", error);
     toast({
       title: "Error",
       description: "Failed to generate or view assignment PDF. Please try again.",
       variant: "destructive",
     });
+  }
+};
+
+// View assignment solution PDF using corrected endpoint
+export const viewAssignmentSolutionPdf = async (callback?: (url: string) => void) => {
+  try {
+    // Use the corrected assignment solution view endpoint
+    const pdfUrl = 'https://python.iamscientist.ai/api/assignment/assignment_solution_view';
     
-    // Don't set the PDF URL if there's an error
     if (callback) {
-      callback(null);
+      callback(pdfUrl);
+    } else {
+      // Open in new tab
+      window.open(pdfUrl, '_blank');
     }
+    
+    toast({
+      title: "Assignment Solution PDF opened",
+      description: "The assignment solution has been opened in a new tab.",
+    });
+    
+  } catch (error) {
+    console.error("View assignment solution PDF error:", error);
+    toast({
+      title: "Error", 
+      description: "Failed to view assignment solution PDF. Please try again.",
+      variant: "destructive",
+    });
   }
 };
 
