@@ -1,7 +1,29 @@
 import { toast } from "@/components/ui/use-toast";
 import { API_COMMON } from "@/utils/ApiCommon";
-// Base API URL
-const API_URL = "http://127.0.0.1:5000/api";
+
+// Environment-based API URL configuration
+const getApiUrl = () => {
+  // Check if we're in production (Vercel deployment)
+  if (import.meta.env.PROD) {
+    // Use environment variable for production API URL
+    return import.meta.env.VITE_API_URL || "https://your-production-api.com/api";
+  }
+  // Development fallback
+  return import.meta.env.VITE_API_URL || "http://127.0.0.1:5000/api";
+};
+
+const API_URL = getApiUrl();
+
+// Development logging for debugging
+if (!import.meta.env.PROD) {
+  console.log("🔧 API Configuration:", {
+    environment: import.meta.env.MODE,
+    isProduction: import.meta.env.PROD,
+    baseURL: API_URL,
+    viteBaseUrl: import.meta.env.VITE_BASE_URL,
+    viteApiUrl: import.meta.env.VITE_API_URL
+  });
+}
 
 // Helper to get auth headers
 const getAuthHeaders = () => {

@@ -45,8 +45,52 @@ export const API_COMMON = async (
       }
     }
   } catch (error) {
-    const message = error.response?.data?.message || ERROR_MESSAGE; // Extracting the message from backend
-    console.error("API Error:", message);
-    return Promise.reject({ message });
+    // Enhanced error handling for different types of errors
+    let message = ERROR_MESSAGE;
+    let statusCode = null;
+    
+    if (error.response) {
+      // Server responded with error status
+      statusCode = error.response.status;
+      message = error.response.data?.message || `Server Error: ${statusCode}`;
+      
+      // Handle specific error codes
+      switch (statusCode) {
+        case 404:
+          message = "Resource not found. Please check the URL or try again.";
+          break;
+        case 500:
+          message = "Internal server error. Please try again later.";
+          break;
+        case 403:
+          message = "Access denied. Please check your permissions.";
+          break;
+        case 401:
+          message = "Authentication required. Please login again.";
+          break;
+      }
+    } else if (error.request) {
+      // Network error - no response received
+      message = "Network error. Please check your internet connection.";
+    } else {
+      // Other error
+      message = error.message || ERROR_MESSAGE;
+    }
+    
+    // Log error details in development only
+    if (!import.meta.env.PROD) {
+      console.error("API Error Details:", {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: statusCode,
+        message,
+        error
+      });
+    } else {
+      // Production-safe logging
+      console.error("API Error:", message);
+    }
+    
+    return Promise.reject({ message, statusCode });
   }
 };
