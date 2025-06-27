@@ -1,8 +1,8 @@
 // Auto-generated deployment tracker
 export const VERSION = {
-  build: '1.0.3',
-  timestamp: '2025-01-20T21:00:00Z',
-  commit: '7772d2c',
+  build: '1.0.5',
+  timestamp: '2025-01-20T22:00:00Z',
+  commit: 'ca0520a',
   features: [
     'CI/CD Pipeline',
     'Vercel Auto-Deploy',
@@ -11,7 +11,10 @@ export const VERSION = {
     '404 Error Fixes',
     'Environment-based API URLs',
     'YouTube Integration',
-    'LMS-Style Video Interface'
+    'LMS-Style Video Interface',
+    'Calculus Video Lectures',
+    'Linear Algebra Video Lectures',
+    'Applied Physics Video Lectures'
   ]
 };
 
