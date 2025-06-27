@@ -223,10 +223,9 @@ const GeneratedKeyPoints: React.FC<GeneratedKeyPointsProps> = ({ keyPoints, isLo
     // Remove numbered bullets like "1. " or "1) "
     cleanedPoint = cleanedPoint.replace(/^\d+[\.\)]\s+/, '');
     
-    // Remove markdown style bullets and other symbols
-    cleanedPoint = cleanedPoint.replace(/^[-*•→★✓✔︎☑︎☐☑️✅•◦◆◇○●⚫︎▪︎▫︎□■⬜︎⬛︎♦︎]\s+/, '');
+    // Remove markdown style bullets and other symbols (allow optional leading whitespace)
+    cleanedPoint = cleanedPoint.replace(/^\s*[-*•→★✓✔︎☑︎☐☑️✅•◦◆◇○●⚫︎▪︎▫︎□■⬜︎⬛︎♦︎]\s+/, '');
     cleanedPoint = cleanedPoint.replace(/^\*\*\s+/, '');
-    cleanedPoint = cleanedPoint.replace(/^[#➤➢➣➪➜➝➞➟➠➡➥➦➧➨➩➪➫➬➭➮➯➱➲➳➵➶➷➸➹➺➻➼➽]\s+/, '');
     
     return cleanedPoint.trim();
   });

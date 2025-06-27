@@ -756,6 +756,33 @@ export const viewSolutionPdf = async (callback?: (url: string) => void) => {
   }
 };
 
+// View generated assignment PDF
+export const viewAssignmentPdf = async (callback?: (url: string) => void) => {
+  try {
+    const pdfUrl = 'https://python.iamscientist.ai/api/assignment/assignment_view';
+    
+    if (callback) {
+      // If callback is provided, pass the URL to the callback function
+      callback(pdfUrl);
+    } else {
+      // Otherwise open in a new tab as before
+      window.open(pdfUrl, '_blank');
+      
+      toast({
+        title: "Assignment PDF opened",
+        description: "The generated assignment has been opened in a new tab.",
+      });
+    }
+  } catch (error) {
+    console.error("View assignment PDF error:", error);
+    toast({
+      title: "Error",
+      description: "Failed to open assignment PDF. Please try again.",
+      variant: "destructive",
+    });
+  }
+};
+
 export async function generateCheatSheet(formData: FormData): Promise<string[]> {
   try {
     console.log("Generating cheat sheet with form data:", Object.fromEntries(formData));

@@ -56,7 +56,9 @@ import {
   generateQuiz,
   generateExam,
   downloadAssignment,
-  downloadQuiz
+  downloadQuiz,
+  viewAssignmentPdf,
+  viewQuizPdf
 } from "@/services/api";
 
 const Upload = () => {
@@ -101,6 +103,7 @@ const Upload = () => {
     "idle" | "extracting" | "extracted" | "generating" | "error"
   >("idle");
   const [assignmentExtractedTextPreview, setAssignmentExtractedTextPreview] = useState<string>("");
+  const [assignmentPdfUrl, setAssignmentPdfUrl] = useState<string | null>(null);
   
   // Quiz tab state
   const [quizFile, setQuizFile] = useState<File | null>(null);
@@ -110,6 +113,7 @@ const Upload = () => {
     "idle" | "extracting" | "extracted" | "generating" | "error"
   >("idle");
   const [quizExtractedTextPreview, setQuizExtractedTextPreview] = useState<string>("");
+  const [quizPdfUrl, setQuizPdfUrl] = useState<string | null>(null);
 
   // Proximity tab state
   const [proximityFile, setProximityFile] = useState<File | null>(null);
@@ -455,9 +459,13 @@ const Upload = () => {
           if (type === "assignment") {
             setAssignmentGeneratedQuestions(questions);
             setAssignmentProcessingComplete(true);
+            // Auto-generate PDF preview for assignment
+            viewAssignmentPdf((url) => setAssignmentPdfUrl(url));
           } else if (type === "quiz") {
             setQuizGeneratedQuestions(questions);
             setQuizProcessingComplete(true);
+            // Auto-generate PDF preview for quiz
+            viewQuizPdf((url) => setQuizPdfUrl(url));
           } else if (type === "proximity") {
             setProximityProcessingComplete(true);
           }
@@ -715,12 +723,14 @@ const Upload = () => {
       setAssignmentProcessingComplete(false);
       setAssignmentExtractionStatus("idle");
       setAssignmentExtractedTextPreview("");
+      setAssignmentPdfUrl(null);
     } else if (activeTab === "quiz") {
       setQuizFile(null);
       setQuizGeneratedQuestions([]);
       setQuizProcessingComplete(false);
       setQuizExtractionStatus("idle");
       setQuizExtractedTextPreview("");
+      setQuizPdfUrl(null);
     } else if (activeTab === "proximity") {
       setProximityFile(null);
       setProximityProcessingComplete(false);
@@ -1168,14 +1178,17 @@ const Upload = () => {
               </CardFooter>
             </Card>
 
-            <Card>
+            <Card className="h-[800px] flex flex-col">
               <CardHeader>
-                <CardTitle>Generated Assignment</CardTitle>
+                <CardTitle className="flex items-center">
+                  <FileText className="h-5 w-5 mr-2" />
+                  Assignment PDF Preview
+                </CardTitle>
                 <CardDescription>
-                  Your generated assignment will appear here.
+                  {assignmentFile ? `${assignmentFile.name}` : "Generated assignment will appear here."}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="h-[600px] overflow-y-auto">
+              <CardContent className="flex-1 flex flex-col p-6 overflow-hidden">
                 {isProcessing && activeTab === "assignment" ? (
                   <div className="flex flex-col items-center justify-center h-full">
                     <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -1187,62 +1200,36 @@ const Upload = () => {
                       may take a moment.
                     </p>
                   </div>
-                ) : assignmentProcessingComplete &&
-                  assignmentGeneratedQuestions.length > 0 ? (
-                  <div className="space-y-6">
-                    <div className="space-y-4 border-b pb-4">
-                      <div className="space-y-1">
-                        <h3 className="text-xl font-bold">
+                ) : assignmentProcessingComplete && assignmentPdfUrl ? (
+                  <div className="relative flex-1 flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center">
+                        <FileText className="h-5 w-5 mr-2 text-primary" />
+                        <span className="font-medium">
                           Assignment: {assignmentSubject || "Generated Assignment"}
-                        </h3>
-                        <div className="flex flex-wrap text-sm text-muted-foreground gap-2">
-                          <div className="flex items-center">
-                            <Calendar className="h-4 w-4 mr-1" />
-                            <span>Due: {assignmentDueDate || "Not specified"}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Hash className="h-4 w-4 mr-1" />
-                            <span>Assignment #{assignmentNumber || "1"}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <LibraryBig className="h-4 w-4 mr-1" />
-                            <span>Points: {assignmentPoints || "20"}</span>
-                          </div>
+                        </span>
+                      </div>
+                      <div className="flex items-center text-sm text-muted-foreground gap-4">
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-1" />
+                          <span>Due: {assignmentDueDate || "Not specified"}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Hash className="h-4 w-4 mr-1" />
+                          <span>#{assignmentNumber || "1"}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <LibraryBig className="h-4 w-4 mr-1" />
+                          <span>Points: {assignmentPoints || "20"}</span>
                         </div>
                       </div>
                     </div>
-
-                    <div>
-                      <div className="flex justify-between items-center mb-4">
-                        <h4 className="font-medium">Questions ({assignmentGeneratedQuestions.length}):</h4>
-                        <div className="text-xs text-muted-foreground">
-                          {assignmentConceptual && <span className="mr-2">Conceptual: {assignmentConceptual}</span>}
-                          {assignmentTheoretical && <span className="mr-2">Theoretical: {assignmentTheoretical}</span>}
-                          {assignmentScenario && <span>Scenario: {assignmentScenario}</span>}
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        {assignmentGeneratedQuestions.map((question, index) => (
-                          <div
-                            key={question.id}
-                            className="p-4 border rounded-lg bg-card shadow-sm hover:shadow-md transition-shadow"
-                          >
-                            <div className="flex">
-                              <div className="mr-3 font-semibold text-primary">{index + 1}.</div>
-                              <div className="flex-1">
-                                <p className="mb-3">{question.question}</p>
-                                <div className="mt-2">
-                                  {question.questionType && (
-                                    <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                                      {question.questionType}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                    <div className="flex-1 bg-muted rounded-md overflow-hidden">
+                      <iframe 
+                        src={assignmentPdfUrl} 
+                        className="w-full h-full border-0"
+                        title="Assignment PDF Preview"
+                      />
                     </div>
                   </div>
                 ) : (
@@ -1258,7 +1245,7 @@ const Upload = () => {
                   </div>
                 )}
               </CardContent>
-              {assignmentProcessingComplete && assignmentGeneratedQuestions.length > 0 && (
+              {assignmentProcessingComplete && assignmentPdfUrl && (
                 <CardFooter className="flex justify-between gap-4">
                   <Button
                     variant="outline"
@@ -1541,14 +1528,17 @@ const Upload = () => {
               </CardFooter>
             </Card>
 
-            <Card>
+            <Card className="h-[800px] flex flex-col">
               <CardHeader>
-                <CardTitle>Generated Quiz</CardTitle>
+                <CardTitle className="flex items-center">
+                  <FileText className="h-5 w-5 mr-2" />
+                  Quiz PDF Preview
+                </CardTitle>
                 <CardDescription>
-                  Your generated quiz will appear here.
+                  {quizFile ? `${quizFile.name}` : "Generated quiz will appear here."}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="h-[600px] overflow-y-auto">
+              <CardContent className="flex-1 flex flex-col p-6 overflow-hidden">
                 {isProcessing && activeTab === "quiz" ? (
                   <div className="flex flex-col items-center justify-center h-full">
                     <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -1560,61 +1550,36 @@ const Upload = () => {
                       may take a moment.
                     </p>
                   </div>
-                ) : quizProcessingComplete && quizGeneratedQuestions.length > 0 ? (
-                  <div className="space-y-6">
-                    <div className="space-y-4 border-b pb-4">
-                      <div className="space-y-1">
-                        <h3 className="text-xl font-bold">
+                ) : quizProcessingComplete && quizPdfUrl ? (
+                  <div className="relative flex-1 flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center">
+                        <FileText className="h-5 w-5 mr-2 text-primary" />
+                        <span className="font-medium">
                           Quiz: {quizSubject || "Generated Quiz"}
-                        </h3>
-                        <div className="flex flex-wrap text-sm text-muted-foreground gap-2">
-                          <div className="flex items-center">
-                            <Calendar className="h-4 w-4 mr-1" />
-                            <span>Due: {quizDueDate || "Not specified"}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Hash className="h-4 w-4 mr-1" />
-                            <span>Quiz #{quizNumber || "1"}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <LibraryBig className="h-4 w-4 mr-1" />
-                            <span>Points: {quizPoints || "10"}</span>
-                          </div>
+                        </span>
+                      </div>
+                      <div className="flex items-center text-sm text-muted-foreground gap-4">
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-1" />
+                          <span>Due: {quizDueDate || "Not specified"}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Hash className="h-4 w-4 mr-1" />
+                          <span>#{quizNumber || "1"}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <LibraryBig className="h-4 w-4 mr-1" />
+                          <span>Points: {quizPoints || "10"}</span>
                         </div>
                       </div>
                     </div>
-
-                    <div>
-                      <div className="flex justify-between items-center mb-4">
-                        <h4 className="font-medium">Questions ({quizGeneratedQuestions.length}):</h4>
-                        <div className="text-xs text-muted-foreground">
-                          {quizConceptual && <span className="mr-2">Conceptual: {quizConceptual}</span>}
-                          {quizTheoretical && <span className="mr-2">Theoretical: {quizTheoretical}</span>}
-                          {quizScenario && <span>Scenario: {quizScenario}</span>}
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        {quizGeneratedQuestions.map((question, index) => (
-                          <div
-                            key={question.id}
-                            className="p-4 border rounded-lg bg-card shadow-sm hover:shadow-md transition-shadow"
-                          >
-                            <div className="flex">
-                              <div className="mr-3 font-semibold text-primary">{index + 1}.</div>
-                              <div className="flex-1">
-                                <p className="mb-3">{question.question}</p>
-                                <div className="mt-2">
-                                  {question.questionType && (
-                                    <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
-                                      {question.questionType}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                    <div className="flex-1 bg-muted rounded-md overflow-hidden">
+                      <iframe 
+                        src={quizPdfUrl} 
+                        className="w-full h-full border-0"
+                        title="Quiz PDF Preview"
+                      />
                     </div>
                   </div>
                 ) : (
@@ -1630,27 +1595,25 @@ const Upload = () => {
                   </div>
                 )}
               </CardContent>
-              <CardFooter>
-                {quizProcessingComplete && quizGeneratedQuestions.length > 0 && (
-                  <div className="w-full flex justify-between gap-4">
-                    <Button
-                      variant="outline"
-                      className="flex items-center justify-center"
-                      onClick={() => copyToClipboard()}
-                    >
-                      <ClipboardCopy className="h-4 w-4 mr-2" />
-                      Copy to Clipboard
-                    </Button>
-                    <Button 
-                      className="flex items-center justify-center"
-                      onClick={() => handleDownload()}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
-                  </div>
-                )}
-              </CardFooter>
+              {quizProcessingComplete && quizPdfUrl && (
+                <CardFooter className="flex justify-between gap-4">
+                  <Button
+                    variant="outline"
+                    className="flex-1 flex items-center justify-center"
+                    onClick={() => copyToClipboard()}
+                  >
+                    <ClipboardCopy className="h-4 w-4 mr-2" />
+                    Copy to Clipboard
+                  </Button>
+                  <Button 
+                    className="flex-1 flex items-center justify-center"
+                    onClick={() => handleDownload()}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download
+                  </Button>
+                </CardFooter>
+              )}
             </Card>
           </div>
         </TabsContent>
