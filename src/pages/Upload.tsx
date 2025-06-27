@@ -459,13 +459,43 @@ const Upload = () => {
           if (type === "assignment") {
             setAssignmentGeneratedQuestions(questions);
             setAssignmentProcessingComplete(true);
+            
             // Auto-generate PDF preview for assignment
-            viewAssignmentPdf((url) => setAssignmentPdfUrl(url));
+            const assignmentForm = new FormData();
+            assignmentForm.append("file", file);
+            assignmentForm.append("department", assignmentDepartment);
+            assignmentForm.append("subject", assignmentSubject);
+            assignmentForm.append("class", assignmentClassName);
+            assignmentForm.append("due_date", assignmentDueDate);
+            assignmentForm.append("assignment_no", assignmentNumber);
+            assignmentForm.append("points", assignmentPoints);
+            assignmentForm.append("num_conceptual", assignmentConceptual);
+            assignmentForm.append("num_theoretical", assignmentTheoretical);
+            assignmentForm.append("num_scenario", assignmentScenario);
+            assignmentForm.append("difficulty_level", assignmentDifficulty);
+            assignmentForm.append("number_of_questions", assignmentTotalQuestions);
+            
+            viewAssignmentPdf(assignmentForm, (url) => setAssignmentPdfUrl(url));
           } else if (type === "quiz") {
             setQuizGeneratedQuestions(questions);
             setQuizProcessingComplete(true);
+            
             // Auto-generate PDF preview for quiz
-            viewQuizPdf((url) => setQuizPdfUrl(url));
+            const quizForm = new FormData();
+            quizForm.append("file", file);
+            quizForm.append("department", quizDepartment);
+            quizForm.append("subject", quizSubject);
+            quizForm.append("class", quizClassName);
+            quizForm.append("due_date", quizDueDate);
+            quizForm.append("quiz_no", quizNumber);
+            quizForm.append("points", quizPoints);
+            quizForm.append("num_conceptual", quizConceptual);
+            quizForm.append("num_theoretical", quizTheoretical);
+            quizForm.append("num_scenario", quizScenario);
+            quizForm.append("difficulty_level", quizDifficulty);
+            quizForm.append("number_of_questions", quizTotalQuestions || "10");
+            
+            viewQuizPdf(quizForm, (url) => setQuizPdfUrl(url));
           } else if (type === "proximity") {
             setProximityProcessingComplete(true);
           }

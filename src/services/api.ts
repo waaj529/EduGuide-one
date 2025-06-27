@@ -703,29 +703,62 @@ export async function evaluatePracticeAnswer(questionId: string, question: strin
 }
 
 // View generated quiz PDF in a new tab
-export const viewQuizPdf = async (callback?: (url: string) => void) => {
+export const viewQuizPdf = async (formData?: FormData, callback?: (url: string) => void) => {
   try {
-    const pdfUrl = 'https://python.iamscientist.ai/api/quiz/quiz_view';
-    
-    if (callback) {
-      // If callback is provided, pass the URL to the callback function
-      callback(pdfUrl);
-    } else {
-      // Otherwise open in a new tab as before
-      window.open(pdfUrl, '_blank');
+    if (formData) {
+      console.log("Generating quiz PDF for preview with form data...");
       
-      toast({
-        title: "PDF viewer opened",
-        description: "The generated PDF content has been opened in a new tab.",
+      // First, call the generation API to create the quiz
+      const response = await fetch('https://python.iamscientist.ai/api/quiz/quiz', {
+        method: 'POST',
+        body: formData
       });
+      
+      if (!response.ok) {
+        console.error(`Quiz generation failed: ${response.status}`);
+        throw new Error(`Failed to generate quiz: ${response.status}`);
+      }
+      
+      console.log("Quiz generated successfully, now getting PDF view...");
+      
+      // Now the quiz should be available for viewing
+      const pdfUrl = 'https://python.iamscientist.ai/api/quiz/quiz_view';
+      
+      if (callback) {
+        callback(pdfUrl);
+      } else {
+        window.open(pdfUrl, '_blank');
+        toast({
+          title: "Quiz PDF opened",
+          description: "The generated quiz has been opened in a new tab.",
+        });
+      }
+    } else {
+      // No form data provided, just try the view URL
+      const pdfUrl = 'https://python.iamscientist.ai/api/quiz/quiz_view';
+      
+      if (callback) {
+        callback(pdfUrl);
+      } else {
+        window.open(pdfUrl, '_blank');
+        toast({
+          title: "Quiz PDF opened",
+          description: "The quiz viewer has been opened.",
+        });
+      }
     }
   } catch (error) {
     console.error("View quiz PDF error:", error);
     toast({
       title: "Error",
-      description: "Failed to open PDF viewer. Please try again.",
+      description: "Failed to generate or view quiz PDF. Please try again.",
       variant: "destructive",
     });
+    
+    // Don't set the PDF URL if there's an error
+    if (callback) {
+      callback(null);
+    }
   }
 };
 
@@ -757,29 +790,62 @@ export const viewSolutionPdf = async (callback?: (url: string) => void) => {
 };
 
 // View generated assignment PDF
-export const viewAssignmentPdf = async (callback?: (url: string) => void) => {
+export const viewAssignmentPdf = async (formData?: FormData, callback?: (url: string) => void) => {
   try {
-    const pdfUrl = 'https://python.iamscientist.ai/api/assignment/assignment_view';
-    
-    if (callback) {
-      // If callback is provided, pass the URL to the callback function
-      callback(pdfUrl);
-    } else {
-      // Otherwise open in a new tab as before
-      window.open(pdfUrl, '_blank');
+    if (formData) {
+      console.log("Generating assignment PDF for preview with form data...");
       
-      toast({
-        title: "Assignment PDF opened",
-        description: "The generated assignment has been opened in a new tab.",
+      // First, call the generation API to create the assignment
+      const response = await fetch('https://python.iamscientist.ai/api/assignment/assignment', {
+        method: 'POST',
+        body: formData
       });
+      
+      if (!response.ok) {
+        console.error(`Assignment generation failed: ${response.status}`);
+        throw new Error(`Failed to generate assignment: ${response.status}`);
+      }
+      
+      console.log("Assignment generated successfully, now getting PDF view...");
+      
+      // Now the assignment should be available for viewing
+      const pdfUrl = 'https://python.iamscientist.ai/api/assignment/assignment_view';
+      
+      if (callback) {
+        callback(pdfUrl);
+      } else {
+        window.open(pdfUrl, '_blank');
+        toast({
+          title: "Assignment PDF opened",
+          description: "The generated assignment has been opened in a new tab.",
+        });
+      }
+    } else {
+      // No form data provided, just try the view URL
+      const pdfUrl = 'https://python.iamscientist.ai/api/assignment/assignment_view';
+      
+      if (callback) {
+        callback(pdfUrl);
+      } else {
+        window.open(pdfUrl, '_blank');
+        toast({
+          title: "Assignment PDF opened",
+          description: "The assignment viewer has been opened.",
+        });
+      }
     }
   } catch (error) {
     console.error("View assignment PDF error:", error);
     toast({
       title: "Error",
-      description: "Failed to open assignment PDF. Please try again.",
+      description: "Failed to generate or view assignment PDF. Please try again.",
       variant: "destructive",
     });
+    
+    // Don't set the PDF URL if there's an error
+    if (callback) {
+      callback(null);
+    }
   }
 };
 
