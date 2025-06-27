@@ -706,20 +706,32 @@ export async function evaluatePracticeAnswer(questionId: string, question: strin
 export const viewQuizPdf = async (formData?: FormData, callback?: (url: string) => void) => {
   try {
     if (formData) {
-      console.log("Generating quiz PDF for preview with form data...");
+      console.log("Generating quiz PDF for preview using download approach...");
       
-      // First, call the generation API to create the quiz
-      const response = await fetch('https://python.iamscientist.ai/api/quiz/quiz', {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (!response.ok) {
-        console.error(`Quiz generation failed: ${response.status}`);
-        throw new Error(`Failed to generate quiz: ${response.status}`);
+      // Use the same approach as downloadQuiz but for viewing
+      // Convert FormData to query params for GET request
+      const params = new URLSearchParams();
+      for (const [key, value] of formData.entries()) {
+        // Skip file entry in URL parameters - files can't be sent in GET requests
+        if (key !== 'file') {
+          params.append(key, value.toString());
+        }
       }
       
-      console.log("Quiz generated successfully, now getting PDF view...");
+      // First call the download endpoint to ensure PDF is generated
+      const downloadResponse = await fetch(`https://python.iamscientist.ai/api/quiz/quiz_download?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/pdf'
+        }
+      });
+      
+      if (!downloadResponse.ok) {
+        console.error(`Quiz generation failed: ${downloadResponse.status}`);
+        throw new Error(`Failed to generate quiz: ${downloadResponse.status}`);
+      }
+      
+      console.log("Quiz PDF generated successfully, now setting view URL...");
       
       // Now the quiz should be available for viewing
       const pdfUrl = 'https://python.iamscientist.ai/api/quiz/quiz_view';
@@ -793,20 +805,32 @@ export const viewSolutionPdf = async (callback?: (url: string) => void) => {
 export const viewAssignmentPdf = async (formData?: FormData, callback?: (url: string) => void) => {
   try {
     if (formData) {
-      console.log("Generating assignment PDF for preview with form data...");
+      console.log("Generating assignment PDF for preview using download approach...");
       
-      // First, call the generation API to create the assignment
-      const response = await fetch('https://python.iamscientist.ai/api/assignment/assignment', {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (!response.ok) {
-        console.error(`Assignment generation failed: ${response.status}`);
-        throw new Error(`Failed to generate assignment: ${response.status}`);
+      // Use the same approach as downloadAssignment but for viewing
+      // Convert FormData to query params for GET request
+      const params = new URLSearchParams();
+      for (const [key, value] of formData.entries()) {
+        // Skip file entry in URL parameters - files can't be sent in GET requests
+        if (key !== 'file') {
+          params.append(key, value.toString());
+        }
       }
       
-      console.log("Assignment generated successfully, now getting PDF view...");
+      // First call the download endpoint to ensure PDF is generated
+      const downloadResponse = await fetch(`https://python.iamscientist.ai/api/assignment/assignment_download?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/pdf'
+        }
+      });
+      
+      if (!downloadResponse.ok) {
+        console.error(`Assignment generation failed: ${downloadResponse.status}`);
+        throw new Error(`Failed to generate assignment: ${downloadResponse.status}`);
+      }
+      
+      console.log("Assignment PDF generated successfully, now setting view URL...");
       
       // Now the assignment should be available for viewing
       const pdfUrl = 'https://python.iamscientist.ai/api/assignment/assignment_view';
