@@ -198,7 +198,7 @@ const subjectVideos: Record<string, { title: string; videos: SimpleVideo[]; play
       {
         id: '2',
         title: 'OOP Lecture 2',
-        url: 'https://www.youtube.com/watch?v=nGJTWaaFdjc&list=PLISTUNloqsz0z9JJJke7g7PxRLvy6How9&index=1&pp=iAQB',
+        url: 'https://www.youtube.com/watch?v=d363dW0AeS8&list=PLISTUNloqsz0z9JJJke7g7PxRLvy6How9&index=2&pp=iAQB',
         index: 2
       },
       {

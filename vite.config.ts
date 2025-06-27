@@ -40,25 +40,52 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          ui: [
-            '@radix-ui/react-accordion', 
-            '@radix-ui/react-dialog', 
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-toast',
-            '@radix-ui/react-progress'
-          ],
-          supabase: ['@supabase/supabase-js'],
-          router: ['react-router-dom'],
-          query: ['@tanstack/react-query'],
-          icons: ['lucide-react'],
-          utils: ['clsx', 'tailwind-merge'],
+        manualChunks: (id) => {
+          // Vendor chunk for core React libraries
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'ui';
+            }
+            if (id.includes('@supabase')) {
+              return 'supabase';
+            }
+            if (id.includes('react-router')) {
+              return 'router';
+            }
+            if (id.includes('@tanstack/react-query')) {
+              return 'query';
+            }
+            if (id.includes('lucide-react')) {
+              return 'icons';
+            }
+            // Split large dependencies
+            if (id.includes('framer-motion')) {
+              return 'animations';
+            }
+            if (id.includes('date-fns') || id.includes('moment')) {
+              return 'dates';
+            }
+            // Other vendor dependencies
+            return 'vendor-libs';
+          }
+          
+          // Split application code by feature
+          if (id.includes('/src/pages/')) {
+            return 'pages';
+          }
+          if (id.includes('/src/components/')) {
+            return 'components';
+          }
+          if (id.includes('/src/services/')) {
+            return 'services';
+          }
         },
       },
     },
-    chunkSizeWarningLimit: 800,
+    chunkSizeWarningLimit: 1000,
     sourcemap: mode === 'development',
     minify: mode === 'production' ? 'terser' : false,
     ...(mode === 'production' && {
