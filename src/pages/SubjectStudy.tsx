@@ -109,13 +109,55 @@ const subjectVideos: Record<string, { title: string; videos: SimpleVideo[]; play
   },
   physics: {
     title: 'Applied Physics',
-    playlistUrl: '',
+    playlistUrl: 'https://youtube.com/playlist?list=PLkZFXMjtq0D2qZB3r1KgpsHOQC1UgVXY2',
     videos: [
       {
         id: '1',
-        title: 'Applied Physics - Fundamentals',
-        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        title: 'Applied Physics Lecture 1 - Introduction to Physics',
+        url: 'https://www.youtube.com/watch?v=ZM8ECpBuQYE',
         index: 1
+      },
+      {
+        id: '2',
+        title: 'Applied Physics Lecture 2 - Mechanics and Motion',
+        url: 'https://www.youtube.com/watch?v=wWnfJ0-xXRE',
+        index: 2
+      },
+      {
+        id: '3',
+        title: 'Applied Physics Lecture 3 - Forces and Energy',
+        url: 'https://www.youtube.com/watch?v=w4QFJb9a8vo',
+        index: 3
+      },
+      {
+        id: '4',
+        title: 'Applied Physics Lecture 4 - Thermodynamics',
+        url: 'https://www.youtube.com/watch?v=NyOYW07-L5g',
+        index: 4
+      },
+      {
+        id: '5',
+        title: 'Applied Physics Lecture 5 - Waves and Oscillations',
+        url: 'https://www.youtube.com/watch?v=GtXpNm1Vyp4',
+        index: 5
+      },
+      {
+        id: '6',
+        title: 'Applied Physics Lecture 6 - Electricity and Magnetism',
+        url: 'https://www.youtube.com/watch?v=5DMIdsL_KpY',
+        index: 6
+      },
+      {
+        id: '7',
+        title: 'Applied Physics Lecture 7 - Optics and Light',
+        url: 'https://www.youtube.com/watch?v=Iuv6hY6zsd0',
+        index: 7
+      },
+      {
+        id: '8',
+        title: 'Applied Physics Lecture 8 - Modern Physics',
+        url: 'https://www.youtube.com/watch?v=7kb1VT0J3DE',
+        index: 8
       }
     ]
   },
