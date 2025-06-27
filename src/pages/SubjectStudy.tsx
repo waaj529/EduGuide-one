@@ -85,25 +85,109 @@ const subjectVideos: Record<string, { title: string; videos: SimpleVideo[]; play
   },
   oop: {
     title: 'Object Oriented Programming',
-    playlistUrl: '',
+    playlistUrl: 'https://youtube.com/playlist?list=PLISTUNloqsz0z9JJJke7g7PxRLvy6How9&si=OuU-_n-gNF3X2qKv',
     videos: [
       {
         id: '1',
-        title: 'OOP Concepts - Lecture 1',
-        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        title: 'OOP Lecture 1',
+        url: 'https://www.youtube.com/watch?v=nGJTWaaFdjc&list=PLISTUNloqsz0z9JJJke7g7PxRLvy6How9&index=1&pp=iAQB',
         index: 1
+      },
+      {
+        id: '2',
+        title: 'OOP Lecture 2',
+        url: 'https://www.youtube.com/watch?v=nGJTWaaFdjc&list=PLISTUNloqsz0z9JJJke7g7PxRLvy6How9&index=1&pp=iAQB',
+        index: 2
+      },
+      {
+        id: '3',
+        title: 'OOP Lecture 3',
+        url: 'https://www.youtube.com/watch?v=d363dW0AeS8&list=PLISTUNloqsz0z9JJJke7g7PxRLvy6How9&index=3&pp=iAQB',
+        index: 3
+      },
+      {
+        id: '4',
+        title: 'OOP Lecture 4',
+        url: 'https://www.youtube.com/watch?v=qq05D2yFIHA&list=PLISTUNloqsz0z9JJJke7g7PxRLvy6How9&index=4&pp=iAQB',
+        index: 4
+      },
+      {
+        id: '5',
+        title: 'OOP Lecture 5',
+        url: 'https://www.youtube.com/watch?v=QcLI2zGVYFo&list=PLISTUNloqsz0z9JJJke7g7PxRLvy6How9&index=5&pp=iAQB0gcJCc4JAYcqIYzv',
+        index: 5
+      },
+      {
+        id: '6',
+        title: 'OOP Lecture 6',
+        url: 'https://www.youtube.com/watch?v=aKnc1A5NOKo&list=PLISTUNloqsz0z9JJJke7g7PxRLvy6How9&index=6&pp=iAQB0gcJCc4JAYcqIYzv',
+        index: 6
+      },
+      {
+        id: '7',
+        title: 'OOP Lecture 7',
+        url: 'https://www.youtube.com/watch?v=HK6gnkQIgqI&list=PLISTUNloqsz0z9JJJke7g7PxRLvy6How9&index=7&pp=iAQB',
+        index: 7
+      },
+      {
+        id: '8',
+        title: 'OOP Lecture 8',
+        url: 'https://www.youtube.com/watch?v=Tk-4KUoatg8&list=PLISTUNloqsz0z9JJJke7g7PxRLvy6How9&index=8&pp=iAQB',
+        index: 8
       }
     ]
   },
   'data-structures': {
     title: 'Data Structure and Algorithms',
-    playlistUrl: '',
+    playlistUrl: 'https://youtube.com/playlist?list=PLu0W_9lII9ahIappRPN0MCAgtOu3lQjQi&si=YzJMjo1Mvw8BMvGP',
     videos: [
       {
         id: '1',
-        title: 'Data Structures - Introduction',
-        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        title: 'DSA Lecture 1',
+        url: 'https://www.youtube.com/watch?v=5_5oE5lgrhw&list=PLu0W_9lII9ahIappRPN0MCAgtOu3lQjQi&index=1&pp=iAQB',
         index: 1
+      },
+      {
+        id: '2',
+        title: 'DSA Lecture 2',
+        url: 'https://www.youtube.com/watch?v=vgSKOMsjLbc&list=PLu0W_9lII9ahIappRPN0MCAgtOu3lQjQi&index=2&pp=iAQB',
+        index: 2
+      },
+      {
+        id: '3',
+        title: 'DSA Lecture 3',
+        url: 'https://www.youtube.com/watch?v=1OTX-WXQHCQ&list=PLu0W_9lII9ahIappRPN0MCAgtOu3lQjQi&index=3&pp=iAQB',
+        index: 3
+      },
+      {
+        id: '4',
+        title: 'DSA Lecture 4',
+        url: 'https://www.youtube.com/watch?v=5g7K86jYto8&list=PLu0W_9lII9ahIappRPN0MCAgtOu3lQjQi&index=4&pp=iAQB',
+        index: 4
+      },
+      {
+        id: '5',
+        title: 'DSA Lecture 5',
+        url: 'https://www.youtube.com/watch?v=STL8ESuETmM&list=PLu0W_9lII9ahIappRPN0MCAgtOu3lQjQi&index=5&pp=iAQB',
+        index: 5
+      },
+      {
+        id: '6',
+        title: 'DSA Lecture 6',
+        url: 'https://www.youtube.com/watch?v=bR0NYdmMg94&list=PLu0W_9lII9ahIappRPN0MCAgtOu3lQjQi&index=6&pp=iAQB',
+        index: 6
+      },
+      {
+        id: '7',
+        title: 'DSA Lecture 7',
+        url: 'https://www.youtube.com/watch?v=-sktNalfrE0&list=PLu0W_9lII9ahIappRPN0MCAgtOu3lQjQi&index=7&pp=iAQB0gcJCc4JAYcqIYzv',
+        index: 7
+      },
+      {
+        id: '8',
+        title: 'DSA Lecture 8',
+        url: 'https://www.youtube.com/watch?v=JqvobBKLHwU&list=PLu0W_9lII9ahIappRPN0MCAgtOu3lQjQi&index=8&pp=iAQB',
+        index: 8
       }
     ]
   },
