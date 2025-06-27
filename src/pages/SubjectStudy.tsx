@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import SimpleVideoList from '@/components/features/SimpleVideoList';
 import { SimpleVideo } from '@/components/features/SimpleVideoList';
 
-// Real video data from provided playlist URLs
+// Real video data from provided playlist URLs - Updated with OOP, DSA, and ICT playlists
 const subjectVideos: Record<string, { title: string; videos: SimpleVideo[]; playlistUrl: string }> = {
   calculus: {
     title: 'Calculus',
