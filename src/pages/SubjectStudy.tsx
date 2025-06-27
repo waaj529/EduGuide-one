@@ -115,13 +115,73 @@ const subjectVideos: Record<string, { title: string; videos: SimpleVideo[]; play
   },
   programming: {
     title: 'Programming Fundamentals',
-    playlistUrl: '',
+    playlistUrl: 'https://www.youtube.com/playlist?list=PLgWOIdHQBEz5VmgyZ4IoByOHidsX4lpVF',
     videos: [
       {
         id: '1',
-        title: 'Programming Fundamentals - Lecture 1',
-        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        title: 'Programming Fundamentals Lecture 1',
+        url: 'https://www.youtube.com/watch?v=DHf6EExnAZs&list=PLgWOIdHQBEz5VmgyZ4IoByOHidsX4lpVF&index=1&pp=iAQB',
         index: 1
+      },
+      {
+        id: '2',
+        title: 'Programming Fundamentals Lecture 2',
+        url: 'https://www.youtube.com/watch?v=8dPLCjuuZsA&list=PLgWOIdHQBEz5VmgyZ4IoByOHidsX4lpVF&index=2&pp=iAQB',
+        index: 2
+      },
+      {
+        id: '3',
+        title: 'Programming Fundamentals Lecture 3',
+        url: 'https://www.youtube.com/watch?v=6eDQhvQqn88&list=PLgWOIdHQBEz5VmgyZ4IoByOHidsX4lpVF&index=3&pp=iAQB',
+        index: 3
+      },
+      {
+        id: '4',
+        title: 'Programming Fundamentals Lecture 4',
+        url: 'https://www.youtube.com/watch?v=hSsHV8NO4O8&list=PLgWOIdHQBEz5VmgyZ4IoByOHidsX4lpVF&index=4&pp=iAQB',
+        index: 4
+      },
+      {
+        id: '5',
+        title: 'Programming Fundamentals Lecture 5',
+        url: 'https://www.youtube.com/watch?v=JlKF1O4I1zA&list=PLgWOIdHQBEz5VmgyZ4IoByOHidsX4lpVF&index=5&pp=iAQB0gcJCc4JAYcqIYzv',
+        index: 5
+      },
+      {
+        id: '6',
+        title: 'Programming Fundamentals Lecture 6',
+        url: 'https://www.youtube.com/watch?v=MgeWxu65lTc&list=PLgWOIdHQBEz5VmgyZ4IoByOHidsX4lpVF&index=6&pp=iAQB',
+        index: 6
+      },
+      {
+        id: '7',
+        title: 'Programming Fundamentals Lecture 7',
+        url: 'https://www.youtube.com/watch?v=C9pyrtoio8E&list=PLgWOIdHQBEz5VmgyZ4IoByOHidsX4lpVF&index=7&pp=iAQB',
+        index: 7
+      },
+      {
+        id: '8',
+        title: 'Programming Fundamentals Lecture 8',
+        url: 'https://www.youtube.com/watch?v=T--pvpqql3M&list=PLgWOIdHQBEz5VmgyZ4IoByOHidsX4lpVF&index=9&pp=iAQB',
+        index: 8
+      },
+      {
+        id: '9',
+        title: 'Programming Fundamentals Lecture 9',
+        url: 'https://www.youtube.com/watch?v=EzTjkch30Qc&list=PLgWOIdHQBEz5VmgyZ4IoByOHidsX4lpVF&index=10&pp=iAQB',
+        index: 9
+      },
+      {
+        id: '10',
+        title: 'Programming Fundamentals Lecture 10',
+        url: 'https://www.youtube.com/watch?v=WUlYaYy4S1Q&list=PLgWOIdHQBEz5VmgyZ4IoByOHidsX4lpVF&index=11&pp=iAQB',
+        index: 10
+      },
+      {
+        id: '11',
+        title: 'Programming Fundamentals Lecture 11',
+        url: 'https://www.youtube.com/watch?v=QXlwXhbGYeo&list=PLgWOIdHQBEz5VmgyZ4IoByOHidsX4lpVF&index=12&pp=iAQB0gcJCc4JAYcqIYzv',
+        index: 11
       }
     ]
   },
