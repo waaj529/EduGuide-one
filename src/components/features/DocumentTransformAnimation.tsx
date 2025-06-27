@@ -316,14 +316,14 @@ const DocumentTransformAnimation = () => {
         
         {/* Tagline at the bottom */}
         <motion.div 
-          className="absolute bottom-[10px] text-center w-[250px] mx-auto font-medium bg-gradient-to-r from-primary to-brand-lightBlue px-3 py-2 rounded-lg text-white shadow-md z-30"
+          className="absolute bottom-[15px] text-center w-[220px] mx-auto font-medium bg-gradient-to-r from-primary to-brand-lightBlue px-2 py-1.5 rounded-md text-white shadow-md z-30"
           variants={benefitTextVariants}
           animate={animationState}
           key={`benefit-${cycle}`}
         >
-          <div className="text-sm">
+          <div className="text-xs leading-tight">
             One upload, endless study resources. 
-            <span className="block mt-1">Learn smarter, not harder.</span>
+            <span className="block mt-0.5">Learn smarter, not harder.</span>
           </div>
         </motion.div>
       </div>
