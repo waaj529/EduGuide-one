@@ -61,13 +61,55 @@ const subjectVideos: Record<string, { title: string; videos: SimpleVideo[]; play
   },
   ict: {
     title: 'Introduction to ICT',
-    playlistUrl: '',
+    playlistUrl: 'https://youtube.com/playlist?list=PL9uonUoqng750q0r2r7E-2wNFadPI2c4P&si=cULScB8M52yRwONP',
     videos: [
       {
         id: '1',
-        title: 'Introduction to Information and Communication Technology',
-        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        title: 'ICT Lecture 1',
+        url: 'https://www.youtube.com/watch?v=6pRs6o8szWE&list=PL9uonUoqng750q0r2r7E-2wNFadPI2c4P&index=1&pp=iAQB0gcJCc4JAYcqIYzv',
         index: 1
+      },
+      {
+        id: '2',
+        title: 'ICT Lecture 2',
+        url: 'https://www.youtube.com/watch?v=3eewoEMYta0&list=PL9uonUoqng750q0r2r7E-2wNFadPI2c4P&index=2&pp=iAQB',
+        index: 2
+      },
+      {
+        id: '3',
+        title: 'ICT Lecture 3',
+        url: 'https://www.youtube.com/watch?v=b3a4mOcu73U&list=PL9uonUoqng750q0r2r7E-2wNFadPI2c4P&index=3&pp=iAQB',
+        index: 3
+      },
+      {
+        id: '4',
+        title: 'ICT Lecture 4',
+        url: 'https://www.youtube.com/watch?v=lL5LiDOQ2vE&list=PL9uonUoqng750q0r2r7E-2wNFadPI2c4P&index=4&pp=iAQB',
+        index: 4
+      },
+      {
+        id: '5',
+        title: 'ICT Lecture 5',
+        url: 'https://www.youtube.com/watch?v=Lfsa31DBYwA&list=PL9uonUoqng750q0r2r7E-2wNFadPI2c4P&index=5&pp=iAQB0gcJCc4JAYcqIYzv',
+        index: 5
+      },
+      {
+        id: '6',
+        title: 'ICT Lecture 6',
+        url: 'https://www.youtube.com/watch?v=S13zR9FxZJI&list=PL9uonUoqng750q0r2r7E-2wNFadPI2c4P&index=6&pp=iAQB',
+        index: 6
+      },
+      {
+        id: '7',
+        title: 'ICT Lecture 7',
+        url: 'https://www.youtube.com/watch?v=80fLsAYN0H0&list=PL9uonUoqng750q0r2r7E-2wNFadPI2c4P&index=7&pp=iAQB',
+        index: 7
+      },
+      {
+        id: '8',
+        title: 'ICT Lecture 8',
+        url: 'https://www.youtube.com/watch?v=saAJadAE1_Y&list=PL9uonUoqng750q0r2r7E-2wNFadPI2c4P&index=8&pp=iAQB',
+        index: 8
       }
     ]
   },
