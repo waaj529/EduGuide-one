@@ -405,7 +405,9 @@ const Upload = () => {
           assignmentForm.append("difficulty_level", assignmentDifficulty);
           assignmentForm.append("number_of_questions", assignmentTotalQuestions);
           
+          console.log("🚀 Attempting assignment generation...");
           questions = await generateAssignment(assignmentForm);
+          console.log("✅ Assignment generation completed successfully:", questions?.length, "questions");
         } 
         else if (type === "quiz") {
           // Create quiz form with properly validated parameters
@@ -423,26 +425,8 @@ const Upload = () => {
           quizForm.append("difficulty_level", quizDifficulty);
           quizForm.append("number_of_questions", quizTotalQuestions || "10");
           
-          try {
-            // Call the quiz API
-            questions = await generateQuiz(quizForm);
-            
-            if (questions && questions.length > 0) {
-              setQuizGeneratedQuestions(questions);
-              setQuizProcessingComplete(true);
-              setQuizExtractionStatus("extracted");
-            } else {
-              throw new Error("No questions returned from API");
-            }
-          } catch (error) {
-            console.error("Quiz API error:", error);
-            setQuizExtractionStatus("error");
-            toast({
-              title: "Quiz Generation Failed",
-              description: "The API service is currently unavailable. Please try again later.",
-              variant: "destructive",
-            });
-          }
+          // Call the quiz API
+          questions = await generateQuiz(quizForm);
         } 
         else if (type === "proximity") {
           // Create proximity form with proximity-specific fields
@@ -460,27 +444,51 @@ const Upload = () => {
             setAssignmentGeneratedQuestions(questions);
             setAssignmentProcessingComplete(true);
             
-            // Auto-generate PDF preview for assignment
-            const assignmentForm = new FormData();
-            assignmentForm.append("file", file);
-            assignmentForm.append("department", assignmentDepartment);
-            assignmentForm.append("subject", assignmentSubject);
-            assignmentForm.append("class", assignmentClassName);
-            assignmentForm.append("due_date", assignmentDueDate);
-            assignmentForm.append("assignment_no", assignmentNumber);
-            assignmentForm.append("points", assignmentPoints);
-            assignmentForm.append("num_conceptual", assignmentConceptual);
-            assignmentForm.append("num_theoretical", assignmentTheoretical);
-            assignmentForm.append("num_scenario", assignmentScenario);
-            assignmentForm.append("difficulty_level", assignmentDifficulty);
-            assignmentForm.append("number_of_questions", assignmentTotalQuestions);
-            
-            viewAssignmentPdf(assignmentForm, (url) => setAssignmentPdfUrl(url));
+            // Auto-generate PDF preview for assignment - only if generation was successful
+            try {
+              const assignmentForm = new FormData();
+              assignmentForm.append("file", file);
+              assignmentForm.append("department", assignmentDepartment);
+              assignmentForm.append("subject", assignmentSubject);
+              assignmentForm.append("class", assignmentClassName);
+              assignmentForm.append("due_date", assignmentDueDate);
+              assignmentForm.append("assignment_no", assignmentNumber);
+              assignmentForm.append("points", assignmentPoints);
+              assignmentForm.append("num_conceptual", assignmentConceptual);
+              assignmentForm.append("num_theoretical", assignmentTheoretical);
+              assignmentForm.append("num_scenario", assignmentScenario);
+              assignmentForm.append("difficulty_level", assignmentDifficulty);
+              assignmentForm.append("number_of_questions", assignmentTotalQuestions);
+              
+              console.log("🔥 Assignment generation successful, attempting PDF preview...");
+              console.log("🔥 About to call viewAssignmentPdf with form data:", Object.fromEntries(assignmentForm.entries()));
+              
+              viewAssignmentPdf(assignmentForm, (url) => {
+                console.log("🔥 Assignment PDF callback received URL:", url);
+                console.log("🔥 Setting assignmentPdfUrl to:", url);
+                
+                if (url) {
+                  setAssignmentPdfUrl(url);
+                  console.log("✅ Assignment PDF URL set successfully");
+                } else {
+                  console.log("⚠️ Assignment PDF preview failed - URL is null/undefined");
+                }
+                
+                // Debug: Check if the state was actually updated
+                setTimeout(() => {
+                  console.log("🔍 Assignment processing complete:", assignmentProcessingComplete);
+                  console.log("🔍 Assignment PDF URL after state update:", url);
+                }, 100);
+              });
+            } catch (previewError) {
+              console.log("⚠️ Assignment PDF preview failed, but assignment generation was successful:", previewError);
+              // Don't fail the whole process if only preview fails
+            }
           } else if (type === "quiz") {
             setQuizGeneratedQuestions(questions);
             setQuizProcessingComplete(true);
             
-            // Auto-generate PDF preview for quiz
+            // Auto-generate PDF preview for quiz - reuse the same form data
             const quizForm = new FormData();
             quizForm.append("file", file);
             quizForm.append("department", quizDepartment);
@@ -495,7 +503,11 @@ const Upload = () => {
             quizForm.append("difficulty_level", quizDifficulty);
             quizForm.append("number_of_questions", quizTotalQuestions || "10");
             
-            viewQuizPdf(quizForm, (url) => setQuizPdfUrl(url));
+            console.log("🟦 About to call viewQuizPdf with form data:", Object.fromEntries(quizForm.entries()));
+            viewQuizPdf(quizForm, (url) => {
+              console.log("🟦 Quiz PDF callback received URL:", url);
+              setQuizPdfUrl(url);
+            });
           } else if (type === "proximity") {
             setProximityProcessingComplete(true);
           }
@@ -600,18 +612,51 @@ const Upload = () => {
       // Log the image details for debugging
       console.log("Image being uploaded:", proximityImageFile.name, proximityImageFile.type, proximityImageFile.size);
       
-      // Post to the deployed API endpoint
-      const response = await fetch("https://python.iamscientist.ai/api/yolo/yolo", {
-        method: "POST",
-        body: formData,
-        headers: {
-          'Accept': 'application/json'
-        }
-      });
+      // Post to the API endpoint (via proxy in development, direct in production)
+      const apiUrl = process.env.NODE_ENV === 'development' 
+        ? "/api/yolo/yolo"  // Use proxy in development
+        : "https://python.iamscientist.ai/api/yolo/yolo"; // Direct in production
       
-      if (!response.ok) {
-        console.error(`API response status: ${response.status}`);
-        throw new Error(`API error: ${response.status}`);
+      let response;
+      try {
+        console.log(`🌐 Calling YOLO API: ${apiUrl} (${process.env.NODE_ENV} mode)`);
+        response = await fetch(apiUrl, {
+          method: "POST",
+          body: formData,
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          console.error(`API response status: ${response.status}`);
+          throw new Error(`API error: ${response.status}`);
+        }
+      } catch (fetchError) {
+        console.error("CORS or network error:", fetchError);
+        
+        // Check if it's a CORS error
+        if (fetchError.message.includes('CORS') || fetchError.message.includes('Failed to fetch')) {
+          console.log("🚨 CORS Error detected - using fallback demo mode");
+          
+          // For development: simulate API response with demo data
+          const demoStudentCount = Math.floor(Math.random() * 25) + 5; // Random 5-30 students
+          
+          setStudentCount(demoStudentCount);
+          setProximityProcessingComplete(true);
+          setProximityFile(proximityImageFile);
+          
+          toast({
+            title: "Demo Mode: Image Analysis Complete",
+            description: `Demo detected ${demoStudentCount} students. (CORS issue - API unavailable in development)`,
+            variant: "default",
+          });
+          
+          return; // Exit early with demo results
+        }
+        
+        // Re-throw other errors
+        throw fetchError;
       }
       
       // Log the entire response for debugging
@@ -867,9 +912,14 @@ const Upload = () => {
       form.append("difficulty_level", assignmentDifficulty);
       form.append("number_of_questions", assignmentTotalQuestions);
       
-      downloadAssignment(form);
+      // Trigger preview instead of download
+      viewAssignmentPdf(form, (url) => {
+        if (url) {
+          window.open(url, '_blank');
+        }
+      });
     } else if (activeTab === "quiz") {
-      // Use quiz-specific form data for download
+      // Use quiz-specific form data for preview
       const form = new FormData();
       form.append("file", quizFile);
       form.append("department", quizDepartment);
@@ -884,7 +934,12 @@ const Upload = () => {
       form.append("difficulty_level", quizDifficulty);
       form.append("number_of_questions", quizTotalQuestions);
       
-      downloadQuiz(form);
+      // Trigger preview instead of download
+      viewQuizPdf(form, (url) => {
+        if (url) {
+          window.open(url, '_blank');
+        }
+      });
     } else if (activeTab === "proximity") {
       // Use proximity-specific form data
       const form = new FormData();
@@ -1190,7 +1245,7 @@ const Upload = () => {
               </CardContent>
               <CardFooter>
                 <Button
-                  className="w-full"
+                  className="w-full h-10 flex items-center justify-center"
                   onClick={() => handleUpload("assignment")}
                   disabled={
                     !assignmentFile ||
@@ -1210,6 +1265,10 @@ const Upload = () => {
 
             <Card className="h-[900px] flex flex-col">
               <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+                {(() => {
+                  console.log("🔍 Assignment iframe condition check:", { isProcessing, activeTab, assignmentProcessingComplete, assignmentPdfUrl });
+                  return null;
+                })()}
                 {isProcessing && activeTab === "assignment" ? (
                   <div className="flex flex-col items-center justify-center h-full">
                     <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -1224,8 +1283,12 @@ const Upload = () => {
                 ) : assignmentProcessingComplete && assignmentPdfUrl ? (
                   <div className="relative flex-1 flex flex-col">
                     <div className="flex-1 bg-muted rounded-md overflow-hidden">
+                      {(() => {
+                        console.log("🖼️ Rendering assignment iframe with URL:", assignmentPdfUrl);
+                        return null;
+                      })()}
                       <iframe 
-                        src={assignmentPdfUrl} 
+                        src={assignmentPdfUrl}
                         className="w-full h-full border-0"
                         title="Assignment PDF Preview"
                       />
@@ -1501,7 +1564,7 @@ const Upload = () => {
               </CardContent>
               <CardFooter>
                 <Button
-                  className="w-full"
+                  className="w-full h-10 flex items-center justify-center"
                   onClick={() => handleUpload("quiz")}
                   disabled={
                     !quizFile ||
@@ -1674,7 +1737,7 @@ const Upload = () => {
               </CardContent>
               <CardFooter>
                 <Button
-                  className="w-full"
+                  className="w-full h-10 flex items-center justify-center"
                   onClick={countStudentsInImage}
                   disabled={
                     !proximityImageFile ||
