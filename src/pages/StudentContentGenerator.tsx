@@ -386,17 +386,17 @@ const StudentContentGenerator = () => {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto py-4 md:py-8 px-4">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="mb-6"
+        className="mb-4 md:mb-6"
       >
-        <h1 className="text-3xl font-bold mb-2 text-gradient">
+        <h1 className="text-2xl md:text-3xl font-bold mb-2 text-gradient">
           My Study Materials
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-sm md:text-base">
           Generate personalized learning content from your uploaded materials
         </p>
       </motion.div>
@@ -407,7 +407,7 @@ const StudentContentGenerator = () => {
         transition={{ duration: 0.3 }}
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-8">
+          <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-1 sm:gap-2 mb-6 md:mb-8 h-auto p-1">
             <motion.div
               variants={tabItemVariants}
               animate={activeTab === "questions" ? "active" : "inactive"}
@@ -415,10 +415,11 @@ const StudentContentGenerator = () => {
             >
               <TabsTrigger
                 value="questions"
-                className="flex items-center w-full"
+                className="flex items-center justify-center w-full text-xs sm:text-sm py-2 px-1 sm:px-3"
               >
-                <PenBox className="h-4 w-4 mr-2" />
-                Practice Questions
+                <PenBox className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 flex-shrink-0" />
+                <span className="hidden sm:inline">Practice Questions</span>
+                <span className="sm:hidden">Practice</span>
               </TabsTrigger>
             </motion.div>
 
@@ -429,10 +430,11 @@ const StudentContentGenerator = () => {
             >
               <TabsTrigger
                 value="chatpdf"
-                className="flex items-center w-full"
+                className="flex items-center justify-center w-full text-xs sm:text-sm py-2 px-1 sm:px-3"
               >
-                <MessagesSquare className="h-4 w-4 mr-2" />
-                Chat With PDF
+                <MessagesSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 flex-shrink-0" />
+                <span className="hidden sm:inline">Chat With PDF</span>
+                <span className="sm:hidden">Chat PDF</span>
               </TabsTrigger>
             </motion.div>
 
@@ -441,9 +443,12 @@ const StudentContentGenerator = () => {
               animate={activeTab === "summary" ? "active" : "inactive"}
               className="w-full"
             >
-              <TabsTrigger value="summary" className="flex items-center w-full">
-                <BookText className="h-4 w-4 mr-2" />
-                Summary
+              <TabsTrigger 
+                value="summary" 
+                className="flex items-center justify-center w-full text-xs sm:text-sm py-2 px-1 sm:px-3"
+              >
+                <BookText className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 flex-shrink-0" />
+                <span>Summary</span>
               </TabsTrigger>
             </motion.div>
 
@@ -454,10 +459,11 @@ const StudentContentGenerator = () => {
             >
               <TabsTrigger
                 value="keypoints"
-                className="flex items-center w-full"
+                className="flex items-center justify-center w-full text-xs sm:text-sm py-2 px-1 sm:px-3"
               >
-                <Lightbulb className="h-4 w-4 mr-2" />
-                Key Points
+                <Lightbulb className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 flex-shrink-0" />
+                <span className="hidden sm:inline">Key Points</span>
+                <span className="sm:hidden">Key Points</span>
               </TabsTrigger>
             </motion.div>
           </TabsList>
@@ -579,12 +585,12 @@ const StudentContentGenerator = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 {/* Left side: PDF upload and viewer */}
-                <Card className="shadow-soft hover:shadow-glow transition-shadow duration-300 h-[800px] flex flex-col">
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <FileType className="h-5 w-5 mr-2" />
+                                  <Card className="shadow-soft hover:shadow-glow transition-shadow duration-300 h-[600px] lg:h-[800px] flex flex-col">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center text-lg">
+                      <FileType className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                       PDF Document
                     </CardTitle>
                   </CardHeader>
@@ -632,10 +638,10 @@ const StudentContentGenerator = () => {
                 </Card>
 
                 {/* Right side: Chat interface */}
-                <Card className="shadow-soft hover:shadow-glow transition-shadow duration-300 h-[800px] flex flex-col overflow-hidden">
-                  <CardHeader className="border-b">
-                    <CardTitle className="flex items-center">
-                      <MessagesSquare className="h-5 w-5 mr-2" />
+                <Card className="shadow-soft hover:shadow-glow transition-shadow duration-300 h-[600px] lg:h-[800px] flex flex-col overflow-hidden">
+                  <CardHeader className="border-b pb-3">
+                    <CardTitle className="flex items-center text-lg">
+                      <MessagesSquare className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                       Chat with your PDF
                     </CardTitle>
                   </CardHeader>

@@ -105,22 +105,22 @@ const TeacherDashboard = () => {
               </Link>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               <Card className="w-full bg-blue-50 dark:bg-blue-950/30 border-0 shadow-sm rounded-xl overflow-hidden">
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-3 text-blue-600 mb-5">
-                    <FileText className="h-6 w-6" />
-                    <span className="text-xl font-semibold">Assignment Generator</span>
+                <CardContent className="p-4 sm:p-6 md:p-8">
+                  <div className="flex items-center gap-2 md:gap-3 text-blue-600 mb-4 md:mb-5">
+                    <FileText className="h-5 w-5 md:h-6 md:w-6 flex-shrink-0" />
+                    <span className="text-lg md:text-xl font-semibold">Assignment Generator</span>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-300 mb-12">
+                  <p className="text-gray-600 dark:text-gray-300 mb-6 md:mb-12 text-sm md:text-base">
                     Create customized assignments from your uploaded content with specific learning objectives and difficulty levels.
                   </p>
                   <div className="w-full mt-auto">
                     <Link to="/upload?tab=assignment" className="w-full block">
                       <div className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/80 hover:shadow-md transition-all duration-300 group">
-                        <div className="flex items-center justify-between px-8 py-5">
-                          <span className="font-medium text-gray-800 dark:text-gray-200">Get Started</span>
-                          <ArrowRight className="h-5 w-5 text-gray-600 dark:text-gray-300 transition-transform group-hover:translate-x-1" />
+                        <div className="flex items-center justify-between px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5">
+                          <span className="font-medium text-gray-800 dark:text-gray-200 text-sm md:text-base">Get Started</span>
+                          <ArrowRight className="h-4 w-4 md:h-5 md:w-5 text-gray-600 dark:text-gray-300 transition-transform group-hover:translate-x-1 flex-shrink-0" />
                         </div>
                       </div>
                     </Link>
@@ -135,25 +135,26 @@ const TeacherDashboard = () => {
                 </div>
               ) : recentAssignments.length > 0 ? (
                 <Card className="col-span-1 md:col-span-2 shadow-sm border-0">
-                  <CardHeader>
-                    <CardTitle>Recent Assignments</CardTitle>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg md:text-xl">Recent Assignments</CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-0">
                     <ScrollArea className="h-[180px]">
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         {recentAssignments.map(assignment => (
-                          <div key={assignment.id} className="flex items-center justify-between p-3 rounded-md hover:bg-muted transition-colors">
-                            <div>
-                              <h3 className="font-medium">{assignment.title}</h3>
-                              <div className="flex items-center text-sm text-muted-foreground">
-                                <span className="mr-3">{assignment.subject}</span>
+                          <div key={assignment.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-md hover:bg-muted transition-colors gap-2">
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-medium text-sm md:text-base truncate">{assignment.title}</h3>
+                              <div className="flex flex-col sm:flex-row sm:items-center text-xs md:text-sm text-muted-foreground gap-1 sm:gap-3">
+                                <span>{assignment.subject}</span>
+                                <span className="hidden sm:inline">•</span>
                                 <span>Created {assignment.createdAt}</span>
                               </div>
                             </div>
-                            <div className="flex items-center">
-                              <span className="mr-4 text-sm">{assignment.students} students</span>
-                              <Button variant="ghost" size="sm">
-                                <ChevronRight className="h-4 w-4" />
+                            <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
+                              <span className="text-xs md:text-sm font-medium">{assignment.students} students</span>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
                               </Button>
                             </div>
                           </div>
@@ -194,22 +195,22 @@ const TeacherDashboard = () => {
               </Link>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               <Card className="w-full bg-purple-50 dark:bg-purple-950/30 border-0 shadow-sm rounded-xl overflow-hidden">
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-3 text-purple-600 mb-5">
-                    <BookOpen className="h-6 w-6" />
-                    <span className="text-xl font-semibold">Quiz Generator</span>
+                <CardContent className="p-4 sm:p-6 md:p-8">
+                  <div className="flex items-center gap-2 md:gap-3 text-purple-600 mb-4 md:mb-5">
+                    <BookOpen className="h-5 w-5 md:h-6 md:w-6 flex-shrink-0" />
+                    <span className="text-lg md:text-xl font-semibold">Quiz Generator</span>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-300 mb-12">
+                  <p className="text-gray-600 dark:text-gray-300 mb-6 md:mb-12 text-sm md:text-base">
                     Generate interactive quizzes with multiple difficulty levels and question types based on your materials.
                   </p>
                   <div className="w-full mt-auto">
                     <Link to="/upload?tab=quiz" className="w-full block">
                       <div className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/80 hover:shadow-md transition-all duration-300 group">
-                        <div className="flex items-center justify-between px-8 py-5">
-                          <span className="font-medium text-gray-800 dark:text-gray-200">Get Started</span>
-                          <ArrowRight className="h-5 w-5 text-gray-600 dark:text-gray-300 transition-transform group-hover:translate-x-1" />
+                        <div className="flex items-center justify-between px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5">
+                          <span className="font-medium text-gray-800 dark:text-gray-200 text-sm md:text-base">Get Started</span>
+                          <ArrowRight className="h-4 w-4 md:h-5 md:w-5 text-gray-600 dark:text-gray-300 transition-transform group-hover:translate-x-1 flex-shrink-0" />
                         </div>
                       </div>
                     </Link>
@@ -224,25 +225,26 @@ const TeacherDashboard = () => {
                 </div>
               ) : recentQuizzes.length > 0 ? (
                 <Card className="col-span-1 md:col-span-2 shadow-sm border-0">
-                  <CardHeader>
-                    <CardTitle>Recent Quizzes</CardTitle>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg md:text-xl">Recent Quizzes</CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-0">
                     <ScrollArea className="h-[180px]">
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         {recentQuizzes.map(quiz => (
-                          <div key={quiz.id} className="flex items-center justify-between p-3 rounded-md hover:bg-muted transition-colors">
-                            <div>
-                              <h3 className="font-medium">{quiz.title}</h3>
-                              <div className="flex items-center text-sm text-muted-foreground">
-                                <span className="mr-3">{quiz.subject}</span>
+                          <div key={quiz.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-md hover:bg-muted transition-colors gap-2">
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-medium text-sm md:text-base truncate">{quiz.title}</h3>
+                              <div className="flex flex-col sm:flex-row sm:items-center text-xs md:text-sm text-muted-foreground gap-1 sm:gap-3">
+                                <span>{quiz.subject}</span>
+                                <span className="hidden sm:inline">•</span>
                                 <span>Created {quiz.createdAt}</span>
                               </div>
                             </div>
-                            <div className="flex items-center">
-                              <span className="mr-4 text-sm">{quiz.questions} questions</span>
-                              <Button variant="ghost" size="sm">
-                                <ChevronRight className="h-4 w-4" />
+                            <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
+                              <span className="text-xs md:text-sm font-medium">{quiz.questions} questions</span>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
                               </Button>
                             </div>
                           </div>
@@ -283,22 +285,22 @@ const TeacherDashboard = () => {
               </Link>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               <Card className="w-full bg-amber-50 dark:bg-amber-950/30 border-0 shadow-sm rounded-xl overflow-hidden">
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-3 text-amber-600 mb-5">
-                    <GraduationCap className="h-6 w-6" />
-                    <span className="text-xl font-semibold">Proximity Handling</span>
+                <CardContent className="p-4 sm:p-6 md:p-8">
+                  <div className="flex items-center gap-2 md:gap-3 text-amber-600 mb-4 md:mb-5">
+                    <GraduationCap className="h-5 w-5 md:h-6 md:w-6 flex-shrink-0" />
+                    <span className="text-lg md:text-xl font-semibold">Proximity Handling</span>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-300 mb-12">
+                  <p className="text-gray-600 dark:text-gray-300 mb-6 md:mb-12 text-sm md:text-base">
                     Upload classroom images to automatically count student attendance and track proximity data.
                   </p>
                   <div className="w-full mt-auto">
                     <Link to="/upload?tab=proximity" className="w-full block">
                       <div className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/80 hover:shadow-md transition-all duration-300 group">
-                        <div className="flex items-center justify-between px-8 py-5">
-                          <span className="font-medium text-gray-800 dark:text-gray-200">Get Started</span>
-                          <ArrowRight className="h-5 w-5 text-gray-600 dark:text-gray-300 transition-transform group-hover:translate-x-1" />
+                        <div className="flex items-center justify-between px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5">
+                          <span className="font-medium text-gray-800 dark:text-gray-200 text-sm md:text-base">Get Started</span>
+                          <ArrowRight className="h-4 w-4 md:h-5 md:w-5 text-gray-600 dark:text-gray-300 transition-transform group-hover:translate-x-1 flex-shrink-0" />
                         </div>
                       </div>
                     </Link>
@@ -313,25 +315,26 @@ const TeacherDashboard = () => {
                 </div>
               ) : recentExams.length > 0 ? (
                 <Card className="col-span-1 md:col-span-2 shadow-sm border-0">
-                  <CardHeader>
-                    <CardTitle>Recent Proximity Sessions</CardTitle>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg md:text-xl">Recent Proximity Sessions</CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-0">
                     <ScrollArea className="h-[180px]">
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         {recentExams.map(exam => (
-                          <div key={exam.id} className="flex items-center justify-between p-3 rounded-md hover:bg-muted transition-colors">
-                            <div>
-                              <h3 className="font-medium">{exam.title}</h3>
-                              <div className="flex items-center text-sm text-muted-foreground">
-                                <span className="mr-3">{exam.subject}</span>
+                          <div key={exam.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-md hover:bg-muted transition-colors gap-2">
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-medium text-sm md:text-base truncate">{exam.title}</h3>
+                              <div className="flex flex-col sm:flex-row sm:items-center text-xs md:text-sm text-muted-foreground gap-1 sm:gap-3">
+                                <span>{exam.subject}</span>
+                                <span className="hidden sm:inline">•</span>
                                 <span>Created {exam.createdAt}</span>
                               </div>
                             </div>
-                            <div className="flex items-center">
-                              <span className="mr-4 text-sm">{exam.questions} questions</span>
-                              <Button variant="ghost" size="sm">
-                                <ChevronRight className="h-4 w-4" />
+                            <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
+                              <span className="text-xs md:text-sm font-medium">{exam.questions} questions</span>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
                               </Button>
                             </div>
                           </div>

@@ -25,11 +25,24 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 // NavbarLink Component for consistent styling
-const NavbarLink = ({ to, children, isMobile = false }: { to: string; children: React.ReactNode; isMobile?: boolean }) => (
+const NavbarLink = ({ 
+  to, 
+  children, 
+  isMobile = false, 
+  onClick 
+}: { 
+  to: string; 
+  children: React.ReactNode; 
+  isMobile?: boolean;
+  onClick?: () => void;
+}) => (
   <Link
     to={to}
-    className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
-      isMobile ? 'hover:bg-gray-100 dark:hover:bg-gray-800 w-full' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+    onClick={onClick}
+    className={`flex items-center gap-3 px-4 py-3 rounded-md transition-colors ${
+      isMobile 
+        ? 'hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-sm font-medium' 
+        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
     }`}
   >
     {children}
@@ -49,6 +62,18 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const toggleMenu = () => setIsOpen(!isOpen);
+
+  // Close menu on escape key
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen]);
 
   const markAllAsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
@@ -103,13 +128,13 @@ const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-sm transition-all">
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="rounded-full bg-brand-blue p-1">
-              <BookOpen className="h-7 w-7 text-white" />
+      <div className="container max-w-7xl mx-auto px-3 sm:px-4 md:px-6 flex h-14 sm:h-16 items-center justify-between">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <Link to="/" className="flex items-center gap-2 min-w-0">
+            <div className="rounded-full bg-brand-blue p-1 flex-shrink-0">
+              <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
             </div>
-            <span className="text-xl font-bold hidden sm:inline-block">EduGuide AI</span>
+            <span className="text-lg sm:text-xl font-bold hidden sm:inline-block truncate">EduGuide AI</span>
           </Link>
         </div>
 
@@ -136,39 +161,57 @@ const Navbar = () => {
           </NavigationMenu>
         ) : null}
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
           {isAuthenticated && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9">
-                  {user?.role === 'teacher' ? (
-                    <>
-                      <GraduationCap className="mr-2 h-4 w-4" />
-                      <span>Teacher</span>
-                    </>
-                  ) : (
-                    <>
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Student</span>
-                    </>
-                  )}
-                  <ChevronDown className="ml-2 h-4 w-4" />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-9 sm:h-10 px-3 sm:px-4 min-w-[100px] sm:min-w-[120px]"
+                >
+                  <div className="flex items-center gap-2 w-full">
+                    {user?.role === 'teacher' ? (
+                      <>
+                        <GraduationCap className="h-4 w-4 flex-shrink-0" />
+                        <span className="text-sm font-medium">Teacher</span>
+                      </>
+                    ) : (
+                      <>
+                        <User className="h-4 w-4 flex-shrink-0" />
+                        <span className="text-sm font-medium">Student</span>
+                      </>
+                    )}
+                    <ChevronDown className="ml-auto h-4 w-4 flex-shrink-0" />
+                  </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-40">
                 <DropdownMenuItem 
                   onClick={() => handleRoleSwitch('student')}
-                  className={cn("cursor-pointer", user?.role === 'student' && "bg-primary/10")}
+                  className={cn(
+                    "cursor-pointer",
+                    user?.role === 'student' && "bg-primary/10"
+                  )}
                 >
                   <User className="mr-2 h-4 w-4" />
                   <span>Student Mode</span>
+                  {user?.role === 'student' && (
+                    <span className="ml-auto text-xs text-primary">●</span>
+                  )}
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => handleRoleSwitch('teacher')}
-                  className={cn("cursor-pointer", user?.role === 'teacher' && "bg-primary/10")}
+                  className={cn(
+                    "cursor-pointer",
+                    user?.role === 'teacher' && "bg-primary/10"
+                  )}
                 >
                   <GraduationCap className="mr-2 h-4 w-4" />
                   <span>Teacher Mode</span>
+                  {user?.role === 'teacher' && (
+                    <span className="ml-auto text-xs text-primary">●</span>
+                  )}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -176,22 +219,22 @@ const Navbar = () => {
 
           <button
             onClick={toggleTheme}
-            className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="rounded-full p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             aria-label="Toggle theme"
           >
-            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            {theme === 'dark' ? <Sun className="h-4 w-4 sm:h-5 sm:w-5" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
           </button>
           
           {isAuthenticated && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
+                  className="rounded-full p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
                   aria-label="Notifications"
                 >
-                  <Bell className="h-5 w-5" />
+                  <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
                   {notifications.some(n => !n.isRead) && (
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    <span className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                   )}
                 </button>
               </DropdownMenuTrigger>
@@ -235,11 +278,11 @@ const Navbar = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="rounded-full bg-gray-200 dark:bg-gray-700 p-2 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                className="rounded-full bg-gray-200 dark:bg-gray-700 p-1.5 sm:p-2 cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                 onClick={handleProfileClick}
               >
                 <span className="sr-only">Profile</span>
-                <User className="h-5 w-5" />
+                <User className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </DropdownMenuTrigger>
             {isAuthenticated ? (
@@ -273,43 +316,70 @@ const Navbar = () => {
           {!isDesktop && (
             <button
               onClick={toggleMenu}
-              className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors lg:hidden"
+              className="p-1.5 sm:p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors lg:hidden ml-1"
               aria-label="Menu"
             >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6" />}
             </button>
           )}
         </div>
       </div>
 
       {isOpen && !isDesktop && isAuthenticated && (
-        <div className="lg:hidden absolute top-16 inset-x-0 bg-background border-b border-border z-50 shadow-lg animate-slide-down">
-          <nav className="px-4 py-2 divide-y divide-border">
-            {navLinks.map((link, idx) => (
-              <NavbarLink key={idx} to={link.to} isMobile>
-                {link.icon}
-                <span>{link.label}</span>
-              </NavbarLink>
-            ))}
-            <div className="py-2">
-              <h3 className="px-4 py-2 text-sm font-semibold">Switch Role</h3>
-              <button 
-                onClick={() => handleRoleSwitch('student')} 
-                className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors w-full hover:bg-gray-100 dark:hover:bg-gray-800 ${user?.role === 'student' ? 'bg-primary/10' : ''}`}
-              >
-                <User className="h-4 w-4" />
-                <span>Student Mode</span>
-              </button>
-              <button 
-                onClick={() => handleRoleSwitch('teacher')} 
-                className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors w-full hover:bg-gray-100 dark:hover:bg-gray-800 ${user?.role === 'teacher' ? 'bg-primary/10' : ''}`}
-              >
-                <GraduationCap className="h-4 w-4" />
-                <span>Teacher Mode</span>
-              </button>
+        <>
+          {/* Backdrop */}
+          <div 
+            className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+          />
+          
+          {/* Mobile Menu */}
+          <div className="lg:hidden absolute top-14 sm:top-16 inset-x-0 bg-background border-b border-border z-50 shadow-xl animate-slide-down">
+            <nav className="px-3 sm:px-4 py-3 divide-y divide-border max-h-[calc(100vh-4rem)] overflow-y-auto">
+            <div className="pb-3">
+              {navLinks.map((link, idx) => (
+                <NavbarLink 
+                  key={idx} 
+                  to={link.to} 
+                  isMobile
+                  onClick={() => setIsOpen(false)}
+                >
+                  {link.icon}
+                  <span>{link.label}</span>
+                </NavbarLink>
+              ))}
+            </div>
+            <div className="pt-3">
+              <h3 className="px-4 py-2 text-sm font-semibold text-muted-foreground">Switch Role</h3>
+              <div className="space-y-1">
+                <button 
+                  onClick={() => {
+                    handleRoleSwitch('student');
+                    setIsOpen(false);
+                  }} 
+                  className={`flex items-center gap-3 px-4 py-3 rounded-md transition-colors w-full hover:bg-gray-100 dark:hover:bg-gray-800 text-left ${user?.role === 'student' ? 'bg-primary/10 border border-primary/20' : ''}`}
+                >
+                  <User className="h-4 w-4" />
+                  <span>Student Mode</span>
+                  {user?.role === 'student' && <span className="ml-auto text-xs text-primary">●</span>}
+                </button>
+                <button 
+                  onClick={() => {
+                    handleRoleSwitch('teacher');
+                    setIsOpen(false);
+                  }} 
+                  className={`flex items-center gap-3 px-4 py-3 rounded-md transition-colors w-full hover:bg-gray-100 dark:hover:bg-gray-800 text-left ${user?.role === 'teacher' ? 'bg-primary/10 border border-primary/20' : ''}`}
+                >
+                  <GraduationCap className="h-4 w-4" />
+                  <span>Teacher Mode</span>
+                  {user?.role === 'teacher' && <span className="ml-auto text-xs text-primary">●</span>}
+                </button>
+              </div>
             </div>
           </nav>
         </div>
+        </>
       )}
     </header>
   );

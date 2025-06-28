@@ -466,6 +466,7 @@ const Upload = () => {
               viewAssignmentPdf(assignmentForm, (url) => {
                 if (url) {
                   setAssignmentPdfUrl(url);
+                } else {
                   console.warn("Assignment PDF preview failed - URL is null/undefined");
                 }
               });
@@ -1039,9 +1040,9 @@ const Upload = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-2">Learning Content Generator</h1>
-      <p className="text-muted-foreground mb-8">
+    <div className="container mx-auto px-4 py-4 md:py-8 max-w-7xl">
+      <h1 className="text-2xl md:text-3xl font-bold mb-2">Learning Content Generator</h1>
+      <p className="text-muted-foreground mb-6 md:mb-8">
         Generate personalized learning content from your uploaded materials
       </p>
 
@@ -1051,25 +1052,27 @@ const Upload = () => {
         onValueChange={handleTabChange}
         className="w-full"
       >
-        <TabsList className="grid grid-cols-3 mb-8">
-          <TabsTrigger value="assignment" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Assignment
+        <TabsList className="grid grid-cols-3 mb-6 md:mb-8 w-full">
+          <TabsTrigger value="assignment" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
+            <FileText className="h-3 w-3 md:h-4 md:w-4" />
+            <span className="hidden sm:inline">Assignment</span>
+            <span className="sm:hidden">Assign</span>
           </TabsTrigger>
-          <TabsTrigger value="quiz" className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4" />
+          <TabsTrigger value="quiz" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
+            <BookOpen className="h-3 w-3 md:h-4 md:w-4" />
             Quiz
           </TabsTrigger>
-          <TabsTrigger value="proximity" className="flex items-center gap-2">
-            <GraduationCap className="h-4 w-4" />
-            Proximity Handling
+          <TabsTrigger value="proximity" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
+            <GraduationCap className="h-3 w-3 md:h-4 md:w-4" />
+            <span className="hidden sm:inline">Proximity</span>
+            <span className="sm:hidden">Prox</span>
           </TabsTrigger>
         </TabsList>
 
         {/* Assignment Tab */}
         <TabsContent value="assignment" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card className="h-[900px] flex flex-col">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+            <Card className="h-auto lg:h-[900px] flex flex-col">
               <CardHeader>
                 <CardTitle>Generate Assignment</CardTitle>
                 <CardDescription>
@@ -1185,7 +1188,7 @@ const Upload = () => {
                         )}
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="department">Department</Label>
                           <Input
@@ -1206,7 +1209,7 @@ const Upload = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="class">Class</Label>
                           <Input
@@ -1227,7 +1230,7 @@ const Upload = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="assignment_no">Assignment Number</Label>
                           <Input
@@ -1267,10 +1270,10 @@ const Upload = () => {
                           </div>
                         </div>
                         
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor="num_conceptual">
-                              Num Conceptual
+                            <Label htmlFor="num_conceptual" className="text-sm">
+                              Conceptual
                             </Label>
                             <Input
                               id="num_conceptual"
@@ -1281,8 +1284,8 @@ const Upload = () => {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="num_theoretical">
-                              Num Theoretical
+                            <Label htmlFor="num_theoretical" className="text-sm">
+                              Theoretical
                             </Label>
                             <Input
                               id="num_theoretical"
@@ -1293,8 +1296,8 @@ const Upload = () => {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="num_scenario">
-                              Num Scenario
+                            <Label htmlFor="num_scenario" className="text-sm">
+                              Scenario
                             </Label>
                             <Input
                               id="num_scenario"
@@ -1349,7 +1352,7 @@ const Upload = () => {
               </CardFooter>
             </Card>
 
-            <Card className="h-[900px] flex flex-col">
+            <Card className="h-auto lg:h-[900px] flex flex-col min-h-[500px]">
               <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
                 {isProcessing && activeTab === "assignment" ? (
                   <div className="flex flex-col items-center justify-center h-full">
@@ -1364,7 +1367,7 @@ const Upload = () => {
                   </div>
                 ) : assignmentProcessingComplete && assignmentPdfUrl ? (
                   <div className="relative flex-1 flex flex-col">
-                    <div className="flex-1 bg-muted rounded-md overflow-hidden">
+                    <div className="flex-1 bg-muted rounded-md overflow-hidden min-h-[400px] lg:min-h-0">
                       <iframe 
                         src={assignmentPdfUrl}
                         className="w-full h-full border-0"
@@ -1386,7 +1389,7 @@ const Upload = () => {
                 )}
               </CardContent>
               {assignmentProcessingComplete && assignmentPdfUrl && (
-                <CardFooter className="p-4 flex gap-2">
+                <CardFooter className="p-4 flex flex-col sm:flex-row gap-2">
                     <Button
                       className="flex-1 flex items-center justify-center"
                       onClick={() => handleDownload()}
@@ -1418,8 +1421,8 @@ const Upload = () => {
 
         {/* Quiz Tab */}
         <TabsContent value="quiz" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card className="h-[900px] flex flex-col">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+            <Card className="h-auto lg:h-[900px] flex flex-col">
               <CardHeader>
                 <CardTitle>Generate Quiz</CardTitle>
                 <CardDescription>
@@ -1534,7 +1537,7 @@ const Upload = () => {
                         )}
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="department">Department</Label>
                           <Input
@@ -1555,7 +1558,7 @@ const Upload = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="class">Class Section</Label>
                           <Input
@@ -1576,7 +1579,7 @@ const Upload = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="points">Total Points</Label>
                           <Input
@@ -1607,9 +1610,9 @@ const Upload = () => {
                         />
                       </div>
 
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="num_conceptual">Conceptual Questions</Label>
+                          <Label htmlFor="num_conceptual" className="text-sm">Conceptual</Label>
                           <Input
                             id="num_conceptual"
                             placeholder="0"
@@ -1620,7 +1623,7 @@ const Upload = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="num_theoretical">Theoretical Questions</Label>
+                          <Label htmlFor="num_theoretical" className="text-sm">Theoretical</Label>
                           <Input
                             id="num_theoretical"
                             placeholder="2"
@@ -1631,7 +1634,7 @@ const Upload = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="num_scenario">Scenario Questions</Label>
+                          <Label htmlFor="num_scenario" className="text-sm">Scenario</Label>
                           <Input
                             id="num_scenario"
                             placeholder="1"
@@ -1683,7 +1686,7 @@ const Upload = () => {
               </CardFooter>
             </Card>
 
-            <Card className="h-[900px] flex flex-col">
+            <Card className="h-auto lg:h-[900px] flex flex-col min-h-[500px]">
               <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
                 {isProcessing && activeTab === "quiz" ? (
                   <div className="flex flex-col items-center justify-center h-full">
@@ -1698,7 +1701,7 @@ const Upload = () => {
                   </div>
                 ) : quizProcessingComplete && quizPdfUrl ? (
                   <div className="relative flex-1 flex flex-col">
-                    <div className="flex-1 bg-muted rounded-md overflow-hidden">
+                    <div className="flex-1 bg-muted rounded-md overflow-hidden min-h-[400px] lg:min-h-0">
                       <iframe 
                         src={quizPdfUrl} 
                         className="w-full h-full border-0"
@@ -1720,7 +1723,7 @@ const Upload = () => {
                 )}
               </CardContent>
               {quizProcessingComplete && quizPdfUrl && (
-                <CardFooter className="p-4 flex gap-2">
+                <CardFooter className="p-4 flex flex-col sm:flex-row gap-2">
                     <Button
                       className="flex-1 flex items-center justify-center"
                       onClick={() => handleDownload()}
@@ -1752,7 +1755,7 @@ const Upload = () => {
 
         {/* Proximity Tab */}
         <TabsContent value="proximity" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
             <Card>
               <CardHeader>
                 <CardTitle>Proximity Handling</CardTitle>
@@ -1827,7 +1830,7 @@ const Upload = () => {
 
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="proximity-class-name">Class Name</Label>
                           <Input
@@ -1921,8 +1924,7 @@ const Upload = () => {
                             <img 
                               src={annotatedImageUrl} 
                               alt="Annotated classroom image" 
-                              className="w-full object-contain"
-                              style={{ maxHeight: '300px' }}
+                              className="w-full object-contain max-h-[200px] md:max-h-[300px]"
                             />
                           </div>
                         </div>
@@ -1944,7 +1946,7 @@ const Upload = () => {
                         </p>
                       </div>
 
-                    <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
                       <div className="space-y-1">
                         <p className="text-sm text-muted-foreground">Class Name</p>
                         <p className="font-medium">{proximityClassName || "Not specified"}</p>
@@ -1954,7 +1956,7 @@ const Upload = () => {
                         <p className="font-medium">{proximitySubject || "Not specified"}</p>
                       </div>
                       {proximityDepartment && (
-                        <div className="space-y-1 col-span-2">
+                        <div className="space-y-1 col-span-1 sm:col-span-2">
                           <p className="text-sm text-muted-foreground">Notes</p>
                           <p className="font-medium">{proximityDepartment}</p>
                         </div>
@@ -1974,7 +1976,7 @@ const Upload = () => {
                 )}
               </CardContent>
               {proximityProcessingComplete && (
-                <CardFooter className="flex justify-between gap-4">
+                <CardFooter className="flex flex-col sm:flex-row gap-4">
                   <Button
                     variant="outline"
                     className="flex-1 flex items-center justify-center"
