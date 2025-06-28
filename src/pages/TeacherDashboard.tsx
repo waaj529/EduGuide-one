@@ -87,10 +87,19 @@ const TeacherDashboard = () => {
 
       <section className="mb-10">
         <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 mb-8 w-full max-w-md mx-auto">
-            <TabsTrigger value="assignments" className="text-center">Assignments</TabsTrigger>
-            <TabsTrigger value="quizzes" className="text-center">Quizzes</TabsTrigger>
-            <TabsTrigger value="exams" className="text-center">Proximity Handling</TabsTrigger>
+          <TabsList className="grid grid-cols-3 mb-8 w-full max-w-lg mx-auto">
+            <TabsTrigger value="assignments" className="text-center px-2 sm:px-3">
+              <span className="text-xs sm:text-sm truncate">Assignments</span>
+            </TabsTrigger>
+            <TabsTrigger value="quizzes" className="text-center px-2 sm:px-3">
+              <span className="text-xs sm:text-sm truncate">Quizzes</span>
+            </TabsTrigger>
+            <TabsTrigger value="exams" className="text-center px-1 sm:px-3">
+              <span className="text-xs sm:text-sm truncate">
+                <span className="sm:hidden">Proximity</span>
+                <span className="hidden sm:inline">Proximity Handling</span>
+              </span>
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="assignments" className="space-y-6">
