@@ -143,30 +143,30 @@ const Upload = () => {
   const [proximityLocation, setProximityLocation] = useState("");
 
   // Assignment form state
-  const [assignmentDepartment, setAssignmentDepartment] = useState("UIIT");
-  const [assignmentSubject, setAssignmentSubject] = useState("IFT");
-  const [assignmentClassName, setAssignmentClassName] = useState("BSCS-1B");
-  const [assignmentDueDate, setAssignmentDueDate] = useState("2024-12-31");
-  const [assignmentNumber, setAssignmentNumber] = useState("Assignment_no 1");
-  const [assignmentPoints, setAssignmentPoints] = useState("10");
-  const [assignmentConceptual, setAssignmentConceptual] = useState("2");
-  const [assignmentTheoretical, setAssignmentTheoretical] = useState("2");
-  const [assignmentScenario, setAssignmentScenario] = useState("1");
-  const [assignmentDifficulty, setAssignmentDifficulty] = useState("hard");
-  const [assignmentTotalQuestions, setAssignmentTotalQuestions] = useState("5");
+  const [assignmentDepartment, setAssignmentDepartment] = useState("");
+  const [assignmentSubject, setAssignmentSubject] = useState("");
+  const [assignmentClassName, setAssignmentClassName] = useState("");
+  const [assignmentDueDate, setAssignmentDueDate] = useState("");
+  const [assignmentNumber, setAssignmentNumber] = useState("");
+  const [assignmentPoints, setAssignmentPoints] = useState("");
+  const [assignmentConceptual, setAssignmentConceptual] = useState("");
+  const [assignmentTheoretical, setAssignmentTheoretical] = useState("");
+  const [assignmentScenario, setAssignmentScenario] = useState("");
+  const [assignmentDifficulty, setAssignmentDifficulty] = useState("");
+  const [assignmentTotalQuestions, setAssignmentTotalQuestions] = useState("");
   
   // Quiz form state - with proper placeholders matching API expectations
-  const [quizDepartment, setQuizDepartment] = useState("Computer Science");
-  const [quizSubject, setQuizSubject] = useState("IFT");
-  const [quizClassName, setQuizClassName] = useState("BSCS-1B");
-  const [quizDueDate, setQuizDueDate] = useState("2024-12-31");
-  const [quizNumber, setQuizNumber] = useState("Quiz No 1");
-  const [quizPoints, setQuizPoints] = useState("10");
-  const [quizConceptual, setQuizConceptual] = useState("0");
-  const [quizTheoretical, setQuizTheoretical] = useState("2");
-  const [quizScenario, setQuizScenario] = useState("1");
-  const [quizDifficulty, setQuizDifficulty] = useState("hard");
-  const [quizTotalQuestions, setQuizTotalQuestions] = useState("3");
+  const [quizDepartment, setQuizDepartment] = useState("");
+  const [quizSubject, setQuizSubject] = useState("");
+  const [quizClassName, setQuizClassName] = useState("");
+  const [quizDueDate, setQuizDueDate] = useState("");
+  const [quizNumber, setQuizNumber] = useState("");
+  const [quizPoints, setQuizPoints] = useState("");
+  const [quizConceptual, setQuizConceptual] = useState("");
+  const [quizTheoretical, setQuizTheoretical] = useState("");
+  const [quizScenario, setQuizScenario] = useState("");
+  const [quizDifficulty, setQuizDifficulty] = useState("");
+  const [quizTotalQuestions, setQuizTotalQuestions] = useState("");
   
   // Handle tab switching
   const handleTabChange = (value: string) => {
