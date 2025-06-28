@@ -1,17 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-
-// Conditional import for development-only dependency
-let componentTagger: any = null;
-try {
-  if (process.env.NODE_ENV !== 'production') {
-    const lovableTagger = require("lovable-tagger");
-    componentTagger = lovableTagger.componentTagger;
-  }
-} catch (error) {
-  // lovable-tagger not available, continue without it
-}
+import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -23,14 +13,14 @@ export default defineConfig(({ mode }) => ({
         target: 'https://python.iamscientist.ai',
         changeOrigin: true,
         secure: true,
-        configure: (proxy: any, _options: any) => {
-          proxy.on('error', (err: any, _req: any, _res: any) => {
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
             console.log('proxy error', err);
           });
-          proxy.on('proxyReq', (proxyReq: any, req: any, _res: any) => {
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
             console.log('Sending Request to the Target:', req.method, req.url);
           });
-          proxy.on('proxyRes', (proxyRes: any, req: any, _res: any) => {
+          proxy.on('proxyRes', (proxyRes, req, _res) => {
             console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
           });
         },
@@ -39,7 +29,8 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' && componentTagger ? componentTagger() : null,
+    mode === 'development' &&
+    componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {
