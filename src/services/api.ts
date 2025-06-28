@@ -179,18 +179,50 @@ export const generateAssignment = async (formData: FormData) => {
     // Ensure all required fields are present and properly formatted
     const requiredFields = {
       file: file,
-      department: (formData.get("department") as string || "UIIT").trim() || "UIIT",
-      subject: (formData.get("subject") as string || "IFT").trim() || "IFT", 
-      class: (formData.get("class") as string || "BSCS-1B").trim() || "BSCS-1B",
-      due_date: (formData.get("due_date") as string || "10-12-2021").trim() || "10-12-2021",
+      department: (formData.get("department") as string || "").trim(),
+      subject: (formData.get("subject") as string || "").trim(), 
+      class: (formData.get("class") as string || "").trim(),
+      due_date: (formData.get("due_date") as string || "").trim(),
       points: validateNumericField(formData.get("points") as string, "10"),
-      Assignment_no: (formData.get("Assignment_no") as string || "Assignment_no 1").trim() || "Assignment_no 1",
+      Assignment_no: (formData.get("Assignment_no") as string || "").trim(),
       number_of_questions: validateNumericField(formData.get("number_of_questions") as string, "5"),
-      num_conceptual: validateNumericField(formData.get("num_conceptual") as string, "2"),
-      num_theoretical: validateNumericField(formData.get("num_theoretical") as string, "2"), 
-      num_scenario: validateNumericField(formData.get("num_scenario") as string, "1"),
-      difficulty_level: (formData.get("difficulty_level") as string || "hard").trim() || "hard"
+      num_conceptual: validateNumericField(formData.get("num_conceptual") as string, "0"),
+      num_theoretical: validateNumericField(formData.get("num_theoretical") as string, "0"), 
+      num_scenario: validateNumericField(formData.get("num_scenario") as string, "0"),
+      difficulty_level: (formData.get("difficulty_level") as string || "").trim()
     };
+    
+    // Debug log the actual field values
+    devLog("🔍 Raw field values received:", {
+      department: `"${requiredFields.department}" (length: ${requiredFields.department?.length || 0})`,
+      subject: `"${requiredFields.subject}" (length: ${requiredFields.subject?.length || 0})`,
+      class: `"${requiredFields.class}" (length: ${requiredFields.class?.length || 0})`,
+      due_date: `"${requiredFields.due_date}" (length: ${requiredFields.due_date?.length || 0})`,
+      Assignment_no: `"${requiredFields.Assignment_no}" (length: ${requiredFields.Assignment_no?.length || 0})`,
+      difficulty_level: `"${requiredFields.difficulty_level}" (length: ${requiredFields.difficulty_level?.length || 0})`
+    });
+
+    // Validate required text fields for assignment
+    const requiredTextFields = {
+      department: "Department",
+      subject: "Subject", 
+      class: "Class",
+      due_date: "Due Date",
+      Assignment_no: "Assignment Number",
+      difficulty_level: "Difficulty Level"
+    };
+
+    const missingFields = [];
+    for (const [field, displayName] of Object.entries(requiredTextFields)) {
+      if (!requiredFields[field] || requiredFields[field].trim() === "") {
+        missingFields.push(displayName);
+      }
+    }
+    
+    if (missingFields.length > 0) {
+      devError(`❌ Missing required fields: ${missingFields.join(', ')}`);
+      throw new Error(`The following fields are required: ${missingFields.join(', ')}. Please fill out all form fields.`);
+    }
     
     // Create validated FormData with exact field names from API
     const validatedFormData = new FormData();
@@ -314,18 +346,34 @@ export const generateQuiz = async (formData: FormData) => {
     // Ensure all required fields are present and properly formatted
     const requiredFields = {
       file: formData.get("file") as File,
-      department: formData.get("department") as string || "Computer Science",
-      subject: formData.get("subject") as string || "IFT", 
-      class: formData.get("class") as string || "BSCS-1B",
-      due_date: formData.get("due_date") as string || "10-12-2021",
-      points: formData.get("points") as string || "10",
-      quiz_no: formData.get("quiz_no") as string || "Quiz No 1",
-      number_of_questions: formData.get("number_of_questions") as string || "3",
-      num_conceptual: formData.get("num_conceptual") as string || "0",
-      num_theoretical: formData.get("num_theoretical") as string || "2", 
-      num_scenario: formData.get("num_scenario") as string || "1",
-      difficulty_level: formData.get("difficulty_level") as string || "hard"
+      department: (formData.get("department") as string || "").trim(),
+      subject: (formData.get("subject") as string || "").trim(), 
+      class: (formData.get("class") as string || "").trim(),
+      due_date: (formData.get("due_date") as string || "").trim(),
+      points: (formData.get("points") as string || "").trim(),
+      quiz_no: (formData.get("quiz_no") as string || "").trim(),
+      number_of_questions: (formData.get("number_of_questions") as string || "5").trim(),
+      num_conceptual: (formData.get("num_conceptual") as string || "0").trim(),
+      num_theoretical: (formData.get("num_theoretical") as string || "0").trim(), 
+      num_scenario: (formData.get("num_scenario") as string || "0").trim(),
+      difficulty_level: (formData.get("difficulty_level") as string || "").trim()
     };
+    
+    // Validate required text fields for quiz
+    const requiredTextFields = {
+      department: "Department",
+      subject: "Subject", 
+      class: "Class",
+      due_date: "Due Date",
+      quiz_no: "Quiz Number",
+      difficulty_level: "Difficulty Level"
+    };
+
+    for (const [field, displayName] of Object.entries(requiredTextFields)) {
+      if (!requiredFields[field] || requiredFields[field].trim() === "") {
+        throw new Error(`${displayName} is required. Please fill out all form fields.`);
+      }
+    }
     
     // Create validated FormData with exact field names from API
     const validatedFormData = new FormData();

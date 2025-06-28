@@ -410,6 +410,21 @@ const Upload = () => {
           assignmentForm.append("number_of_questions", assignmentTotalQuestions);
           
           console.log("🚀 Attempting assignment generation...");
+          console.log("📋 Assignment form data being sent:", {
+            file: file.name,
+            department: assignmentDepartment,
+            subject: assignmentSubject,
+            class: assignmentClassName,
+            due_date: formatDateForAPI(assignmentDueDate),
+            Assignment_no: assignmentNumber,
+            points: assignmentPoints,
+            num_conceptual: assignmentConceptual,
+            num_theoretical: assignmentTheoretical,
+            num_scenario: assignmentScenario,
+            difficulty_level: assignmentDifficulty,
+            number_of_questions: assignmentTotalQuestions
+          });
+          console.log("📋 FormData entries:", Object.fromEntries(assignmentForm.entries()));
           questions = await generateAssignment(assignmentForm);
         } 
         else if (type === "quiz") {
@@ -1335,7 +1350,32 @@ const Upload = () => {
               <CardFooter className="p-4 flex gap-2 border-t">
                 <Button
                   className="flex-1 h-10 flex items-center justify-center"
-                  onClick={() => handleUpload("assignment")}
+                  onClick={() => {
+                    // Check if all required fields are filled
+                    const requiredFields = {
+                      'Department': assignmentDepartment,
+                      'Subject': assignmentSubject,
+                      'Class': assignmentClassName,
+                      'Due Date': assignmentDueDate,
+                      'Assignment Number': assignmentNumber,
+                      'Difficulty Level': assignmentDifficulty
+                    };
+                    
+                    const emptyFields = Object.entries(requiredFields)
+                      .filter(([name, value]) => !value || value.trim() === '')
+                      .map(([name]) => name);
+                    
+                    if (emptyFields.length > 0) {
+                      toast({
+                        title: "Missing required fields",
+                        description: `Please fill out: ${emptyFields.join(', ')}`,
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    
+                    handleUpload("assignment");
+                  }}
                   disabled={
                     !assignmentFile ||
                     isUploading ||
