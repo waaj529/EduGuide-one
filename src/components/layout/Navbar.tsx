@@ -128,8 +128,8 @@ const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-sm transition-all">
-      <div className="container max-w-7xl mx-auto px-3 sm:px-4 md:px-6 flex h-14 sm:h-16 items-center justify-between">
-        <div className="flex items-center gap-2 min-w-0 flex-1">
+      <div className="container max-w-7xl mx-auto px-3 sm:px-4 md:px-6 flex h-14 sm:h-16 items-center">
+        <div className="flex items-center gap-2 min-w-0">
           <Link to="/" className="flex items-center gap-2 min-w-0">
             <div className="rounded-full bg-brand-blue p-1 flex-shrink-0">
               <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
@@ -139,27 +139,31 @@ const Navbar = () => {
         </div>
 
         {isAuthenticated && isDesktop ? (
-          <NavigationMenu className="mx-6">
-            <NavigationMenuList>
-              {navLinks.map((link, index) => (
-                <NavigationMenuItem key={index}>
-                  <NavigationMenuLink asChild>
-                    <Link
-                      to={link.to}
-                      className={cn(
-                        navigationMenuTriggerStyle(),
-                        "flex items-center gap-2"
-                      )}
-                    >
-                      {link.icon}
-                      <span>{link.label}</span>
-                    </Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              ))}
-            </NavigationMenuList>
-          </NavigationMenu>
-        ) : null}
+          <div className="flex-1 flex items-center justify-center">
+            <NavigationMenu>
+              <NavigationMenuList className="flex items-center justify-center">
+                {navLinks.map((link, index) => (
+                  <NavigationMenuItem key={index}>
+                    <NavigationMenuLink asChild>
+                      <Link
+                        to={link.to}
+                        className={cn(
+                          navigationMenuTriggerStyle(),
+                          "flex items-center justify-center gap-2 px-4 py-2"
+                        )}
+                      >
+                        {link.icon}
+                        <span>{link.label}</span>
+                      </Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                ))}
+              </NavigationMenuList>
+            </NavigationMenu>
+          </div>
+        ) : (
+          <div className="flex-1"></div>
+        )}
 
         <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
           {isAuthenticated && (
