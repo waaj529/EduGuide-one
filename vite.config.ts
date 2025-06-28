@@ -29,59 +29,35 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' &&
-    componentTagger(),
+    mode === 'development' && componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    dedupe: ['react', 'react-dom'],
   },
   build: {
     rollupOptions: {
+      external: [],
       output: {
-        manualChunks: (id) => {
-          // Keep React core together to avoid createContext issues
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react/')) {
-              return 'react-vendor';
-            }
-            if (id.includes('@radix-ui')) {
-              return 'ui';
-            }
-            if (id.includes('@supabase')) {
-              return 'supabase';
-            }
-            if (id.includes('react-router')) {
-              return 'router';
-            }
-            if (id.includes('@tanstack/react-query')) {
-              return 'query';
-            }
-            if (id.includes('lucide-react')) {
-              return 'icons';
-            }
-            // Split large dependencies
-            if (id.includes('framer-motion')) {
-              return 'animations';
-            }
-            if (id.includes('date-fns') || id.includes('moment')) {
-              return 'dates';
-            }
-            // Other vendor dependencies
-            return 'vendor-libs';
-          }
-          
-          // Split application code by feature
-          if (id.includes('/src/pages/')) {
-            return 'pages';
-          }
-          if (id.includes('/src/components/')) {
-            return 'components';
-          }
-          if (id.includes('/src/services/')) {
-            return 'services';
-          }
+        manualChunks: {
+          // Keep React together to prevent context issues
+          'react-vendor': ['react', 'react-dom'],
+          // UI components
+          'ui': ['@radix-ui/react-accordion', '@radix-ui/react-alert-dialog', '@radix-ui/react-avatar', '@radix-ui/react-button', '@radix-ui/react-checkbox', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-label', '@radix-ui/react-popover', '@radix-ui/react-select', '@radix-ui/react-separator', '@radix-ui/react-slot', '@radix-ui/react-switch', '@radix-ui/react-tabs', '@radix-ui/react-toast', '@radix-ui/react-tooltip'],
+          // Router
+          'router': ['react-router-dom'],
+          // Query
+          'query': ['@tanstack/react-query'],
+          // Supabase
+          'supabase': ['@supabase/supabase-js'],
+          // Icons
+          'icons': ['lucide-react'],
+          // Animations
+          'animations': ['framer-motion'],
+          // Utilities
+          'utils': ['clsx', 'class-variance-authority', 'tailwind-merge']
         },
       },
     },
