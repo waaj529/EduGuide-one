@@ -54,6 +54,13 @@ export default defineConfig(({ mode }) => ({
           'icons': ['lucide-react'],
           // Animations
           'animations': ['framer-motion'],
+          // UI Components - split large UI libraries
+          'ui-radix': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu', 
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-popover'
+          ],
           // Utilities
           'utils': ['clsx', 'class-variance-authority', 'tailwind-merge']
         },
@@ -67,8 +74,15 @@ export default defineConfig(({ mode }) => ({
         compress: {
           drop_console: true,
           drop_debugger: true,
+          pure_funcs: ['console.log', 'console.info', 'console.debug'],
+          passes: 2,
+        },
+        mangle: {
+          safari10: true,
         },
       },
     }),
+    target: 'es2020',
+    cssCodeSplit: true,
   },
 }));

@@ -1828,6 +1828,12 @@ const Upload = () => {
                                 src={URL.createObjectURL(proximityFile)} 
                                 alt="Classroom preview" 
                                 className="w-full h-full object-cover"
+                                loading="lazy"
+                                decoding="async"
+                                onLoad={(e) => {
+                                  // Revoke the object URL to free memory after image loads
+                                  URL.revokeObjectURL(e.currentTarget.src);
+                                }}
                               />
                             </div>
                             <Button

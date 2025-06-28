@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, memo } from "react";
+import { logger } from "@/lib/console";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -105,7 +106,7 @@ const StudentContentGenerator = () => {
       formData.append("file", pdfFile);
       formData.append("text", currentMessage);  // Changed from "query" to "text" to match Postman
       
-      console.log("Sending request with:", {
+      logger.log("Sending request with:", {
         fileSize: pdfFile.size,
         fileName: pdfFile.name,
         fileType: pdfFile.type,
@@ -127,11 +128,11 @@ const StudentContentGenerator = () => {
         clearTimeout(timeoutId);
         
         // Log the response status for debugging
-        console.log("API Response status:", response.status, response.statusText);
+        logger.log("API Response status:", response.status, response.statusText);
         
         if (response.ok) {
           const data = await response.json();
-          console.log("API Response data:", data);
+          logger.log("API Response data:", data);
           
           // Add bot response to chat - "Answer" is the key from your screenshot
           const botMessage = { 
@@ -141,13 +142,13 @@ const StudentContentGenerator = () => {
           setChatMessages(prev => [...prev, botMessage]);
         } else {
           // Server error occurred - use fallback response
-          console.error(`API error: ${response.status} ${response.statusText}`);
+          logger.error(`API error: ${response.status} ${response.statusText}`);
           
           // Get error details if available
           let errorDetail = '';
           try {
             const errorText = await response.text();
-            console.error("API error details:", errorText);
+            logger.error("API error details:", errorText);
             errorDetail = errorText.includes("<!doctype html>") 
               ? "The server encountered an internal error." 
               : errorText;

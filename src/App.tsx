@@ -3,30 +3,46 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { lazy, Suspense } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import TeacherDashboard from "./pages/TeacherDashboard";
-import Upload from "./pages/Upload";
-import Practice from "./pages/Practice";
-import FlashcardPage from "./pages/FlashcardPage";
-import StudyTimerPage from "./pages/StudyTimerPage";
-import ReviewMistakes from "./pages/ReviewMistakes";
-import ProgressTracker from "./pages/ProgressTracker";
-import Profile from "./pages/Profile";
-import StudentContentGenerator from "./pages/StudentContentGenerator";
-import SubjectStudy from "./pages/SubjectStudy";
 import { ThemeProvider } from "./context/ThemeContext";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import ErrorBoundary from "./components/common/ErrorBoundary";
+import LoadingSpinner from "./components/ui/LoadingSpinner";
 
-// Create a new query client
-const queryClient = new QueryClient();
+// Lazy load pages for better performance
+const Index = lazy(() => import("./pages/Index"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Login = lazy(() => import("./pages/Login"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const TeacherDashboard = lazy(() => import("./pages/TeacherDashboard"));
+const Upload = lazy(() => import("./pages/Upload"));
+const Practice = lazy(() => import("./pages/Practice"));
+const FlashcardPage = lazy(() => import("./pages/FlashcardPage"));
+const StudyTimerPage = lazy(() => import("./pages/StudyTimerPage"));
+const ReviewMistakes = lazy(() => import("./pages/ReviewMistakes"));
+const ProgressTracker = lazy(() => import("./pages/ProgressTracker"));
+const Profile = lazy(() => import("./pages/Profile"));
+const StudentContentGenerator = lazy(() => import("./pages/StudentContentGenerator"));
+const SubjectStudy = lazy(() => import("./pages/SubjectStudy"));
+
+// Create an optimized query client with better caching
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Cache queries for 5 minutes by default
+      staleTime: 1000 * 60 * 5,
+      // Keep unused data in cache for 10 minutes  
+      gcTime: 1000 * 60 * 10,
+      // Retry failed requests only once in production
+      retry: import.meta.env.PROD ? 1 : 3,
+      // Don't refetch on window focus in production for better UX
+      refetchOnWindowFocus: !import.meta.env.PROD,
+    },
+  },
+});
 
 // Role-based redirect component
 const RoleBasedRedirect = () => {
@@ -55,7 +71,12 @@ function App() {
               <div className="flex flex-col min-h-screen overflow-x-hidden">
                 <Navbar />
                 <main className="flex-1 w-full page-transition">
-                  <Routes>
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center min-h-[50vh]">
+                      <LoadingSpinner size="lg" text="Loading..." />
+                    </div>
+                  }>
+                    <Routes>
                     {/* Public routes */}
                     <Route path="/" element={<Index />} />
                     <Route path="/login" element={<Login />} />
@@ -130,7 +151,8 @@ function App() {
                     
                     {/* Catch-all route */}
                     <Route path="*" element={<NotFound />} />
-                  </Routes>
+                    </Routes>
+                  </Suspense>
                 </main>
                 <Footer />
               </div>
