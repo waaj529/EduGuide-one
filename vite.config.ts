@@ -41,10 +41,10 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Vendor chunk for core React libraries
+          // Keep React core together to avoid createContext issues
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor';
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react/')) {
+              return 'react-vendor';
             }
             if (id.includes('@radix-ui')) {
               return 'ui';
