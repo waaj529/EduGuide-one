@@ -801,7 +801,14 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
 
     const fileCategory = getFileTypeCategory(file);
     console.log(`🚀 Generating practice questions for ${fileCategory} file: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB, ${file.type})`);
-    console.log(`📡 Using exam_generate endpoint with ONLY file parameter (matching successful API test)`);
+    
+    // Smart endpoint routing based on file type
+    const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    const apiEndpoint = isPDF 
+      ? 'https://python.iamscientist.ai/api/exam/exam_generate'  // PDF-specific endpoint
+      : 'https://python.iamscientist.ai/api/cheat_sheet/cheat_sheet'; // Universal endpoint for PPTX, DOCX, etc.
+    
+    console.log(`📡 Using ${isPDF ? 'PDF-specific exam_generate' : 'universal cheat_sheet'} endpoint for ${file.type}`);
     
     // Log all FormData entries for debugging
     console.log('📋 FormData contents:');
@@ -813,9 +820,9 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
       }
     }
 
-    // Use the correct exam_generate endpoint for Practice Questions
+    // Use smart endpoint routing for optimal file type support
     const response = await fetchWithTimeout(
-      'https://python.iamscientist.ai/api/exam/exam_generate',
+      apiEndpoint,
       {
         method: 'POST',
         body: formData,
