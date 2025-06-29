@@ -801,10 +801,10 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
 
     const fileCategory = getFileTypeCategory(file);
     console.log(`🚀 Generating practice questions for ${fileCategory} file: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB, ${file.type})`);
-    console.log(`📡 Using universal exam_generate endpoint for ALL file types (PDF, PPTX, DOCX, etc.)`);
+    console.log(`📡 Using exam_generate endpoint for Practice Questions`);
     
     // Log all FormData entries for debugging
-    console.log('📋 Original FormData contents:');
+    console.log('📋 FormData contents:');
     for (const pair of formData.entries()) {
       if (pair[1] instanceof File) {
         console.log(`  ${pair[0]}: [File] ${pair[1].name} (${pair[1].size} bytes, ${pair[1].type})`);
@@ -813,19 +813,12 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
       }
     }
 
-    // 🔧 CRITICAL FIX: exam_generate endpoint expects ONLY the file, not additional fields
-    // Create minimal FormData with just the file (as shown in Postman screenshot)
-    const minimalFormData = new FormData();
-    minimalFormData.append('file', file);
-    
-    console.log('✅ Sending minimal FormData with ONLY file to exam_generate endpoint (as shown in Postman)');
-
-    // Use the universal exam_generate endpoint that handles all file types (PDF, PPTX, DOCX, etc.)
+    // Use the correct exam_generate endpoint for Practice Questions
     const response = await fetchWithTimeout(
       'https://python.iamscientist.ai/api/exam/exam_generate',
       {
         method: 'POST',
-        body: minimalFormData,  // 🔥 Using minimal FormData with ONLY file (as shown in Postman)
+        body: formData,
         // Don't set Content-Type header - let browser set it with boundary for FormData
         headers: {
           // Add any additional headers if needed, but not Content-Type
@@ -886,7 +879,7 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
     // Initialize the results array
     let questionsArray: PracticeQuestion[] = [];
     
-    // Handle exam_generate endpoint response format (optimized for all file types)
+    // Handle exam_generate endpoint response format
     if (data && data.questions && Array.isArray(data.questions)) {
       // Primary format: questions array from exam_generate endpoint
       const formattedQuestions = data.questions.map((q: any, index: number) => {
