@@ -209,6 +209,7 @@ const Upload = () => {
         "application/msword",
         "application/vnd.openxmlformats-officedocument.presentationml.presentation",
         "application/vnd.ms-powerpoint",
+        "application/vnd.oasis.opendocument.presentation",
         "image/jpeg",
         "image/png",
         "image/jpg",
@@ -219,7 +220,7 @@ const Upload = () => {
         toast({
           title: "Unsupported file format",
           description:
-            "Please upload a PDF, Word document, PowerPoint, or image file.",
+            "Please upload a PDF, Word document, PowerPoint (PPT/PPTX), or image file.",
           variant: "destructive",
         });
         return;
@@ -394,6 +395,18 @@ const Upload = () => {
         let questions = [];
         
         if (type === "assignment") {
+          // Debug: Log state values right before creating FormData
+          console.log("🔍 Assignment state values at FormData creation:", {
+            assignmentDepartment: `"${assignmentDepartment}" (type: ${typeof assignmentDepartment}, length: ${assignmentDepartment?.length})`,
+            assignmentSubject: `"${assignmentSubject}" (type: ${typeof assignmentSubject}, length: ${assignmentSubject?.length})`,
+            assignmentClassName: `"${assignmentClassName}" (type: ${typeof assignmentClassName}, length: ${assignmentClassName?.length})`,
+            assignmentDueDate: `"${assignmentDueDate}" (type: ${typeof assignmentDueDate}, length: ${assignmentDueDate?.length})`,
+            assignmentNumber: `"${assignmentNumber}" (type: ${typeof assignmentNumber}, length: ${assignmentNumber?.length})`,
+            assignmentDifficulty: `"${assignmentDifficulty}" (type: ${typeof assignmentDifficulty}, length: ${assignmentDifficulty?.length})`,
+            assignmentPoints: `"${assignmentPoints}" (type: ${typeof assignmentPoints}, length: ${assignmentPoints?.length})`,
+            assignmentTotalQuestions: `"${assignmentTotalQuestions}" (type: ${typeof assignmentTotalQuestions}, length: ${assignmentTotalQuestions?.length})`
+          });
+          
           // Create assignment form with assignment-specific fields
           const assignmentForm = new FormData();
           assignmentForm.append("file", file);
@@ -425,6 +438,21 @@ const Upload = () => {
             number_of_questions: assignmentTotalQuestions
           });
           console.log("📋 FormData entries:", Object.fromEntries(assignmentForm.entries()));
+          
+          // Final validation before API call
+          const formEntries = Object.fromEntries(assignmentForm.entries());
+          const requiredApiFields = ['department', 'subject', 'class', 'Assignment_no', 'difficulty_level'];
+          const missingApiFields = requiredApiFields.filter(field => 
+            !formEntries[field] || formEntries[field].toString().trim() === ''
+          );
+          
+          if (missingApiFields.length > 0) {
+            console.error("🚨 CRITICAL: Required fields missing from FormData:", missingApiFields);
+            console.error("🚨 FormData contents:", formEntries);
+            throw new Error(`Required fields missing from FormData: ${missingApiFields.join(', ')}`);
+          }
+          
+          console.log("✅ All required fields present in FormData, calling API...");
           questions = await generateAssignment(assignmentForm);
         } 
         else if (type === "quiz") {
@@ -1110,7 +1138,7 @@ const Upload = () => {
                   <>
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <h3 className="text-lg font-medium">Upload PDF Document</h3>
+                        <h3 className="text-lg font-medium">Upload Material</h3>
 
                         {assignmentFile ? (
                           <div className="p-4 border rounded-md bg-blue-50 dark:bg-blue-950/30 flex items-center justify-between">
@@ -1147,11 +1175,11 @@ const Upload = () => {
                                 or drag and drop
                               </p>
                               <p className="text-xs text-muted-foreground mt-1">
-                                PDF files only (max 10MB)
+                                PDF, Word, PowerPoint (PPT/PPTX), or image files (max 10MB)
                               </p>
                               <input
                                 type="file"
-                                accept=".pdf"
+                                accept=".pdf,.doc,.docx,.ppt,.pptx,.odp,.jpg,.jpeg,.png,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.ms-powerpoint,application/vnd.oasis.opendocument.presentation,image/*,text/plain"
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                 onChange={handleFileChange}
                                 disabled={isUploading || isProcessing}
@@ -1205,63 +1233,81 @@ const Upload = () => {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="department">Department</Label>
+                          <Label htmlFor="assignment-department">Department</Label>
                           <Input
-                            id="department"
+                            id="assignment-department"
                             placeholder="Computer Science"
                             value={assignmentDepartment}
-                            onChange={(e) => setAssignmentDepartment(e.target.value)}
+                            onChange={(e) => {
+                              console.log("🔧 Assignment Department changed to:", e.target.value);
+                              setAssignmentDepartment(e.target.value);
+                            }}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="subject">Subject</Label>
+                          <Label htmlFor="assignment-subject">Subject</Label>
                           <Input
-                            id="subject"
+                            id="assignment-subject"
                             placeholder="Introduction to Programming"
                             value={assignmentSubject}
-                            onChange={(e) => setAssignmentSubject(e.target.value)}
+                            onChange={(e) => {
+                              console.log("🔧 Assignment Subject changed to:", e.target.value);
+                              setAssignmentSubject(e.target.value);
+                            }}
                           />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="class">Class</Label>
+                          <Label htmlFor="assignment-class">Class</Label>
                           <Input
-                            id="class"
+                            id="assignment-class"
                             placeholder="CS101"
                             value={assignmentClassName}
-                            onChange={(e) => setAssignmentClassName(e.target.value)}
+                            onChange={(e) => {
+                              console.log("🔧 Assignment Class changed to:", e.target.value);
+                              setAssignmentClassName(e.target.value);
+                            }}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="due_date">Due Date</Label>
+                          <Label htmlFor="assignment-due-date">Due Date</Label>
                           <Input
-                            id="due_date"
+                            id="assignment-due-date"
                             type="date"
                             value={assignmentDueDate}
-                            onChange={(e) => setAssignmentDueDate(e.target.value)}
+                            onChange={(e) => {
+                              console.log("🔧 Assignment Due Date changed to:", e.target.value);
+                              setAssignmentDueDate(e.target.value);
+                            }}
                           />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="assignment_no">Assignment Number</Label>
+                          <Label htmlFor="assignment-number">Assignment Number</Label>
                           <Input
-                            id="assignment_no"
+                            id="assignment-number"
                             placeholder="1"
                             value={assignmentNumber}
-                            onChange={(e) => setAssignmentNumber(e.target.value)}
+                            onChange={(e) => {
+                              console.log("🔧 Assignment Number changed to:", e.target.value);
+                              setAssignmentNumber(e.target.value);
+                            }}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="points">Total Points</Label>
+                          <Label htmlFor="assignment-points">Total Points</Label>
                           <Input
-                            id="points"
+                            id="assignment-points"
                             placeholder="100"
                             value={assignmentPoints}
-                            onChange={(e) => setAssignmentPoints(e.target.value)}
+                            onChange={(e) => {
+                              console.log("🔧 Assignment Points changed to:", e.target.value);
+                              setAssignmentPoints(e.target.value);
+                            }}
                           />
                         </div>
                       </div>
@@ -1272,12 +1318,15 @@ const Upload = () => {
                         </h3>
                         <div className="grid grid-cols-1 gap-4 mb-4">
                           <div className="space-y-2">
-                            <Label htmlFor="number_of_questions">Number of Questions</Label>
+                            <Label htmlFor="assignment-number-of-questions">Number of Questions</Label>
                             <Input
-                              id="number_of_questions"
+                              id="assignment-number-of-questions"
                               placeholder="Enter total number of questions"
                               value={assignmentTotalQuestions}
-                              onChange={(e) => setAssignmentTotalQuestions(e.target.value)}
+                              onChange={(e) => {
+                                console.log("🔧 Assignment Total Questions changed to:", e.target.value);
+                                setAssignmentTotalQuestions(e.target.value);
+                              }}
                             />
                             <p className="text-xs text-muted-foreground">
                               Define how many questions you want to generate
@@ -1287,51 +1336,57 @@ const Upload = () => {
                         
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor="num_conceptual" className="text-sm">
+                            <Label htmlFor="assignment-num-conceptual" className="text-sm">
                               Conceptual
                             </Label>
                             <Input
-                              id="num_conceptual"
+                              id="assignment-num-conceptual"
                               value={assignmentConceptual}
-                              onChange={(e) =>
-                                setAssignmentConceptual(e.target.value)
-                              }
+                              onChange={(e) => {
+                                console.log("🔧 Assignment Conceptual changed to:", e.target.value);
+                                setAssignmentConceptual(e.target.value);
+                              }}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="num_theoretical" className="text-sm">
+                            <Label htmlFor="assignment-num-theoretical" className="text-sm">
                               Theoretical
                             </Label>
                             <Input
-                              id="num_theoretical"
+                              id="assignment-num-theoretical"
                               value={assignmentTheoretical}
-                              onChange={(e) =>
-                                setAssignmentTheoretical(e.target.value)
-                              }
+                              onChange={(e) => {
+                                console.log("🔧 Assignment Theoretical changed to:", e.target.value);
+                                setAssignmentTheoretical(e.target.value);
+                              }}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="num_scenario" className="text-sm">
+                            <Label htmlFor="assignment-num-scenario" className="text-sm">
                               Scenario
                             </Label>
                             <Input
-                              id="num_scenario"
+                              id="assignment-num-scenario"
                               value={assignmentScenario}
-                              onChange={(e) =>
-                                setAssignmentScenario(e.target.value)
-                              }
+                              onChange={(e) => {
+                                console.log("🔧 Assignment Scenario changed to:", e.target.value);
+                                setAssignmentScenario(e.target.value);
+                              }}
                             />
                           </div>
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="difficulty_level">
+                        <Label htmlFor="assignment-difficulty-level">
                           Difficulty Level
                         </Label>
                         <Select
                           value={assignmentDifficulty}
-                          onValueChange={setAssignmentDifficulty}
+                          onValueChange={(value) => {
+                            console.log("🔧 Assignment Difficulty level changed to:", value);
+                            setAssignmentDifficulty(value);
+                          }}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select difficulty" />
@@ -1351,6 +1406,21 @@ const Upload = () => {
                 <Button
                   className="flex-1 h-10 flex items-center justify-center"
                   onClick={() => {
+                    // Debug: Log current state values
+                    console.log("🔍 Assignment state values when clicking Generate:", {
+                      assignmentDepartment,
+                      assignmentSubject,
+                      assignmentClassName,
+                      assignmentDueDate,
+                      assignmentNumber,
+                      assignmentDifficulty,
+                      assignmentPoints,
+                      assignmentTotalQuestions,
+                      assignmentConceptual,
+                      assignmentTheoretical,
+                      assignmentScenario
+                    });
+                    
                     // Check if all required fields are filled
                     const requiredFields = {
                       'Department': assignmentDepartment,
@@ -1366,6 +1436,7 @@ const Upload = () => {
                       .map(([name]) => name);
                     
                     if (emptyFields.length > 0) {
+                      console.error("❌ Empty fields detected:", emptyFields);
                       toast({
                         title: "Missing required fields",
                         description: `Please fill out: ${emptyFields.join(', ')}`,
@@ -1374,6 +1445,7 @@ const Upload = () => {
                       return;
                     }
                     
+                    console.log("✅ All required fields validated, proceeding with upload");
                     handleUpload("assignment");
                   }}
                   disabled={
@@ -1522,10 +1594,11 @@ const Upload = () => {
                                 or drag and drop
                               </p>
                               <p className="text-xs text-muted-foreground mt-1">
-                                PDF, Word, PowerPoint, or image files (max 10MB)
+                                PDF, Word, PowerPoint (PPT/PPTX), or image files (max 10MB)
                               </p>
                               <input
                                 type="file"
+                                accept=".pdf,.doc,.docx,.ppt,.pptx,.odp,.jpg,.jpeg,.png,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.ms-powerpoint,application/vnd.oasis.opendocument.presentation,image/*,text/plain"
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                 onChange={handleFileChange}
                                 disabled={isUploading || isProcessing}
