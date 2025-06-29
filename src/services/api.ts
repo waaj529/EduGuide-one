@@ -801,7 +801,7 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
 
     const fileCategory = getFileTypeCategory(file);
     console.log(`🚀 Generating practice questions for ${fileCategory} file: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB, ${file.type})`);
-    console.log(`📡 Using universal cheat_sheet endpoint for ALL file types (PDF, PPTX, DOCX, etc.)`);
+    console.log(`📡 Using universal exam_generate endpoint for ALL file types (PDF, PPTX, DOCX, etc.)`);
     
     // Log all FormData entries for debugging
     console.log('📋 Original FormData contents:');
@@ -813,19 +813,19 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
       }
     }
 
-    // 🔧 CRITICAL FIX: cheat_sheet endpoint expects ONLY the file, not additional fields
-    // Create minimal FormData with just the file (like working generateCheatSheet/Summary/KeyPoints)
+    // 🔧 CRITICAL FIX: exam_generate endpoint expects ONLY the file, not additional fields
+    // Create minimal FormData with just the file (as shown in Postman screenshot)
     const minimalFormData = new FormData();
     minimalFormData.append('file', file);
     
-    console.log('✅ Sending minimal FormData with ONLY file to cheat_sheet endpoint (matches working functions)');
+    console.log('✅ Sending minimal FormData with ONLY file to exam_generate endpoint (as shown in Postman)');
 
-    // Use the universal cheat_sheet endpoint that handles all file types (PDF, PPTX, DOCX, etc.)
+    // Use the universal exam_generate endpoint that handles all file types (PDF, PPTX, DOCX, etc.)
     const response = await fetchWithTimeout(
-      'https://python.iamscientist.ai/api/cheat_sheet/cheat_sheet',
+      'https://python.iamscientist.ai/api/exam/exam_generate',
       {
         method: 'POST',
-        body: minimalFormData,  // 🔥 Using minimal FormData instead of full FormData
+        body: minimalFormData,  // 🔥 Using minimal FormData with ONLY file (as shown in Postman)
         // Don't set Content-Type header - let browser set it with boundary for FormData
         headers: {
           // Add any additional headers if needed, but not Content-Type
@@ -886,9 +886,9 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
     // Initialize the results array
     let questionsArray: PracticeQuestion[] = [];
     
-    // Handle cheat_sheet endpoint response format (optimized for all file types)
+    // Handle exam_generate endpoint response format (optimized for all file types)
     if (data && data.questions && Array.isArray(data.questions)) {
-      // Primary format: questions array from cheat_sheet endpoint
+      // Primary format: questions array from exam_generate endpoint
       const formattedQuestions = data.questions.map((q: any, index: number) => {
         // Handle both string questions and object questions
         const questionText = typeof q === 'string' ? q : (q.question || q.text || q.content || String(q));
