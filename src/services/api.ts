@@ -819,9 +819,35 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
     let apiEndpoint;
     let finalFormData = formData;
 
-    // Use exam_generate endpoint for ALL file types - proven to work with PDF, PPT, DOCX, images
-    apiEndpoint = 'https://python.iamscientist.ai/api/exam/exam_generate';
-    console.log(`📡 Using exam_generate endpoint for all file types: ${fileExtension}`);
+    // File-type specific endpoint selection based on API capabilities
+    const isPDF = fileExtension === '.pdf';
+    
+    if (isPDF) {
+      // PDF files: Use exam_generate (proven to work in Postman)
+      apiEndpoint = 'https://python.iamscientist.ai/api/exam/exam_generate';
+      console.log(`📡 Using exam_generate endpoint for PDF file`);
+    } else {
+      // Non-PDF files: Use assignment endpoint with required fields for question generation
+      apiEndpoint = 'https://python.iamscientist.ai/api/assignment/assignment';
+      console.log(`📡 Using assignment endpoint for non-PDF file: ${fileExtension}`);
+      
+      // Create FormData with required fields for assignment endpoint
+      const enhancedFormData = new FormData();
+      enhancedFormData.append('file', file);
+      enhancedFormData.append('department', 'Practice Questions');
+      enhancedFormData.append('subject', 'Study Material');
+      enhancedFormData.append('class', 'Practice Session');
+      enhancedFormData.append('due_date', '2025-12-31');
+      enhancedFormData.append('Assignment_no', 'Practice');
+      enhancedFormData.append('points', '10');
+      enhancedFormData.append('num_conceptual', '3');
+      enhancedFormData.append('num_theoretical', '2');
+      enhancedFormData.append('num_scenario', '0');
+      enhancedFormData.append('difficulty_level', 'medium');
+      enhancedFormData.append('number_of_questions', '5');
+      
+      finalFormData = enhancedFormData;
+    }
 
     // Make the API call with the appropriate endpoint and data
     try {
@@ -985,8 +1011,52 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
       return filtered;
     };
 
-        // Handle exam_generate endpoint response format
-    if (data && data.questions && Array.isArray(data.questions)) {
+        // Handle assignment endpoint success response
+    if (data && data.answer === 'Assignment Successfully Generated') {
+      console.log('📋 Assignment generated successfully, attempting to retrieve real content...');
+      
+      try {
+        // Try to get the actual assignment content
+        const assignmentViewResponse = await fetchWithTimeout(
+          'https://python.iamscientist.ai/api/assignment/assignment_view',
+          {
+            method: 'GET',
+            headers: {
+              'Accept': 'text/plain',
+            },
+          },
+          30000
+        );
+        
+        if (assignmentViewResponse.ok) {
+          const assignmentContent = await assignmentViewResponse.text();
+          console.log('📄 Retrieved assignment content:', assignmentContent.substring(0, 200) + '...');
+          
+          // Extract real questions from the assignment content
+          const questionMatches = assignmentContent.match(/(?:Question\s+\d+[:.]\s*|^\d+\.\s*)([^?]*\?)/gim) || [];
+          
+          if (questionMatches.length > 0) {
+            const realQuestions = questionMatches.map((match, index) => ({
+              id: `question-${index + 1}`,
+              question: match.replace(/^(?:Question\s+\d+[:.]\s*|\d+\.\s*)/, '').trim(),
+              isInstruction: false
+            }));
+            
+            questionsArray = [...questionsArray, ...realQuestions];
+            console.log(`✅ Extracted ${realQuestions.length} real questions from assignment content`);
+          } else {
+            throw new Error('No questions found in the generated assignment content. The assignment may not contain question format suitable for practice.');
+          }
+        } else {
+          throw new Error('Failed to retrieve assignment content for question extraction.');
+        }
+      } catch (error) {
+        console.error('Failed to extract real questions from assignment:', error);
+        throw new Error('Could not extract practice questions from the generated assignment. The file may not be suitable for automatic question generation.');
+      }
+    }
+    // Handle exam_generate endpoint response format  
+    else if (data && data.questions && Array.isArray(data.questions)) {
       console.log(`📋 Processing questions array with ${data.questions.length} items`);
       // Primary format: questions array from exam_generate endpoint
       const rawQuestions = data.questions.map((q: any, index: number) => {
@@ -1099,7 +1169,12 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
     } else if (error.message.includes('415')) {
       throw new Error('Unsupported file type. This service supports PDF, Word documents (.docx, .doc), PowerPoint files (.pptx, .ppt), and images.');
     } else if (error.message.includes('500')) {
-      throw new Error('Server error: The question generation service cannot process this file. Please ensure the file contains readable text content and try with a different file format if needed.');
+      const fileExt = (formData.get('file') as File)?.name.split('.').pop()?.toLowerCase();
+      if (fileExt === 'pdf') {
+        throw new Error('Server error: The PDF processing service is temporarily unavailable. Please try again later.');
+      } else {
+        throw new Error(`Server error: Cannot process ${fileExt?.toUpperCase()} files. This file type may not be supported for question generation. Try converting to PDF or use a different file.`);
+      }
     } else if (error.message.includes('timeout')) {
       throw new Error('Request timeout: The file is taking too long to process. Please try with a smaller file.');
     }
