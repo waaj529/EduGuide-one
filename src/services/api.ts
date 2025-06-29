@@ -801,10 +801,9 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
 
     const fileCategory = getFileTypeCategory(file);
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-    const isPDF = fileExtension === '.pdf';
     
     console.log(`🚀 Generating practice questions for ${fileCategory} file: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB, ${file.type})`);
-    console.log(`📄 File type: ${fileExtension}, isPDF: ${isPDF}`);
+    console.log(`📄 File type: ${fileExtension}`);
     
     // Log all FormData entries for debugging
     console.log('📋 FormData contents:');
@@ -820,17 +819,9 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
     let apiEndpoint;
     let finalFormData = formData;
 
-    // Production endpoint selection - use only reliable endpoints, no fallbacks
-    if (isPDF) {
-      // For PDF files, use the exam_generate endpoint (proven reliable for PDFs)
-      apiEndpoint = 'https://python.iamscientist.ai/api/exam/exam_generate';
-      console.log(`📡 Using exam_generate endpoint for PDF file`);
-    } else {
-      // For non-PDF files, use cheat_sheet endpoint (proven reliable for PPT, DOCX, images)
-      apiEndpoint = 'https://python.iamscientist.ai/api/cheat_sheet/cheat_sheet';
-      console.log(`📡 Using cheat_sheet endpoint for non-PDF file: ${fileExtension}`);
-      // Keep original formData for cheat_sheet endpoint
-    }
+    // Use exam_generate endpoint for ALL file types - proven to work with PDF, PPT, DOCX, images
+    apiEndpoint = 'https://python.iamscientist.ai/api/exam/exam_generate';
+    console.log(`📡 Using exam_generate endpoint for all file types: ${fileExtension}`);
 
     // Make the API call with the appropriate endpoint and data
     try {
@@ -994,35 +985,8 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
       return filtered;
     };
 
-    // Handle cheat_sheet endpoint response format first
-    if (data && data.questions && Array.isArray(data.questions) && !isPDF) {
-      console.log(`📋 Processing cheat_sheet response with ${data.questions.length} items`);
-      
-      // Convert cheat sheet content to practice questions
-      const cheatSheetQuestions = data.questions
-        .filter(item => typeof item === 'string' && item.trim().length > 10)
-        .map((item, index) => {
-          let questionText = item.trim();
-          // Convert statements to questions if they don't end with ?
-          if (!questionText.endsWith('?')) {
-            questionText = `Explain the following concept: ${questionText}`;
-          }
-          return {
-            id: `question-${index + 1}`,
-            question: questionText,
-            isInstruction: false
-          };
-        });
-      
-             if (cheatSheetQuestions.length > 0) {
-         questionsArray = [...questionsArray, ...cheatSheetQuestions];
-         console.log(`✅ Generated ${cheatSheetQuestions.length} questions from cheat sheet`);
-       } else {
-         throw new Error('No usable content extracted from the file. The cheat sheet endpoint could not process this file type or the file may not contain readable content.');
-       }
-         }
-    // Handle exam_generate endpoint response format
-    else if (data && data.questions && Array.isArray(data.questions)) {
+        // Handle exam_generate endpoint response format
+    if (data && data.questions && Array.isArray(data.questions)) {
       console.log(`📋 Processing questions array with ${data.questions.length} items`);
       // Primary format: questions array from exam_generate endpoint
       const rawQuestions = data.questions.map((q: any, index: number) => {
