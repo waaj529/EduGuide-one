@@ -15,8 +15,13 @@ interface MaterialUploaderProps {
 const MaterialUploader: React.FC<MaterialUploaderProps> = ({ 
   onFileSelected, 
   maxSize = 10, // Default 10MB
-  allowedTypes = ['.pdf', '.docx', '.doc', '.pptx', '.ppt', '.jpg', '.jpeg', '.png'],
-  helpText = "Supports PDF, DOCX, PPTX, JPG, PNG"
+  allowedTypes = [
+    '.pdf', '.docx', '.doc', '.pptx', '.ppt', 
+    '.txt', '.rtf', '.odt', '.odp',
+    '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff',
+    '.mp3', '.wav', '.m4a', '.aac'
+  ],
+  helpText = "Supports PDF, Word, PowerPoint, Images, Text files & Audio"
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,8 +38,38 @@ const MaterialUploader: React.FC<MaterialUploaderProps> = ({
       return false;
     }
 
-    // Check file type
+    // Define comprehensive MIME type mappings
+    const mimeTypeMap = {
+      // Document types
+      'application/pdf': ['.pdf'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/msword': ['.doc'],
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
+      'application/vnd.ms-powerpoint': ['.ppt'],
+      'text/plain': ['.txt'],
+      'application/rtf': ['.rtf'],
+      'application/vnd.oasis.opendocument.text': ['.odt'],
+      'application/vnd.oasis.opendocument.presentation': ['.odp'],
+      
+      // Image types
+      'image/jpeg': ['.jpg', '.jpeg'],
+      'image/png': ['.png'],
+      'image/gif': ['.gif'],
+      'image/bmp': ['.bmp'],
+      'image/tiff': ['.tiff', '.tif'],
+      
+      // Audio types
+      'audio/mpeg': ['.mp3'],
+      'audio/wav': ['.wav'],
+      'audio/mp4': ['.m4a'],
+      'audio/aac': ['.aac']
+    };
+
+    // Check file type using both MIME type and extension for maximum compatibility
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+    const mimeType = file.type;
+
+    // First check if extension is allowed
     if (!allowedTypes.includes(fileExtension)) {
       setError(`Invalid file type. Allowed types: ${allowedTypes.join(', ')}`);
       toast({
@@ -44,6 +79,33 @@ const MaterialUploader: React.FC<MaterialUploaderProps> = ({
       });
       return false;
     }
+
+    // Check if MIME type matches the extension (if MIME type is provided)
+    if (mimeType) {
+      const allowedExtensionsForMime = mimeTypeMap[mimeType];
+      if (allowedExtensionsForMime && !allowedExtensionsForMime.includes(fileExtension)) {
+        console.warn(`MIME type ${mimeType} doesn't match extension ${fileExtension}`);
+        // Don't reject, just warn - some browsers might provide incorrect MIME types
+      }
+    }
+
+    // Additional validation for empty files
+    if (file.size === 0) {
+      setError('File appears to be empty. Please select a valid file.');
+      toast({
+        title: "Empty file",
+        description: "The selected file appears to be empty.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    console.log(`✅ File validation passed:`, {
+      name: file.name,
+      size: `${(file.size / 1024 / 1024).toFixed(2)}MB`,
+      type: file.type || 'unknown',
+      extension: fileExtension
+    });
 
     setError(null);
     return true;
@@ -113,7 +175,7 @@ const MaterialUploader: React.FC<MaterialUploaderProps> = ({
             <input
               type="file"
               className="hidden"
-              accept={allowedTypes.join(',')}
+              accept=".pdf,.docx,.doc,.pptx,.ppt,.txt,.rtf,.odt,.odp,.jpg,.jpeg,.png,.gif,.bmp,.tiff,.mp3,.wav,.m4a,.aac,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.ms-powerpoint,image/*,audio/*"
               onChange={handleFileChange}
             />
           </label>

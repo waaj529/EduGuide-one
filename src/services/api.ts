@@ -1,5 +1,6 @@
 import { toast } from "@/components/ui/use-toast";
 import { API_COMMON } from "@/utils/ApiCommon";
+import { validateFile, createFormDataWithFile, fetchWithTimeout, getFileTypeCategory } from "@/utils/fileUtils";
 
 // Environment-based API URL configuration
 const getApiUrl = () => {
@@ -786,27 +787,83 @@ export interface PracticeQuestion {
 
 export async function generatePracticeQuestions(formData: FormData): Promise<PracticeQuestion[]> {
   try {
-    const response = await fetch('https://python.iamscientist.ai/api/exam/exam_generate', {
-      method: 'POST',
-      body: formData,
-    });
+    // Validate FormData before sending
+    const file = formData.get('file') as File;
+    if (!file || !(file instanceof File)) {
+      throw new Error('No valid file found in form data');
+    }
+
+    // Validate file using utility function
+    const validationResult = validateFile(file, 10); // 10MB limit
+    if (!validationResult.isValid) {
+      throw new Error(validationResult.error || 'File validation failed');
+    }
+
+    const fileCategory = getFileTypeCategory(file);
+    console.log(`🚀 Generating practice questions for ${fileCategory} file: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB, ${file.type})`);
+    
+    // Log all FormData entries for debugging
+    console.log('📋 FormData contents:');
+    for (const pair of formData.entries()) {
+      if (pair[1] instanceof File) {
+        console.log(`  ${pair[0]}: [File] ${pair[1].name} (${pair[1].size} bytes, ${pair[1].type})`);
+      } else {
+        console.log(`  ${pair[0]}: ${pair[1]}`);
+      }
+    }
+
+    // Use timeout-enabled fetch
+    const response = await fetchWithTimeout(
+      'https://python.iamscientist.ai/api/exam/exam_generate',
+      {
+        method: 'POST',
+        body: formData,
+      },
+      60000 // 60 second timeout for file processing
+    );
+
+    console.log(`📡 API Response Status: ${response.status} ${response.statusText}`);
 
     if (!response.ok) {
-      throw new Error(`Error generating questions: ${response.status}`);
+      // Get detailed error information
+      let errorMessage = `API Error ${response.status}: ${response.statusText}`;
+      try {
+        const errorText = await response.text();
+        console.error('🚨 API Error Details:', errorText);
+        
+        // Try to parse as JSON for structured errors
+        try {
+          const errorJson = JSON.parse(errorText);
+          if (errorJson.error) {
+            errorMessage = errorJson.error;
+          } else if (errorJson.message) {
+            errorMessage = errorJson.message;
+          }
+        } catch {
+          // If not JSON, use raw text
+          if (errorText.length > 0 && errorText.length < 200) {
+            errorMessage = errorText;
+          }
+        }
+      } catch {
+        // If we can't read the error response, use the status
+      }
+      
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
-    console.log("API Response data:", data);
+    console.log("✅ API Response data:", data);
     
     // Initialize the results array
     let questionsArray: PracticeQuestion[] = [];
     
-    // Handle different response formats
+    // Handle different response formats more robustly
     if (Array.isArray(data)) {
       // If data is already an array, format it directly
       const formattedQuestions = data.map((q: any, index: number) => ({
         id: q.id || `question-${index + 1}`,
-        question: q.question || q.text || q,
+        question: q.question || q.text || String(q),
         isInstruction: false
       }));
       questionsArray = [...questionsArray, ...formattedQuestions];
@@ -814,32 +871,63 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
       // If data has a 'questions' array property
       const formattedQuestions = data.questions.map((q: any, index: number) => ({
         id: q.id || `question-${index + 1}`,
-        question: q.question || q.text || q,
+        question: q.question || q.text || String(q),
         isInstruction: false
       }));
       questionsArray = [...questionsArray, ...formattedQuestions];
+    } else if (data && data.answer && typeof data.answer === 'string') {
+      // Handle string response with numbered questions
+      const questions = data.answer
+        .split(/\d+\.\s+/)
+        .filter(q => q.trim() !== '')
+        .map((q, index) => ({
+          id: `question-${index + 1}`,
+          question: q.trim(),
+          isInstruction: false
+        }));
+      questionsArray = [...questionsArray, ...questions];
     } else if (data && typeof data === 'object') {
       // If data is a single question object
       questionsArray.push({
         id: data.id || 'question-1',
-        question: data.question || data.text || JSON.stringify(data),
+        question: data.question || data.text || data.answer || JSON.stringify(data),
         isInstruction: false
       });
     } else {
-      // Fallback for unexpected formats - create at least one placeholder question
-      console.warn('Unexpected API response format:', data);
-      
-      questionsArray.push({
-        id: 'question-1',
-        question: 'The API returned data in an unexpected format. Please try again.',
-        isInstruction: false
-      });
+      // Fallback for unexpected formats
+      console.warn('⚠️ Unexpected API response format:', data);
+      throw new Error('The API returned data in an unexpected format. This might be due to an unsupported file type or a temporary server issue.');
     }
     
-    // Filter out any instruction items
-    return questionsArray.filter(q => !q.isInstruction);
+    // Validate that we have at least one question
+    const validQuestions = questionsArray.filter(q => !q.isInstruction && q.question.trim().length > 0);
+    
+    if (validQuestions.length === 0) {
+      throw new Error('No valid questions were generated from the uploaded file. Please try with a different file or check if the file contains readable content.');
+    }
+    
+    console.log(`✅ Successfully processed ${validQuestions.length} questions`);
+    return validQuestions;
+    
   } catch (error) {
-    console.error('Failed to generate practice questions:', error);
+    console.error('🚨 Failed to generate practice questions:', error);
+    
+    // Provide more specific error messages based on error type
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network error: Unable to connect to the question generation service. Please check your internet connection and try again.');
+    } else if (error.message.includes('400')) {
+      throw new Error('Invalid file format or corrupted file. Please try uploading a different file.');
+    } else if (error.message.includes('413')) {
+      throw new Error('File is too large for processing. Please try with a smaller file.');
+    } else if (error.message.includes('415')) {
+      throw new Error('Unsupported file type. Please upload a PDF, Word document, or PowerPoint file.');
+    } else if (error.message.includes('500')) {
+      throw new Error('Server error: The question generation service is temporarily unavailable. Please try again in a few minutes.');
+    } else if (error.message.includes('timeout')) {
+      throw new Error('Request timeout: The file is taking too long to process. Please try with a smaller file.');
+    }
+    
+    // Re-throw the original error if we can't provide a more specific message
     throw error;
   }
 }
