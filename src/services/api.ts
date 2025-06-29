@@ -874,46 +874,149 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
       }
 
     const data = await response.json();
-    console.log("✅ API Response data:", data);
+    console.log("✅ RAW API Response data:", JSON.stringify(data, null, 2));
     
     // Initialize the results array
     let questionsArray: PracticeQuestion[] = [];
     
+    // Helper function to check if text is instructional rather than a question
+    const isInstructionText = (text: string): boolean => {
+      const instructionPatterns = [
+        /^however,?\s+i\s+can\s+(?:help\s+)?generate/i,
+        /^however,?\s+i\s+can\s+generate\s+some\s+questions/i,
+        /however.*generate.*questions.*based.*information.*context/i,
+        /however.*generate.*questions.*context.*here.*they.*are/i,
+        /^here\s+are\s+(?:some\s+)?questions/i,
+        /^here\s+they\s+are/i,
+        /^based\s+on\s+the\s+(?:text|context|document|information)/i,
+        /^i\s+(?:can|will)\s+generate\s+questions/i,
+        /^the\s+following\s+(?:are\s+)?questions/i,
+        /^below\s+are\s+(?:some\s+)?questions/i,
+        /^these\s+questions\s+are\s+based\s+on/i,
+        /^answer\s+the\s+questions\s+below/i,
+        /given\s+in\s+the\s+context/i,
+        /information\s+given\s+in\s+the\s+context/i
+      ];
+      
+      // Test specific known problematic text
+      if (text.includes("However, I can generate")) {
+        console.log(`🔴 FOUND PROBLEMATIC TEXT: "${text}"`);
+        return true; // Immediately filter out this text
+      }
+      
+      // Also check for other common instruction phrases
+      const instructionKeywords = [
+        "However, I can help generate questions",
+        "Here are some questions based on",
+        "Based on the context",
+        "Here they are:"
+      ];
+      
+      if (instructionKeywords.some(keyword => text.includes(keyword))) {
+        console.log(`🔴 FOUND INSTRUCTION KEYWORD in: "${text}"`);
+        return true; // Immediately filter out this text
+      }
+      
+      const isInstruction = instructionPatterns.some(pattern => {
+        const matches = pattern.test(text.trim());
+        if (matches) {
+          console.log(`🚫 PATTERN MATCHED: ${pattern} for text: "${text.substring(0, 100)}..."`);
+        }
+        return matches;
+      });
+      
+      if (isInstruction) {
+        console.log(`🚫 INSTRUCTION TEXT DETECTED: "${text.substring(0, 100)}..."`);
+      }
+      return isInstruction;
+    };
+
+    // Helper function to filter out instruction text and extract actual questions
+    const filterQuestions = (questions: string[]): string[] => {
+      const filtered = questions.filter(q => {
+        const trimmedQ = q.trim();
+        
+        // Check if it's instructional text
+        if (isInstructionText(trimmedQ)) {
+          console.log(`🔍 Filtered out instruction text: "${trimmedQ.substring(0, 50)}..."`);
+          return false;
+        }
+        
+        // Check length and question patterns
+        const isValidQuestion = trimmedQ.length > 10 && 
+               // Must contain a question word or end with question mark to be considered a question
+               (/\?$/.test(trimmedQ) || /\b(?:what|how|why|when|where|which|who|is|are|do|does|did|can|could|would|will|should)\b/i.test(trimmedQ));
+        
+        if (!isValidQuestion && trimmedQ.length > 0) {
+          console.log(`🔍 Filtered out non-question text: "${trimmedQ.substring(0, 50)}..."`);
+        }
+        
+        return isValidQuestion;
+      });
+      
+      console.log(`📊 Question filtering: ${questions.length} total items → ${filtered.length} valid questions`);
+      return filtered;
+    };
+
     // Handle exam_generate endpoint response format
     if (data && data.questions && Array.isArray(data.questions)) {
+      console.log(`📋 Processing questions array with ${data.questions.length} items`);
       // Primary format: questions array from exam_generate endpoint
-      const formattedQuestions = data.questions.map((q: any, index: number) => {
-        // Handle both string questions and object questions
+      const rawQuestions = data.questions.map((q: any, index: number) => {
         const questionText = typeof q === 'string' ? q : (q.question || q.text || q.content || String(q));
-        return {
-          id: `question-${index + 1}`,
-          question: questionText.trim(),
-          isInstruction: false
-        };
+        console.log(`📝 Raw question ${index + 1}: "${questionText.substring(0, 100)}..."`);
+        return questionText;
       });
+      
+      console.log(`🔍 About to filter ${rawQuestions.length} raw questions`);
+      const filteredQuestions = filterQuestions(rawQuestions);
+      console.log(`✅ After filtering: ${filteredQuestions.length} valid questions remain`);
+      
+      const formattedQuestions = filteredQuestions.map((q, index) => ({
+        id: `question-${index + 1}`,
+        question: q.trim(),
+        isInstruction: false
+      }));
       questionsArray = [...questionsArray, ...formattedQuestions];
     } else if (Array.isArray(data)) {
+      console.log(`📋 Processing direct array with ${data.length} items`);
       // If data is already an array, format it directly
-      const formattedQuestions = data.map((q: any, index: number) => ({
+      const rawQuestions = data.map((q: any, index: number) => {
+        const questionText = typeof q === 'string' ? q : (q.question || q.text || String(q));
+        console.log(`📝 Raw question ${index + 1}: "${questionText.substring(0, 100)}..."`);
+        return questionText;
+      });
+      
+      const filteredQuestions = filterQuestions(rawQuestions);
+      const formattedQuestions = filteredQuestions.map((q, index) => ({
         id: `question-${index + 1}`,
-        question: typeof q === 'string' ? q : (q.question || q.text || String(q)),
+        question: q.trim(),
         isInstruction: false
       }));
       questionsArray = [...questionsArray, ...formattedQuestions];
     } else if (data && data.answer && typeof data.answer === 'string') {
+      console.log(`📋 Processing data.answer string: "${data.answer.substring(0, 100)}..."`);
       // Handle string response with numbered questions
-      const questions = data.answer
+      const rawQuestions = data.answer
         .split(/\d+\.\s+/)
-        .filter(q => q.trim() !== '')
-        .map((q, index) => ({
-          id: `question-${index + 1}`,
-          question: q.trim(),
-          isInstruction: false
-        }));
-      questionsArray = [...questionsArray, ...questions];
+        .filter(q => q.trim() !== '');
+      
+      console.log(`📝 Split into ${rawQuestions.length} parts`);
+      rawQuestions.forEach((q, index) => {
+        console.log(`📝 Part ${index + 1}: "${q.substring(0, 100)}..."`);
+      });
+      
+      const filteredQuestions = filterQuestions(rawQuestions);
+      const formattedQuestions = filteredQuestions.map((q, index) => ({
+        id: `question-${index + 1}`,
+        question: q.trim(),
+        isInstruction: false
+      }));
+      questionsArray = [...questionsArray, ...formattedQuestions];
     } else if (data && data.points && Array.isArray(data.points)) {
       // Handle points array format
-      const formattedQuestions = data.points.map((point: string, index: number) => ({
+      const filteredQuestions = filterQuestions(data.points);
+      const formattedQuestions = filteredQuestions.map((point: string, index: number) => ({
         id: `question-${index + 1}`,
         question: point.trim(),
         isInstruction: false
@@ -932,14 +1035,28 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
       throw new Error('The API returned data in an unexpected format. This might be due to an unsupported file type or a temporary server issue.');
     }
     
+    // Final validation and debug info
+    console.log(`📊 FINAL PROCESSING RESULTS:`);
+    console.log(`   - Total items in questionsArray: ${questionsArray.length}`);
+    questionsArray.forEach((q, index) => {
+      console.log(`   - Item ${index + 1}: "${q.question.substring(0, 50)}..." (isInstruction: ${q.isInstruction})`);
+    });
+    
     // Validate that we have at least one question
     const validQuestions = questionsArray.filter(q => !q.isInstruction && q.question.trim().length > 0);
     
+    console.log(`📊 VALIDATION RESULTS:`);
+    console.log(`   - Valid questions after filtering: ${validQuestions.length}`);
+    validQuestions.forEach((q, index) => {
+      console.log(`   - Valid question ${index + 1}: "${q.question.substring(0, 50)}..."`);
+    });
+    
     if (validQuestions.length === 0) {
-      throw new Error('No valid questions were generated from the uploaded file. Please try with a different file or check if the file contains readable content.');
+      console.error('⚠️ No valid questions found after filtering. Raw API response:', data);
+      throw new Error('No valid questions were generated from the uploaded file. The response may contain only instructional text. Please try with a different file or check if the file contains readable content.');
     }
     
-    console.log(`✅ Successfully processed ${validQuestions.length} questions`);
+    console.log(`✅ Successfully processed ${validQuestions.length} questions (filtered from ${questionsArray.length} total items)`);
     return validQuestions;
     
   } catch (error) {
