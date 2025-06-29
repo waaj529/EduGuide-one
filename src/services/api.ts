@@ -800,8 +800,11 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
     }
 
     const fileCategory = getFileTypeCategory(file);
+    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+    const isPDF = fileExtension === '.pdf';
+    
     console.log(`🚀 Generating practice questions for ${fileCategory} file: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB, ${file.type})`);
-    console.log(`📡 Using exam_generate endpoint for ALL file types (as confirmed in Postman)`);
+    console.log(`📄 File type: ${fileExtension}, isPDF: ${isPDF}`);
     
     // Log all FormData entries for debugging
     console.log('📋 FormData contents:');
@@ -813,22 +816,85 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
       }
     }
 
-    // Use exam_generate endpoint for ALL file types (PDF, PPTX, DOCX, etc.)
-    const response = await fetchWithTimeout(
-      'https://python.iamscientist.ai/api/exam/exam_generate',
-      {
-        method: 'POST',
-        body: formData,
-        // Don't set Content-Type header - let browser set it with boundary for FormData
-        headers: {
-          // Add any additional headers if needed, but not Content-Type
-          'Accept': 'application/json',
-        },
-      },
-      60000 // 60 second timeout for file processing
-    );
+    let response;
+    let apiEndpoint;
+    let finalFormData = formData;
 
-    console.log(`📡 API Response Status: ${response.status} ${response.statusText}`);
+    // Smart endpoint selection based on file type
+    if (isPDF) {
+      // For PDF files, use the exam_generate endpoint (optimized for PDFs)
+      apiEndpoint = 'https://python.iamscientist.ai/api/exam/exam_generate';
+      console.log(`📡 Using exam_generate endpoint for PDF file`);
+    } else {
+      // For non-PDF files (PPT, PPTX, DOCX, etc.), use the assignment endpoint which supports more file types
+      apiEndpoint = 'https://python.iamscientist.ai/api/assignment/assignment';
+      console.log(`📡 Using assignment endpoint for non-PDF file: ${fileExtension}`);
+      
+      // Create enhanced FormData with required fields for assignment endpoint
+      const enhancedFormData = new FormData();
+      enhancedFormData.append('file', file);
+      enhancedFormData.append('department', 'Student Practice');
+      enhancedFormData.append('subject', 'Practice Questions');
+      enhancedFormData.append('class', 'Practice Session');
+      enhancedFormData.append('due_date', '01-01-2025');
+      enhancedFormData.append('Assignment_no', 'Practice');
+      enhancedFormData.append('points', '10');
+      enhancedFormData.append('num_conceptual', '2');
+      enhancedFormData.append('num_theoretical', '2');
+      enhancedFormData.append('num_scenario', '1');
+      enhancedFormData.append('difficulty_level', 'medium');
+      enhancedFormData.append('number_of_questions', '5');
+      
+      finalFormData = enhancedFormData;
+      
+      console.log('📋 Enhanced FormData for assignment endpoint:');
+      for (const pair of finalFormData.entries()) {
+        if (pair[1] instanceof File) {
+          console.log(`  ${pair[0]}: [File] ${pair[1].name} (${pair[1].size} bytes, ${pair[1].type})`);
+        } else {
+          console.log(`  ${pair[0]}: ${pair[1]}`);
+        }
+      }
+    }
+
+    // Make the API call with the appropriate endpoint and data
+    try {
+      response = await fetchWithTimeout(
+        apiEndpoint,
+        {
+          method: 'POST',
+          body: finalFormData,
+          headers: {
+            'Accept': 'application/json',
+          },
+        },
+        60000 // 60 second timeout for file processing
+      );
+
+      console.log(`📡 API Response Status: ${response.status} ${response.statusText}`);
+      
+      // If primary endpoint fails and it's not a PDF, try exam_generate as fallback
+      if (!response.ok && !isPDF && response.status === 500) {
+        console.log(`⚠️ Assignment endpoint failed for ${fileExtension}, trying exam_generate as fallback...`);
+        
+        response = await fetchWithTimeout(
+          'https://python.iamscientist.ai/api/exam/exam_generate',
+          {
+            method: 'POST',
+            body: formData, // Use original formData for exam_generate
+            headers: {
+              'Accept': 'application/json',
+            },
+          },
+          60000
+        );
+        
+        console.log(`📡 Fallback API Response Status: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error(`🚨 API call failed:`, error);
+      throw error;
+    }
 
           if (!response.ok) {
         // Get detailed error information
@@ -1070,9 +1136,9 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
     } else if (error.message.includes('413')) {
       throw new Error('File is too large for processing. Please try with a smaller file.');
     } else if (error.message.includes('415')) {
-      throw new Error('Unsupported file type. Please upload a PDF, Word document, or PowerPoint file.');
+      throw new Error('Unsupported file type. This service supports PDF, Word documents (.docx, .doc), PowerPoint files (.pptx, .ppt), and images.');
     } else if (error.message.includes('500')) {
-      throw new Error('Server error: The question generation service is temporarily unavailable. Please try again in a few minutes.');
+      throw new Error('Server error: The question generation service encountered an issue processing your file. This may be due to file format compatibility. Please try converting to PDF or try again in a few minutes.');
     } else if (error.message.includes('timeout')) {
       throw new Error('Request timeout: The file is taking too long to process. Please try with a smaller file.');
     }
