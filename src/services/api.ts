@@ -801,6 +801,7 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
 
     const fileCategory = getFileTypeCategory(file);
     console.log(`🚀 Generating practice questions for ${fileCategory} file: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB, ${file.type})`);
+    console.log(`📡 Using universal cheat_sheet endpoint for ALL file types (PDF, PPTX, DOCX, etc.)`);
     
     // Log all FormData entries for debugging
     console.log('📋 FormData contents:');
@@ -812,9 +813,9 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
       }
     }
 
-    // Use timeout-enabled fetch with proper headers
+    // Use the universal cheat_sheet endpoint that handles all file types (PDF, PPTX, DOCX, etc.)
     const response = await fetchWithTimeout(
-      'https://python.iamscientist.ai/api/exam/exam_generate',
+      'https://python.iamscientist.ai/api/cheat_sheet/cheat_sheet',
       {
         method: 'POST',
         body: formData,
@@ -878,20 +879,24 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
     // Initialize the results array
     let questionsArray: PracticeQuestion[] = [];
     
-    // Handle different response formats more robustly
-    if (Array.isArray(data)) {
+    // Handle cheat_sheet endpoint response format (optimized for all file types)
+    if (data && data.questions && Array.isArray(data.questions)) {
+      // Primary format: questions array from cheat_sheet endpoint
+      const formattedQuestions = data.questions.map((q: any, index: number) => {
+        // Handle both string questions and object questions
+        const questionText = typeof q === 'string' ? q : (q.question || q.text || q.content || String(q));
+        return {
+          id: `question-${index + 1}`,
+          question: questionText.trim(),
+          isInstruction: false
+        };
+      });
+      questionsArray = [...questionsArray, ...formattedQuestions];
+    } else if (Array.isArray(data)) {
       // If data is already an array, format it directly
       const formattedQuestions = data.map((q: any, index: number) => ({
-        id: q.id || `question-${index + 1}`,
-        question: q.question || q.text || String(q),
-        isInstruction: false
-      }));
-      questionsArray = [...questionsArray, ...formattedQuestions];
-    } else if (data && data.questions && Array.isArray(data.questions)) {
-      // If data has a 'questions' array property
-      const formattedQuestions = data.questions.map((q: any, index: number) => ({
-        id: q.id || `question-${index + 1}`,
-        question: q.question || q.text || String(q),
+        id: `question-${index + 1}`,
+        question: typeof q === 'string' ? q : (q.question || q.text || String(q)),
         isInstruction: false
       }));
       questionsArray = [...questionsArray, ...formattedQuestions];
@@ -906,11 +911,19 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
           isInstruction: false
         }));
       questionsArray = [...questionsArray, ...questions];
+    } else if (data && data.points && Array.isArray(data.points)) {
+      // Handle points array format
+      const formattedQuestions = data.points.map((point: string, index: number) => ({
+        id: `question-${index + 1}`,
+        question: point.trim(),
+        isInstruction: false
+      }));
+      questionsArray = [...questionsArray, ...formattedQuestions];
     } else if (data && typeof data === 'object') {
       // If data is a single question object
       questionsArray.push({
-        id: data.id || 'question-1',
-        question: data.question || data.text || data.answer || JSON.stringify(data),
+        id: 'question-1',
+        question: data.question || data.text || data.answer || data.content || JSON.stringify(data),
         isInstruction: false
       });
     } else {
