@@ -801,7 +801,7 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
 
     const fileCategory = getFileTypeCategory(file);
     console.log(`🚀 Generating practice questions for ${fileCategory} file: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB, ${file.type})`);
-    console.log(`📡 Using exam_generate endpoint for Practice Questions`);
+    console.log(`📡 Using exam_generate endpoint with ONLY file parameter (matching successful API test)`);
     
     // Log all FormData entries for debugging
     console.log('📋 FormData contents:');
