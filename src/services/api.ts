@@ -812,45 +812,65 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
       }
     }
 
-    // Use timeout-enabled fetch
+    // Use timeout-enabled fetch with proper headers
     const response = await fetchWithTimeout(
       'https://python.iamscientist.ai/api/exam/exam_generate',
       {
         method: 'POST',
         body: formData,
+        // Don't set Content-Type header - let browser set it with boundary for FormData
+        headers: {
+          // Add any additional headers if needed, but not Content-Type
+          'Accept': 'application/json',
+        },
       },
       60000 // 60 second timeout for file processing
     );
 
     console.log(`📡 API Response Status: ${response.status} ${response.statusText}`);
 
-    if (!response.ok) {
-      // Get detailed error information
-      let errorMessage = `API Error ${response.status}: ${response.statusText}`;
-      try {
-        const errorText = await response.text();
-        console.error('🚨 API Error Details:', errorText);
-        
-        // Try to parse as JSON for structured errors
+          if (!response.ok) {
+        // Get detailed error information
+        let errorMessage = `API Error ${response.status}: ${response.statusText}`;
         try {
-          const errorJson = JSON.parse(errorText);
-          if (errorJson.error) {
-            errorMessage = errorJson.error;
-          } else if (errorJson.message) {
-            errorMessage = errorJson.message;
+          const errorText = await response.text();
+          console.error('🚨 API Error Details:', errorText);
+          
+          // Check if it's an HTML error page (like 500 Internal Server Error)
+          if (errorText.includes('<!doctype html>') || errorText.includes('<html')) {
+            // Extract the title or main error from HTML if possible
+            const titleMatch = errorText.match(/<title>(.*?)<\/title>/i);
+            const h1Match = errorText.match(/<h1>(.*?)<\/h1>/i);
+            
+            if (titleMatch && titleMatch[1]) {
+              errorMessage = `Server Error: ${titleMatch[1]}`;
+            } else if (h1Match && h1Match[1]) {
+              errorMessage = `Server Error: ${h1Match[1]}`;
+            } else {
+              errorMessage = `Server Error (${response.status}): The API server encountered an internal error while processing your file. This may be due to missing required fields or a server-side issue.`;
+            }
+          } else {
+            // Try to parse as JSON for structured errors
+            try {
+              const errorJson = JSON.parse(errorText);
+              if (errorJson.error) {
+                errorMessage = errorJson.error;
+              } else if (errorJson.message) {
+                errorMessage = errorJson.message;
+              }
+            } catch {
+              // If not JSON and not HTML, use raw text if it's short enough
+              if (errorText.length > 0 && errorText.length < 200) {
+                errorMessage = errorText;
+              }
+            }
           }
         } catch {
-          // If not JSON, use raw text
-          if (errorText.length > 0 && errorText.length < 200) {
-            errorMessage = errorText;
-          }
+          // If we can't read the error response, use the status
         }
-      } catch {
-        // If we can't read the error response, use the status
+        
+        throw new Error(errorMessage);
       }
-      
-      throw new Error(errorMessage);
-    }
 
     const data = await response.json();
     console.log("✅ API Response data:", data);

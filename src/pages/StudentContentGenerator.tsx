@@ -231,8 +231,31 @@ const StudentContentGenerator = () => {
     setIsGeneratingQuestions(true);
 
     try {
+      // Create FormData with all required fields that the API expects
       const form = new FormData();
       form.append("file", questionFile);
+      
+      // Add default values for required API fields
+      form.append("department", "General");
+      form.append("subject", "Study Material");
+      form.append("class", "General");
+      form.append("due_date", new Date().toISOString().split('T')[0]); // Today's date
+      form.append("points", "10");
+      form.append("exam_no", "1");
+      form.append("number_of_questions", "5");
+      form.append("num_conceptual", "2");
+      form.append("num_theoretical", "2");
+      form.append("num_scenario", "1");
+      form.append("difficulty_level", "medium");
+      
+      console.log("🚀 Sending FormData with fields:");
+      for (const pair of form.entries()) {
+        if (pair[1] instanceof File) {
+          console.log(`  ${pair[0]}: [File] ${pair[1].name} (${pair[1].size} bytes, ${pair[1].type})`);
+        } else {
+          console.log(`  ${pair[0]}: ${pair[1]}`);
+        }
+      }
       
       // Call the API to generate practice questions
       const questions = await generatePracticeQuestions(form);
@@ -246,7 +269,7 @@ const StudentContentGenerator = () => {
       console.error("Error generating questions:", error);
       toast({
         title: "Generation failed",
-        description: "Failed to generate questions. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to generate questions. Please try again.",
         variant: "destructive",
       });
     } finally {

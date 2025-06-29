@@ -76,7 +76,7 @@ function App() {
                       <LoadingSpinner size="lg" text="Loading..." />
                     </div>
                   }>
-                    <Routes>
+                  <Routes>
                     {/* Public routes */}
                     <Route path="/" element={<Index />} />
                     <Route path="/login" element={<Login />} />
@@ -151,7 +151,7 @@ function App() {
                     
                     {/* Catch-all route */}
                     <Route path="*" element={<NotFound />} />
-                    </Routes>
+                  </Routes>
                   </Suspense>
                 </main>
                 <Footer />
