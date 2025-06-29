@@ -804,7 +804,7 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
     console.log(`📡 Using universal cheat_sheet endpoint for ALL file types (PDF, PPTX, DOCX, etc.)`);
     
     // Log all FormData entries for debugging
-    console.log('📋 FormData contents:');
+    console.log('📋 Original FormData contents:');
     for (const pair of formData.entries()) {
       if (pair[1] instanceof File) {
         console.log(`  ${pair[0]}: [File] ${pair[1].name} (${pair[1].size} bytes, ${pair[1].type})`);
@@ -813,12 +813,19 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
       }
     }
 
+    // 🔧 CRITICAL FIX: cheat_sheet endpoint expects ONLY the file, not additional fields
+    // Create minimal FormData with just the file (like working generateCheatSheet/Summary/KeyPoints)
+    const minimalFormData = new FormData();
+    minimalFormData.append('file', file);
+    
+    console.log('✅ Sending minimal FormData with ONLY file to cheat_sheet endpoint (matches working functions)');
+
     // Use the universal cheat_sheet endpoint that handles all file types (PDF, PPTX, DOCX, etc.)
     const response = await fetchWithTimeout(
       'https://python.iamscientist.ai/api/cheat_sheet/cheat_sheet',
       {
         method: 'POST',
-        body: formData,
+        body: minimalFormData,  // 🔥 Using minimal FormData instead of full FormData
         // Don't set Content-Type header - let browser set it with boundary for FormData
         headers: {
           // Add any additional headers if needed, but not Content-Type
