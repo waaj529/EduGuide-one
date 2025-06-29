@@ -231,24 +231,11 @@ const StudentContentGenerator = () => {
     setIsGeneratingQuestions(true);
 
     try {
-      // Create FormData with all required fields that exam_generate endpoint expects
+      // Create FormData with ONLY the file (matching your successful API test)
       const form = new FormData();
       form.append("file", questionFile);
       
-      // Add required fields with proper values matching successful endpoints
-      form.append("department", "Computer Science");
-      form.append("subject", "General Studies");
-      form.append("class", "Practice Session");
-      form.append("due_date", new Date().toISOString().split('T')[0]); // Today's date
-      form.append("points", "10");
-      form.append("exam_no", "PRACTICE001");
-      form.append("number_of_questions", "10");
-      form.append("num_conceptual", "4");
-      form.append("num_theoretical", "3");
-      form.append("num_scenario", "3");
-      form.append("difficulty_level", "Medium");
-      
-      console.log("🚀 Sending FormData with fields:");
+      console.log("🚀 Sending ONLY file to exam_generate endpoint (matching your successful API test):");
       for (const pair of form.entries()) {
         if (pair[1] instanceof File) {
           console.log(`  ${pair[0]}: [File] ${pair[1].name} (${pair[1].size} bytes, ${pair[1].type})`);
