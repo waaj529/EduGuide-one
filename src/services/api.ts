@@ -819,16 +819,9 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
     let apiEndpoint;
     let finalFormData = formData;
 
-    // Production restriction: Only PDF files are supported for practice question generation
-    const isPDF = fileExtension === '.pdf';
-    
-    if (!isPDF) {
-      throw new Error(`Practice questions are currently only supported for PDF files. Please convert your ${fileExtension.toUpperCase()} file to PDF format, or use the Summary/Key Points features for other file types.`);
-    }
-    
-    // Use exam_generate endpoint for PDF files (proven to work reliably)
+    // Use exam_generate endpoint for ALL file types (as confirmed working in Postman)
     apiEndpoint = 'https://python.iamscientist.ai/api/exam/exam_generate';
-    console.log(`📡 Using exam_generate endpoint for PDF file`);
+    console.log(`📡 Using exam_generate endpoint for ${fileExtension} file`);
 
     // Make the API call with the appropriate endpoint and data
     try {
@@ -1106,12 +1099,7 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
     } else if (error.message.includes('415')) {
       throw new Error('Unsupported file type. This service supports PDF, Word documents (.docx, .doc), PowerPoint files (.pptx, .ppt), and images.');
     } else if (error.message.includes('500')) {
-      const fileExt = (formData.get('file') as File)?.name.split('.').pop()?.toLowerCase();
-      if (fileExt === 'pdf') {
-        throw new Error('Server error: The PDF processing service is temporarily unavailable. Please try again later.');
-      } else {
-        throw new Error(`Server error: Cannot process ${fileExt?.toUpperCase()} files. This file type may not be supported for question generation. Try converting to PDF or use a different file.`);
-      }
+      throw new Error('Server error: The question generation service encountered an issue processing your file. Please try again later or try with a different file.');
     } else if (error.message.includes('timeout')) {
       throw new Error('Request timeout: The file is taking too long to process. Please try with a smaller file.');
     }
