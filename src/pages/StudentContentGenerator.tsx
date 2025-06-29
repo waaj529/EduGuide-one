@@ -491,7 +491,16 @@ const StudentContentGenerator = () => {
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     <h2 className="text-xl font-semibold">Upload Material for Questions</h2>
-                    <MaterialUploader onFileSelected={handleQuestionFileSelected} />
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <p className="text-sm text-blue-800 dark:text-blue-200">
+                        <strong>📄 PDF Files Only:</strong> Practice questions are currently supported for PDF files only. For other file types (PPT, PPTX, Word), please use the Summary or Key Points features.
+                      </p>
+                    </div>
+                    <MaterialUploader 
+                      onFileSelected={handleQuestionFileSelected}
+                      allowedTypes={['.pdf']}
+                      helpText="Supports PDF files only"
+                    />
                     
                     {questionFile && (
                       <motion.div
