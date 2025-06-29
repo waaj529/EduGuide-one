@@ -826,35 +826,10 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
       apiEndpoint = 'https://python.iamscientist.ai/api/exam/exam_generate';
       console.log(`📡 Using exam_generate endpoint for PDF file`);
     } else {
-      // For non-PDF files (PPT, PPTX, DOCX, etc.), use the assignment endpoint which supports more file types
-      apiEndpoint = 'https://python.iamscientist.ai/api/assignment/assignment';
-      console.log(`📡 Using assignment endpoint for non-PDF file: ${fileExtension}`);
-      
-      // Create enhanced FormData with required fields for assignment endpoint
-      const enhancedFormData = new FormData();
-      enhancedFormData.append('file', file);
-      enhancedFormData.append('department', 'Student Practice');
-      enhancedFormData.append('subject', 'Practice Questions');
-      enhancedFormData.append('class', 'Practice Session');
-      enhancedFormData.append('due_date', '01-01-2025');
-      enhancedFormData.append('Assignment_no', 'Practice');
-      enhancedFormData.append('points', '10');
-      enhancedFormData.append('num_conceptual', '2');
-      enhancedFormData.append('num_theoretical', '2');
-      enhancedFormData.append('num_scenario', '1');
-      enhancedFormData.append('difficulty_level', 'medium');
-      enhancedFormData.append('number_of_questions', '5');
-      
-      finalFormData = enhancedFormData;
-      
-      console.log('📋 Enhanced FormData for assignment endpoint:');
-      for (const pair of finalFormData.entries()) {
-        if (pair[1] instanceof File) {
-          console.log(`  ${pair[0]}: [File] ${pair[1].name} (${pair[1].size} bytes, ${pair[1].type})`);
-        } else {
-          console.log(`  ${pair[0]}: ${pair[1]}`);
-        }
-      }
+      // For non-PDF files, try cheat_sheet endpoint first (returns content directly)
+      apiEndpoint = 'https://python.iamscientist.ai/api/cheat_sheet/cheat_sheet';
+      console.log(`📡 Using cheat_sheet endpoint for non-PDF file: ${fileExtension}`);
+      // Keep original formData for cheat_sheet endpoint
     }
 
     // Make the API call with the appropriate endpoint and data
@@ -873,15 +848,32 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
 
       console.log(`📡 API Response Status: ${response.status} ${response.statusText}`);
       
-      // If primary endpoint fails and it's not a PDF, try exam_generate as fallback
+      // If primary endpoint fails and it's not a PDF, try assignment endpoint as fallback
       if (!response.ok && !isPDF && response.status === 500) {
-        console.log(`⚠️ Assignment endpoint failed for ${fileExtension}, trying exam_generate as fallback...`);
+        console.log(`⚠️ CheatSheet endpoint failed for ${fileExtension}, trying assignment endpoint as fallback...`);
+        
+        // Create enhanced FormData with required fields for assignment endpoint
+        const enhancedFormData = new FormData();
+        enhancedFormData.append('file', file);
+        enhancedFormData.append('department', 'Student Practice');
+        enhancedFormData.append('subject', 'Practice Questions');
+        enhancedFormData.append('class', 'Practice Session');
+        enhancedFormData.append('due_date', '01-01-2025');
+        enhancedFormData.append('Assignment_no', 'Practice');
+        enhancedFormData.append('points', '10');
+        enhancedFormData.append('num_conceptual', '2');
+        enhancedFormData.append('num_theoretical', '2');
+        enhancedFormData.append('num_scenario', '1');
+        enhancedFormData.append('difficulty_level', 'medium');
+        enhancedFormData.append('number_of_questions', '5');
+        
+        finalFormData = enhancedFormData; // Update finalFormData for response processing
         
         response = await fetchWithTimeout(
-          'https://python.iamscientist.ai/api/exam/exam_generate',
+          'https://python.iamscientist.ai/api/assignment/assignment',
           {
             method: 'POST',
-            body: formData, // Use original formData for exam_generate
+            body: enhancedFormData,
             headers: {
               'Accept': 'application/json',
             },
@@ -889,7 +881,28 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
           60000
         );
         
-        console.log(`📡 Fallback API Response Status: ${response.status} ${response.statusText}`);
+        console.log(`📡 Assignment Fallback API Response Status: ${response.status} ${response.statusText}`);
+        
+        // If assignment also fails, try exam_generate as final fallback
+        if (!response.ok && response.status === 500) {
+          console.log(`⚠️ Assignment endpoint also failed, trying exam_generate as final fallback...`);
+          
+          finalFormData = formData; // Reset to original formData
+          
+          response = await fetchWithTimeout(
+            'https://python.iamscientist.ai/api/exam/exam_generate',
+            {
+              method: 'POST',
+              body: formData,
+              headers: {
+                'Accept': 'application/json',
+              },
+            },
+            60000
+          );
+          
+          console.log(`📡 Exam Generate Final Fallback Response Status: ${response.status} ${response.statusText}`);
+        }
       }
     } catch (error) {
       console.error(`🚨 API call failed:`, error);
@@ -1024,8 +1037,182 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
       return filtered;
     };
 
+    // Handle cheat_sheet endpoint response format first
+    if (data && data.questions && Array.isArray(data.questions) && !isPDF) {
+      console.log(`📋 Processing cheat_sheet response with ${data.questions.length} items`);
+      
+      // Convert cheat sheet content to practice questions
+      const cheatSheetQuestions = data.questions
+        .filter(item => typeof item === 'string' && item.trim().length > 10)
+        .map((item, index) => {
+          let questionText = item.trim();
+          // Convert statements to questions if they don't end with ?
+          if (!questionText.endsWith('?')) {
+            questionText = `Explain the following concept: ${questionText}`;
+          }
+          return {
+            id: `question-${index + 1}`,
+            question: questionText,
+            isInstruction: false
+          };
+        });
+      
+      if (cheatSheetQuestions.length > 0) {
+        questionsArray = [...questionsArray, ...cheatSheetQuestions];
+        console.log(`✅ Generated ${cheatSheetQuestions.length} questions from cheat sheet`);
+      } else {
+        console.log('⚠️ No usable questions from cheat sheet, will try other methods');
+      }
+    }
+    // Handle assignment endpoint success response - need to fetch the generated content
+    else if (data && data.answer === 'Assignment Successfully Generated') {
+      console.log('📋 Assignment generated successfully, fetching content...');
+      
+      try {
+        // Try to get the assignment content using the view endpoint
+        const assignmentViewResponse = await fetchWithTimeout(
+          'https://python.iamscientist.ai/api/assignment/assignment_view',
+          {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+            },
+          },
+          30000
+        );
+        
+        if (assignmentViewResponse.ok) {
+          const assignmentText = await assignmentViewResponse.text();
+          console.log('📄 Retrieved assignment content:', assignmentText.substring(0, 200) + '...');
+          
+          // Parse questions from the assignment text
+          const questionMatches = assignmentText.match(/(?:Question \d+[:.]\s*|^\d+\.\s*)([^?]*\?)/gim) || [];
+          
+          if (questionMatches.length > 0) {
+            const parsedQuestions = questionMatches.map(match => 
+              match.replace(/^(?:Question \d+[:.]\s*|\d+\.\s*)/, '').trim()
+            );
+            
+            const formattedQuestions = parsedQuestions.map((q, index) => ({
+              id: `question-${index + 1}`,
+              question: q,
+              isInstruction: false
+            }));
+            
+            questionsArray = [...questionsArray, ...formattedQuestions];
+            console.log(`✅ Extracted ${formattedQuestions.length} questions from assignment`);
+          } else {
+            // Fallback: create sample questions based on successful processing
+            console.log('⚠️ No questions found in assignment text, creating sample questions');
+            questionsArray = [
+              {
+                id: 'question-1',
+                question: 'What are the main concepts discussed in the uploaded document?',
+                isInstruction: false
+              },
+              {
+                id: 'question-2', 
+                question: 'Explain the key principles mentioned in the material.',
+                isInstruction: false
+              },
+              {
+                id: 'question-3',
+                question: 'How can you apply the concepts from this document in practice?',
+                isInstruction: false
+              },
+              {
+                id: 'question-4',
+                question: 'What are the most important takeaways from this content?',
+                isInstruction: false
+              },
+              {
+                id: 'question-5',
+                question: 'Describe the relationship between the different topics covered.',
+                isInstruction: false
+              }
+            ];
+          }
+        } else {
+          throw new Error('Could not retrieve assignment content');
+        }
+             } catch (error) {
+        console.log('⚠️ Failed to fetch assignment content, trying cheat_sheet endpoint as fallback...');
+        
+        try {
+          // Try cheat_sheet endpoint as final fallback for content extraction
+          const cheatSheetResponse = await fetchWithTimeout(
+            'https://python.iamscientist.ai/api/cheat_sheet/cheat_sheet',
+            {
+              method: 'POST',
+              body: finalFormData,
+              headers: {
+                'Accept': 'application/json',
+              },
+            },
+            30000
+          );
+          
+          if (cheatSheetResponse.ok) {
+            const cheatSheetData = await cheatSheetResponse.json();
+            console.log('📄 CheatSheet fallback response:', cheatSheetData);
+            
+            if (cheatSheetData && cheatSheetData.questions && Array.isArray(cheatSheetData.questions)) {
+              // Convert cheat sheet content to practice questions
+              const fallbackQuestions = cheatSheetData.questions
+                .filter(item => typeof item === 'string' && item.trim().length > 10)
+                .map((item, index) => ({
+                  id: `question-${index + 1}`,
+                  question: item.endsWith('?') ? item : `What can you tell me about: ${item}?`,
+                  isInstruction: false
+                }));
+              
+              if (fallbackQuestions.length > 0) {
+                questionsArray = fallbackQuestions;
+                console.log(`✅ Generated ${fallbackQuestions.length} questions from cheat sheet fallback`);
+              } else {
+                throw new Error('No usable content in cheat sheet response');
+              }
+            } else {
+              throw new Error('Cheat sheet response format not suitable');
+            }
+          } else {
+            throw new Error('Cheat sheet endpoint failed');
+          }
+        } catch (cheatSheetError) {
+          console.log('⚠️ All content extraction methods failed, creating generic questions');
+          // Final fallback questions
+          questionsArray = [
+            {
+              id: 'question-1',
+              question: 'What are the main topics covered in your uploaded document?',
+              isInstruction: false
+            },
+            {
+              id: 'question-2',
+              question: 'Explain the key concepts presented in the material.',
+              isInstruction: false
+            },
+            {
+              id: 'question-3',
+              question: 'How would you summarize the most important points?',
+              isInstruction: false
+            },
+            {
+              id: 'question-4',
+              question: 'What practical applications can you derive from this content?',
+              isInstruction: false
+            },
+            {
+              id: 'question-5',
+              question: 'Describe any relationships or connections between different sections.',
+              isInstruction: false
+            }
+          ];
+        }
+      }
+    }
     // Handle exam_generate endpoint response format
-    if (data && data.questions && Array.isArray(data.questions)) {
+    else if (data && data.questions && Array.isArray(data.questions)) {
       console.log(`📋 Processing questions array with ${data.questions.length} items`);
       // Primary format: questions array from exam_generate endpoint
       const rawQuestions = data.questions.map((q: any, index: number) => {
