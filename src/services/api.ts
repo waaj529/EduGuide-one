@@ -287,6 +287,12 @@ export const generateAssignment = async (formData: FormData) => {
     if (!generateResponse.ok) {
       const errorText = await generateResponse.text();
       devError(`Assignment API failed with status ${generateResponse.status}:`, errorText);
+      
+      // Check for specific backend error and provide helpful message
+      if (errorText.includes("page_content")) {
+        throw new Error(`Backend API error: Document processing failed. Please contact the backend developer to fix the 'page_content' attribute error.`);
+      }
+      
       throw new Error(`API error (${generateResponse.status}): ${errorText}`);
     }
     
@@ -421,6 +427,12 @@ export const generateQuiz = async (formData: FormData) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Quiz API failed with status ${response.status}:`, errorText);
+      
+      // Check for specific backend error and provide helpful message
+      if (errorText.includes("page_content")) {
+        throw new Error(`Backend API error: Document processing failed. Please contact the backend developer to fix the 'page_content' attribute error.`);
+      }
+      
       throw new Error(`API error (${response.status}): ${errorText}`);
     }
     
