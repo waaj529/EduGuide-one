@@ -12,6 +12,10 @@
   },
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "https://python.iamscientist.ai/api/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
@@ -26,5 +30,10 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "src/pages/*.tsx": {
+      "memory": 1024
+    }
+  }
 } 

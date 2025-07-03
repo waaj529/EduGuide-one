@@ -119,7 +119,7 @@ const StudentContentGenerator = () => {
         // Set timeout of 30 seconds
         const timeoutId = setTimeout(() => controller.abort(), 30000);
         
-        const response = await fetch("https://python.iamscientist.ai/api/chatpdf/chatpdf", {
+        const response = await fetch("/api/chatpdf/chatpdf", {
           method: "POST",
           body: formData,
           signal: controller.signal

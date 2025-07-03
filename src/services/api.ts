@@ -59,7 +59,7 @@ const prodLog = (message: string, data?: any) => {
 // Resolve the Python backend base URL.
 //  • In development we call the Vite proxy (relative "/api" path) so the browser sees a same-origin request and CORS is bypassed.
 //  • In production we hit the absolute public URL.
-const PYTHON_API_BASE = import.meta.env.DEV ? "/api" : "https://python.iamscientist.ai/api";
+const PYTHON_API_BASE = "/api";
 
 // Auth APIs
 export const loginUser = async (email: string, password: string) => {
@@ -832,7 +832,7 @@ export async function generatePracticeQuestions(formData: FormData): Promise<Pra
     let finalFormData = formData;
 
     // Use exam_generate endpoint for ALL file types (as confirmed working in Postman)
-    apiEndpoint = 'https://python.iamscientist.ai/api/exam/exam_generate';
+          apiEndpoint = '/api/exam/exam_generate';
     console.log(`📡 Using exam_generate endpoint for ${fileExtension} file`);
 
     // Make the API call with the appropriate endpoint and data
@@ -1125,7 +1125,7 @@ export async function evaluatePracticeAnswer(questionId: string, question: strin
   try {
     console.log("Evaluating answer:", { questionId, question, userAnswer: userAnswer.substring(0, 20) + "..." });
     
-    const response = await fetch('https://python.iamscientist.ai/api/exam/evaluate_answer', {
+    const response = await fetch('/api/exam/evaluate_answer', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1611,13 +1611,13 @@ export async function generateSpeechFromText(text: string): Promise<string> {
   if (DEBUG_SPEECH_GENERATION) {
     console.log("Text sample (first 200 chars):", text.substring(0, 200));
     // Debug output showing exactly what's being sent
-    console.log("Request URL:", 'https://python.iamscientist.ai/api/generate-speech/generate-speech');
+    console.log("Request URL:", '/api/generate-speech/generate-speech');
     console.log("Request method:", 'POST');
   }
   
   try {
     // Make the API call to the exact URL from the screenshot
-    const response = await fetch('https://python.iamscientist.ai/api/generate-speech/generate-speech', {
+    const response = await fetch('/api/generate-speech/generate-speech', {
       method: 'POST',
       body: formData,
     });

@@ -643,10 +643,8 @@ const Upload = () => {
       // Log the image details for debugging
       console.log("Image being uploaded:", proximityImageFile.name, proximityImageFile.type, proximityImageFile.size);
       
-      // Post to the API endpoint (via proxy in development, direct in production)
-      const apiUrl = process.env.NODE_ENV === 'development' 
-        ? "/api/yolo/yolo"  // Use proxy in development
-        : "https://python.iamscientist.ai/api/yolo/yolo"; // Direct in production
+      // Post to the API endpoint (via Vercel proxy)
+      const apiUrl = "/api/yolo/yolo";
       
       let response;
       try {
