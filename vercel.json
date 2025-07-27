@@ -12,24 +12,11 @@
   },
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://python.iamscientist.ai/api/:path*"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
   "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, s-maxage=300, stale-while-revalidate=600"
-        }
-      ]
-    },
     {
       "source": "/assets/(.*)",
       "headers": [
@@ -39,10 +26,5 @@
         }
       ]
     }
-  ],
-  "functions": {
-    "src/pages/*.tsx": {
-      "memory": 1024
-    }
-  }
+  ]
 } 
