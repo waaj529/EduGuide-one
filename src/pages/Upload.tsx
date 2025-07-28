@@ -847,20 +847,37 @@ const Upload = () => {
     navigate("/login");
   };
 
-  // Helper function to generate demo questions when API is down
-  // Helper function to convert date from YYYY-MM-DD to DD-MM-YYYY format
+  // Helper function to format date for API (keep YYYY-MM-DD format)
   const formatDateForAPI = (dateString: string): string => {
-    if (!dateString) return "10-12-2021"; // Default fallback
+    if (!dateString) return "2025-08-01"; // Default fallback in YYYY-MM-DD format
     
     try {
-      const [year, month, day] = dateString.split('-');
-      return `${day}-${month}-${year}`;
+      // HTML date input already provides YYYY-MM-DD format, so just return it as is
+      // Validate that it's in the correct format
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (dateRegex.test(dateString)) {
+        return dateString; // Already in YYYY-MM-DD format
+      }
+      
+      // If somehow it's in a different format, try to parse and convert
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        console.warn("Invalid date string:", dateString);
+        return "2025-08-01"; // Default fallback
+      }
+      
+      // Convert to YYYY-MM-DD format
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     } catch (error) {
       console.warn("Date formatting error:", error);
-      return "10-12-2021"; // Default fallback
+      return "2025-08-01"; // Default fallback in YYYY-MM-DD format
     }
   };
 
+  // Helper function to generate demo questions when API is down
   const generateDemoQuestions = (totalQuestionsStr: string, extractedText: string): any[] => {
     const totalQuestions = parseInt(totalQuestionsStr) || 4;
     
