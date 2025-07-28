@@ -165,7 +165,7 @@ export const generateAssignment = async (formData: FormData) => {
   try {
     devLog("Generating assignment with form data:", Object.fromEntries(formData.entries()));
     
-    // Helper function to validate and clean numeric fields
+    // Helper to validate and clean numeric fields
     const validateNumericField = (value: string | null, defaultValue: string): string => {
       const cleanValue = (value || defaultValue).trim();
       return cleanValue === "" || isNaN(Number(cleanValue)) ? defaultValue : cleanValue;
@@ -350,21 +350,34 @@ export const generateQuiz = async (formData: FormData) => {
   try {
     console.log("Generating quiz with form data:", Object.fromEntries(formData.entries()));
     
+    // Validate file field first
+    const file = formData.get("file") as File;
+    if (!file || !(file instanceof File)) {
+      throw new Error("Valid file is required for quiz generation");
+    }
+    
     // Ensure all required fields are present and properly formatted
     const requiredFields = {
-      file: formData.get("file") as File,
+      file: file,
       department: (formData.get("department") as string || "").trim(),
       subject: (formData.get("subject") as string || "").trim(), 
       class: (formData.get("class") as string || "").trim(),
       due_date: (formData.get("due_date") as string || "").trim(),
       points: (formData.get("points") as string || "").trim(),
       quiz_no: (formData.get("quiz_no") as string || "").trim(),
-      number_of_questions: (formData.get("number_of_questions") as string || "5").trim(),
+      number_of_questions: (formData.get("number_of_questions") as string || "").trim(),
       num_conceptual: (formData.get("num_conceptual") as string || "0").trim(),
       num_theoretical: (formData.get("num_theoretical") as string || "0").trim(), 
       num_scenario: (formData.get("num_scenario") as string || "0").trim(),
       difficulty_level: (formData.get("difficulty_level") as string || "").trim()
     };
+    
+    console.log("🔍 Quiz field validation - number_of_questions:", {
+      raw: formData.get("number_of_questions"),
+      processed: requiredFields.number_of_questions,
+      length: requiredFields.number_of_questions?.length,
+      isEmpty: requiredFields.number_of_questions === ""
+    });
     
     // Validate required text fields for quiz
     const requiredTextFields = {
@@ -373,22 +386,34 @@ export const generateQuiz = async (formData: FormData) => {
       class: "Class",
       due_date: "Due Date",
       quiz_no: "Quiz Number",
-      difficulty_level: "Difficulty Level"
+      difficulty_level: "Difficulty Level",
+      number_of_questions: "Total Questions"  // Add this to required fields
     };
 
+    const missingFields = [];
     for (const [field, displayName] of Object.entries(requiredTextFields)) {
       if (!requiredFields[field] || requiredFields[field].trim() === "") {
-        throw new Error(`${displayName} is required. Please fill out all form fields.`);
+        missingFields.push(displayName);
       }
     }
+    
+    if (missingFields.length > 0) {
+      throw new Error(`The following fields are required: ${missingFields.join(', ')}. Please fill out all form fields.`);
+    }
+    
+    // Validate number_of_questions is a valid number
+    const totalQuestions = parseInt(requiredFields.number_of_questions);
+    if (isNaN(totalQuestions) || totalQuestions < 1 || totalQuestions > 50) {
+      throw new Error(`Total Questions must be a number between 1 and 50. You entered: "${requiredFields.number_of_questions}"`);
+    }
+    
+    console.log(`✅ Validated quiz will generate ${totalQuestions} questions`);
     
     // Create validated FormData with exact field names from API
     const validatedFormData = new FormData();
     
     // Add file
-    if (requiredFields.file) {
-      validatedFormData.append("file", requiredFields.file);
-    }
+    validatedFormData.append("file", requiredFields.file);
     
     // Add all other fields with proper names matching the API
     validatedFormData.append("department", requiredFields.department);
@@ -403,7 +428,7 @@ export const generateQuiz = async (formData: FormData) => {
     validatedFormData.append("num_scenario", requiredFields.num_scenario);
     validatedFormData.append("difficulty_level", requiredFields.difficulty_level);
     
-    console.log("Quiz API request fields:", {
+    console.log("📋 Final Quiz API request fields:", {
       department: requiredFields.department,
       subject: requiredFields.subject,
       class: requiredFields.class,
@@ -462,14 +487,21 @@ export const generateQuiz = async (formData: FormData) => {
     }
     
     if (questions && questions.length > 0) {
-      const requestedQuestionCount = parseInt(requiredFields.number_of_questions) || 10;
-      console.log(`Successfully generated ${questions.length} quiz questions from API`);
+      // Respect the user's requested question count - slice to the exact number they requested
+      const requestedQuestionCount = totalQuestions; // Use validated number
+      const finalQuestions = questions.slice(0, requestedQuestionCount);
+      
+      console.log(`📊 Quiz generation summary:`);
+      console.log(`   - Requested: ${requestedQuestionCount} questions`);
+      console.log(`   - Generated: ${questions.length} questions`);
+      console.log(`   - Returning: ${finalQuestions.length} questions`);
+      
       toast({
         title: "Quiz Generated",
-        description: `Successfully created ${questions.length} questions from your document`,
+        description: `Successfully created ${finalQuestions.length} questions from your document`,
       });
       
-      return questions.slice(0, requestedQuestionCount);
+      return finalQuestions;
     } else {
       console.log("API returned empty questions array");
       throw new Error("Quiz API returned no questions");
@@ -1179,9 +1211,9 @@ export async function evaluatePracticeAnswer(questionId: string, question: strin
     });
     throw error;
   }
-}
+};
 
-// View generated quiz PDF in a new tab using corrected endpoint
+// Download generated quiz PDF in a new tab using corrected endpoint
 export const viewQuizPdf = async (formData?: FormData, callback?: (url: string) => void) => {
   try {
     console.log("🚀 Opening quiz PDF view...");
@@ -1228,8 +1260,21 @@ export const viewQuizPdf = async (formData?: FormData, callback?: (url: string) 
 // View quiz solution PDF using corrected endpoint
 export const viewQuizSolutionPdf = async (callback?: (url: string) => void) => {
   try {
-    // Use the quiz solution view endpoint
-    const pdfUrl = `${PYTHON_API_BASE}/quiz/quiz_solution_view`;
+    // Since quiz_solution_view endpoint doesn't exist, use the download endpoint
+    // and create a blob URL for viewing instead of downloading
+    const response = await fetch(`${PYTHON_API_BASE}/quiz/quiz_solution_download`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/pdf'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    
+    const blob = await response.blob();
+    const pdfUrl = URL.createObjectURL(blob);
     
     if (callback) {
       callback(pdfUrl);
@@ -1238,10 +1283,10 @@ export const viewQuizSolutionPdf = async (callback?: (url: string) => void) => {
       window.open(pdfUrl, '_blank');
     }
       
-      toast({
+    toast({
       title: "Quiz Solution PDF opened",
-        description: "The quiz solution has been opened in a new tab.",
-      });
+      description: "The quiz solution has been opened in a new tab.",
+    });
     
   } catch (error) {
     console.error("View quiz solution PDF error:", error);

@@ -456,6 +456,21 @@ const Upload = () => {
           questions = await generateAssignment(assignmentForm);
         } 
         else if (type === "quiz") {
+          // Debug: Log state values right before creating FormData for quiz
+          console.log("🔍 Quiz state values at FormData creation:", {
+            quizDepartment: `"${quizDepartment}" (type: ${typeof quizDepartment}, length: ${quizDepartment?.length})`,
+            quizSubject: `"${quizSubject}" (type: ${typeof quizSubject}, length: ${quizSubject?.length})`,
+            quizClassName: `"${quizClassName}" (type: ${typeof quizClassName}, length: ${quizClassName?.length})`,
+            quizDueDate: `"${quizDueDate}" (type: ${typeof quizDueDate}, length: ${quizDueDate?.length})`,
+            quizNumber: `"${quizNumber}" (type: ${typeof quizNumber}, length: ${quizNumber?.length})`,
+            quizDifficulty: `"${quizDifficulty}" (type: ${typeof quizDifficulty}, length: ${quizDifficulty?.length})`,
+            quizPoints: `"${quizPoints}" (type: ${typeof quizPoints}, length: ${quizPoints?.length})`,
+            quizTotalQuestions: `"${quizTotalQuestions}" (type: ${typeof quizTotalQuestions}, length: ${quizTotalQuestions?.length})`,
+            quizConceptual: `"${quizConceptual}" (type: ${typeof quizConceptual}, length: ${quizConceptual?.length})`,
+            quizTheoretical: `"${quizTheoretical}" (type: ${typeof quizTheoretical}, length: ${quizTheoretical?.length})`,
+            quizScenario: `"${quizScenario}" (type: ${typeof quizScenario}, length: ${quizScenario?.length})`
+          });
+
           // Create quiz form with properly validated parameters
           const quizForm = new FormData();
           quizForm.append("file", file);
@@ -469,8 +484,48 @@ const Upload = () => {
           quizForm.append("num_theoretical", quizTheoretical);
           quizForm.append("num_scenario", quizScenario);
           quizForm.append("difficulty_level", quizDifficulty);
-          quizForm.append("number_of_questions", quizTotalQuestions || "10");
+          // Ensure we send the exact value from form, no default fallback here
+          quizForm.append("number_of_questions", quizTotalQuestions);
           
+          console.log("🚀 Attempting quiz generation...");
+          console.log("📋 Quiz form data being sent:", {
+            file: file.name,
+            department: quizDepartment,
+            subject: quizSubject,
+            class: quizClassName,
+            due_date: formatDateForAPI(quizDueDate),
+            quiz_no: quizNumber,
+            points: quizPoints,
+            num_conceptual: quizConceptual,
+            num_theoretical: quizTheoretical,
+            num_scenario: quizScenario,
+            difficulty_level: quizDifficulty,
+            number_of_questions: quizTotalQuestions
+          });
+          console.log("📋 Quiz FormData entries:", Object.fromEntries(quizForm.entries()));
+          
+          // Final validation before API call
+          const quizFormEntries = Object.fromEntries(quizForm.entries());
+          const requiredQuizFields = ['department', 'subject', 'class', 'quiz_no', 'difficulty_level'];
+          const missingQuizFields = requiredQuizFields.filter(field => 
+            !quizFormEntries[field] || quizFormEntries[field].toString().trim() === ''
+          );
+          
+          if (missingQuizFields.length > 0) {
+            console.error("🚨 CRITICAL: Required quiz fields missing from FormData:", missingQuizFields);
+            console.error("🚨 Quiz FormData contents:", quizFormEntries);
+            throw new Error(`Required quiz fields missing from FormData: ${missingQuizFields.join(', ')}`);
+          }
+          
+          // Validate that number_of_questions is set
+          if (!quizTotalQuestions || quizTotalQuestions.trim() === '') {
+            console.warn("⚠️ WARNING: number_of_questions is empty, this may cause the API to default to 10");
+            // Set a default if user didn't specify
+            quizForm.set("number_of_questions", "5");
+            console.log("📋 Set default number_of_questions to 5");
+          }
+          
+          console.log("✅ All required quiz fields present in FormData, calling quiz API...");
             // Call the quiz API
             questions = await generateQuiz(quizForm);
         } 
@@ -1797,7 +1852,71 @@ const Upload = () => {
               <CardFooter className="p-4 flex gap-2 border-t">
                 <Button
                   className="flex-1 h-10 flex items-center justify-center"
-                  onClick={() => handleUpload("quiz")}
+                  onClick={() => {
+                    // Debug: Log current quiz state values
+                    console.log("🔍 Quiz state values when clicking Generate:", {
+                      quizDepartment,
+                      quizSubject,
+                      quizClassName,
+                      quizDueDate,
+                      quizNumber,
+                      quizDifficulty,
+                      quizPoints,
+                      quizTotalQuestions,
+                      quizConceptual,
+                      quizTheoretical,
+                      quizScenario
+                    });
+                    
+                    // Check if all required fields are filled
+                    const requiredQuizFields = {
+                      'Department': quizDepartment,
+                      'Subject': quizSubject,
+                      'Class': quizClassName,
+                      'Due Date': quizDueDate,
+                      'Quiz Number': quizNumber,
+                      'Difficulty Level': quizDifficulty
+                    };
+                    
+                    const emptyQuizFields = Object.entries(requiredQuizFields)
+                      .filter(([name, value]) => !value || value.trim() === '')
+                      .map(([name]) => name);
+                    
+                    if (emptyQuizFields.length > 0) {
+                      console.error("❌ Empty quiz fields detected:", emptyQuizFields);
+                      toast({
+                        title: "Missing required fields",
+                        description: `Please fill out: ${emptyQuizFields.join(', ')}`,
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+
+                    // Validate Total Questions field specifically
+                    if (!quizTotalQuestions || quizTotalQuestions.trim() === '') {
+                      console.warn("⚠️ WARNING: Total Questions field is empty");
+                      toast({
+                        title: "Total Questions Required",
+                        description: "Please specify how many questions you want to generate (e.g., 5)",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+
+                    const totalQuestionsNum = parseInt(quizTotalQuestions);
+                    if (isNaN(totalQuestionsNum) || totalQuestionsNum < 1 || totalQuestionsNum > 50) {
+                      console.error("❌ Invalid Total Questions value:", quizTotalQuestions);
+                      toast({
+                        title: "Invalid Total Questions",
+                        description: "Please enter a number between 1 and 50 for total questions",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    
+                    console.log("✅ All required quiz fields validated, proceeding with upload");
+                    handleUpload("quiz");
+                  }}
                   disabled={
                     !quizFile ||
                     isUploading ||
@@ -1882,7 +2001,7 @@ const Upload = () => {
         </TabsContent>
 
         {/* Proximity Tab */}
-        <TabsContent value="proximity" className="space-y-4">
+               <TabsContent value="proximity" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
             <Card>
               <CardHeader>
