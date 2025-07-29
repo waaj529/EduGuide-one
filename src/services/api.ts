@@ -165,7 +165,7 @@ export const generateAssignment = async (formData: FormData) => {
   try {
     devLog("Generating assignment with form data:", Object.fromEntries(formData.entries()));
     
-    // Helper to validate and clean numeric fields
+    // Helper function to validate and clean numeric fields
     const validateNumericField = (value: string | null, defaultValue: string): string => {
       const cleanValue = (value || defaultValue).trim();
       return cleanValue === "" || isNaN(Number(cleanValue)) ? defaultValue : cleanValue;
@@ -1213,7 +1213,7 @@ export async function evaluatePracticeAnswer(questionId: string, question: strin
   }
 };
 
-// Download generated quiz PDF in a new tab using corrected endpoint
+// View generated quiz PDF in a new tab using corrected endpoint
 export const viewQuizPdf = async (formData?: FormData, callback?: (url: string) => void) => {
   try {
     console.log("🚀 Opening quiz PDF view...");
@@ -1260,21 +1260,8 @@ export const viewQuizPdf = async (formData?: FormData, callback?: (url: string) 
 // View quiz solution PDF using corrected endpoint
 export const viewQuizSolutionPdf = async (callback?: (url: string) => void) => {
   try {
-    // Since quiz_solution_view endpoint doesn't exist, use the download endpoint
-    // and create a blob URL for viewing instead of downloading
-    const response = await fetch(`${PYTHON_API_BASE}/quiz/quiz_solution_download`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/pdf'
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    
-    const blob = await response.blob();
-    const pdfUrl = URL.createObjectURL(blob);
+    // Use the quiz solution view endpoint
+    const pdfUrl = `${PYTHON_API_BASE}/quiz/quiz_solution_view`;
     
     if (callback) {
       callback(pdfUrl);
@@ -1283,10 +1270,10 @@ export const viewQuizSolutionPdf = async (callback?: (url: string) => void) => {
       window.open(pdfUrl, '_blank');
     }
       
-    toast({
+      toast({
       title: "Quiz Solution PDF opened",
-      description: "The quiz solution has been opened in a new tab.",
-    });
+        description: "The quiz solution has been opened in a new tab.",
+      });
     
   } catch (error) {
     console.error("View quiz solution PDF error:", error);

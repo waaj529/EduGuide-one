@@ -293,6 +293,18 @@ const GeneratedKeyPoints: React.FC<GeneratedKeyPointsProps> = ({ keyPoints, isLo
     }
   }
 
+  // Ensure we always have at least one section with valid points
+  if (organizedPoints.length === 0 || organizedPoints.every(section => section.points.length === 0)) {
+    // Fallback: create a single section with all non-empty processed points
+    const fallbackPoints = processedPoints.filter(p => p && p.trim().length > 0);
+    if (fallbackPoints.length > 0) {
+      organizedPoints = [{ points: fallbackPoints }];
+    } else {
+      // Last resort: use the original keyPoints if everything else fails
+      organizedPoints = [{ points: keyPoints.filter(p => p && p.trim().length > 0) }];
+    }
+  }
+
   // Function to generate the full text content for the speech API
   const generateTextContent = () => {
     let fullText = "Study Cheat Sheet.\n\n";
